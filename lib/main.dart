@@ -1,5 +1,9 @@
+import "dart:io";
+
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:google_fonts/google_fonts.dart";
+import "package:window_manager/window_manager.dart";
 
 ColorScheme appColorScheme = ColorScheme(
   primary: Colors.green.shade800,
@@ -26,7 +30,21 @@ class AppTheme {
   }
 }
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  /// This should only run if we're running on desktop.
+  if (!(kIsWeb || Platform.isAndroid || Platform.isIOS)) {
+    await windowManager.ensureInitialized();
+
+    const Size recommendedSize = Size(400, 750);
+    const WindowOptions options = WindowOptions(
+      minimumSize: recommendedSize,
+      size: recommendedSize,
+    );
+
+    await windowManager.waitUntilReadyToShow(options);
+  }
   runApp(const MyApp());
 }
 
