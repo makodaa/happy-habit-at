@@ -39,6 +39,7 @@ dependencies:
   provider: ^6.1.2
   go_router: ^14.3.0
   window_manager: ^0.4.3
+  fluentui_icons: ^1.0.0
 
 dev_dependencies:
   flutter_test:
