@@ -3,7 +3,7 @@ import "dart:io";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:google_fonts/google_fonts.dart";
-import "package:happy_habit_at/screens/main_screen.dart";
+import "package:happy_habit_at/router.dart";
 import "package:window_manager/window_manager.dart";
 
 ColorScheme appColorScheme = ColorScheme(
@@ -55,10 +55,10 @@ class HappyHabitAtApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: "Happy Habit-At",
       theme: AppTheme.getAppTheme(),
-      home: const MainScreen(),
+      routerConfig: router,
     );
   }
 }
