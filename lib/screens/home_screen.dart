@@ -43,11 +43,7 @@ class HomeScreen extends StatelessWidget {
             label: "Stats",
           ),
         ],
-        onTap: (int index) {
-          print("");
-
-          return navigationShell.goBranch(index);
-        },
+        onTap: navigationShell.goBranch,
       ),
     );
   }
