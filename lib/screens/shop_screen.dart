@@ -9,7 +9,11 @@ class ShopScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         /// APPBAR
-        AppBar(title: const Text("Shop Page")),
+        AppBar(
+          title: const Text("Shop Page"),
+          elevation: 2.0,
+          shadowColor: Colors.black,
+        ),
 
         /// BODY
         const Expanded(

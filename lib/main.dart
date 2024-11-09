@@ -3,7 +3,10 @@ import "dart:io";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:google_fonts/google_fonts.dart";
+import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/router.dart";
+import "package:provider/provider.dart";
+import "package:sqflite_common_ffi/sqflite_ffi.dart";
 import "package:window_manager/window_manager.dart";
 
 ColorScheme appColorScheme = ColorScheme(
@@ -36,6 +39,9 @@ void main() async {
 
   /// This should only run if we're running on desktop.
   if (!(kIsWeb || Platform.isAndroid || Platform.isIOS)) {
+    databaseFactory = databaseFactoryFfi;
+    sqfliteFfiInit();
+
     await windowManager.ensureInitialized();
 
     const Size recommendedSize = Size(375, 650);
@@ -47,7 +53,16 @@ void main() async {
 
     await windowManager.waitUntilReadyToShow(options);
   }
-  runApp(const HappyHabitAtApp());
+
+  AppState state = AppState();
+  await state.init();
+
+  runApp(
+    ChangeNotifierProvider<AppState>.value(
+      value: state,
+      child: const HappyHabitAtApp(),
+    ),
+  );
 }
 
 class HappyHabitAtApp extends StatelessWidget {
@@ -58,6 +73,7 @@ class HappyHabitAtApp extends StatelessWidget {
     return MaterialApp.router(
       title: "Happy Habit-At",
       theme: AppTheme.getAppTheme(),
+      debugShowCheckedModeBanner: false,
       routerConfig: router,
     );
   }

@@ -9,7 +9,10 @@ class StatsScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         /// APPBAR
-        AppBar(title: const Text("Stats Page")),
+        AppBar(title: const Text("Stats Page"),
+          elevation: 2.0,
+          shadowColor: Colors.black,
+        ),
 
         /// BODY
         const Expanded(

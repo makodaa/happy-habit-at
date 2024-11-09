@@ -9,7 +9,11 @@ class HabitsScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         /// APPBAR
-        AppBar(title: const Text("Habits Page")),
+        AppBar(
+          title: const Text("Habits Page"),
+          elevation: 2.0,
+          shadowColor: Colors.black,
+        ),
 
         /// BODY
         const Expanded(
