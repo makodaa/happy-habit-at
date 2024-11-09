@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:happy_habit_at/screens/home_screen/branch_animator.dart";
+import "package:happy_habit_at/utils/extension_types/immutable_list.dart";
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
@@ -9,15 +11,11 @@ class HomeScreen extends StatelessWidget {
   });
 
   final StatefulNavigationShell navigationShell;
-  final List<Widget> children;
+  final ImmutableList<Widget> children;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text("Happy Habit-At"),
-      ),
       body: BranchAnimator(
         currentIndex: navigationShell.currentIndex,
         children: children,
@@ -51,38 +49,6 @@ class HomeScreen extends StatelessWidget {
           return navigationShell.goBranch(index);
         },
       ),
-    );
-  }
-}
-
-class BranchAnimator extends StatelessWidget {
-  const BranchAnimator({required this.currentIndex, required this.children, super.key});
-
-  final int currentIndex;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        for (var (int i, Widget child) in children.indexed)
-          AnimatedSlide(
-            offset: i < currentIndex
-                ? const Offset(-1, 0)
-                : i > currentIndex
-                    ? const Offset(1, 0)
-                    : Offset.zero,
-            curve: Curves.easeInOutQuart,
-            duration: const Duration(milliseconds: 250),
-            child: IgnorePointer(
-              ignoring: i != currentIndex,
-              child: TickerMode(
-                enabled: i == currentIndex,
-                child: child,
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

@@ -1,78 +1,23 @@
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:happy_habit_at/screens/habitat_screen.dart";
+import "package:happy_habit_at/screens/habits_screen.dart";
 import "package:happy_habit_at/screens/home_screen.dart";
-import "package:happy_habit_at/screens/home_screen_shells/habitat_screen.dart";
-import "package:happy_habit_at/screens/home_screen_shells/habits_screen.dart";
-import "package:happy_habit_at/screens/home_screen_shells/shop_screen.dart";
-import "package:happy_habit_at/screens/home_screen_shells/stats_screen.dart";
-
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: "root");
+import "package:happy_habit_at/screens/shop_screen.dart";
+import "package:happy_habit_at/screens/stats_screen.dart";
+import "package:happy_habit_at/utils/extension_types/immutable_list.dart";
 
 // ignore: always_specify_types
 final navigatorKeys = (
+  root: GlobalKey<NavigatorState>(debugLabel: "root"),
   habitat: GlobalKey<NavigatorState>(debugLabel: "habitat"),
   habits: GlobalKey<NavigatorState>(debugLabel: "habits"),
   shop: GlobalKey<NavigatorState>(debugLabel: "shop"),
   stats: GlobalKey<NavigatorState>(debugLabel: "stats"),
 );
 
-class SlideUpPageAnimation extends StatelessWidget {
-  const SlideUpPageAnimation({
-    required this.context,
-    required this.animation,
-    required this.secondaryAnimation,
-    required this.child,
-    super.key,
-  });
-  final BuildContext context;
-  final Animation<double> animation;
-  final Animation<double> secondaryAnimation;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: animation,
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0.0, 0.8),
-          end: Offset.zero,
-        ).animate(
-          CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeInOut, // Curve applied here
-          ),
-        ),
-        child: child,
-      ),
-    );
-  }
-}
-
-CustomTransitionPage<void> Function(BuildContext, GoRouterState) transitionPage({
-  required Widget child,
-}) {
-  return (BuildContext context, GoRouterState state) {
-    return CustomTransitionPage<void>(
-      key: state.pageKey,
-      child: child,
-      transitionsBuilder: (
-        BuildContext context,
-        Animation<double> animation,
-        Animation<double> secondaryAnimation,
-        Widget child,
-      ) {
-        return RotationTransition(
-          turns: animation,
-          child: child,
-        );
-      },
-    );
-  };
-}
-
 final GoRouter router = GoRouter(
-  navigatorKey: _rootNavigatorKey,
+  navigatorKey: navigatorKeys.root,
   initialLocation: "/habitat",
   routes: <RouteBase>[
     StatefulShellRoute(
@@ -81,14 +26,12 @@ final GoRouter router = GoRouter(
         StatefulNavigationShell navigationShell,
         List<Widget> children,
       ) {
-        return HomeScreen(navigationShell: navigationShell, children: children);
+        return HomeScreen(
+          navigationShell: navigationShell,
+          children: ImmutableList<Widget>(children),
+        );
       },
-      builder: (
-        BuildContext context,
-        GoRouterState state,
-        StatefulNavigationShell navigationShell,
-      ) =>
-          navigationShell,
+      builder: (_, __, StatefulNavigationShell navigationShell) => navigationShell,
       branches: <StatefulShellBranch>[
         StatefulShellBranch(
           navigatorKey: navigatorKeys.habitat,
