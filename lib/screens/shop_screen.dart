@@ -55,8 +55,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    spacing: 8.0, 
-                    children: [
+                    children: <Widget>[
                       Chip(
                         avatar: CircleAvatar(
                           backgroundColor: Colors.grey.shade800,

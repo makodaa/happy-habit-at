@@ -10,6 +10,8 @@ class CreateHabitScreen extends StatefulWidget {
 
 class _CreateHabitScreenState extends State<CreateHabitScreen> {
   late final TextEditingController habitNameController;
+  late final TextEditingController habitDescriptionController;
+  late final TextEditingController habitGoalController;
 
   void _createNewHabit() {}
 
@@ -18,6 +20,8 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
     super.initState();
 
     habitNameController = TextEditingController();
+    habitDescriptionController = TextEditingController();
+    habitGoalController = TextEditingController();
   }
 
   @override
@@ -44,6 +48,12 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
             },
             icon: const Icon(Icons.arrow_back),
           ),
+          actions: <Widget>[
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.check),
+            ),
+          ],
         ),
 
         //BODY
@@ -54,26 +64,79 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                const Text("Icon and Name", textAlign: TextAlign.left),
+                const Text(
+                  "Icon and Name",
+                  textAlign: TextAlign.left,
+                ),
+                SizedBox(height: 4.0,),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        print("Hi");
-                      },
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4.0),
+                      child: IconButton(
+                        icon: const Icon(Icons.emoji_emotions),
+                        onPressed: () {
+                          print("Hi");
+                        },
+                      ),
                     ),
                     // TODO(water-mizuu):
                     Expanded(
                       child: TextField(
                         controller: habitNameController,
                         cursorColor: Colors.white,
-                        decoration: const InputDecoration(hintText: "e.g. Meditate, Read a Book"),
+                        decoration: const InputDecoration(
+                            hintText: "e.g. Meditate, Read a Book"),
                       ),
                     ),
                   ],
                 ),
+                SizedBox(height: 16.0,),
+                const Text(
+                  "Description",
+                  textAlign: TextAlign.left,
+                ),
+                SizedBox(height: 4.0,),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Expanded(
+                      child: TextField(
+                        controller: habitDescriptionController,
+                        cursorColor: Colors.white,
+                        decoration: const InputDecoration(
+                            hintText: "e.g. Clear and organize thoughts"),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.0,),
+                const Text(
+                  "Goal",
+                  textAlign: TextAlign.left,
+                ),
+                SizedBox(height: 4.0,),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Expanded(
+                      child: TextField(
+                        controller: habitGoalController,
+                        cursorColor: Colors.white,
+                        decoration: const InputDecoration(
+                            hintText: "e.g. Spend at least 15 minutes"),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.0,),
+                const Text(
+                  "Repeats on",
+                  textAlign: TextAlign.left,
+                ),
+                SizedBox(height: 4.0,),
+                // ToggleButtons(children: children, isSelected: isSelected)
               ],
             ),
           ),
