@@ -9,6 +9,7 @@ import "package:provider/provider.dart";
 import "package:sqflite_common_ffi/sqflite_ffi.dart";
 import "package:window_manager/window_manager.dart";
 
+
 ColorScheme appColorScheme = ColorScheme(
   primary: Colors.green[800]!,
   primaryContainer: const Color.fromRGBO(165, 214, 167, 1),

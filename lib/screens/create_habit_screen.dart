@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 
-class StatsScreen extends StatelessWidget {
-  const StatsScreen({super.key});
+class CreateHabitScreen extends StatelessWidget {
+  const CreateHabitScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -9,19 +9,21 @@ class StatsScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         /// APPBAR
-        AppBar(title: const Text("Stats Page"),
-          elevation: 2.0,
+        AppBar(
+          title: const Text("Habits"),
+          elevation: 1.0,
           shadowColor: Colors.black,
+          leading: IconButton(
+            onPressed: (){},
+            icon: const Icon(Icons.arrow_back),),
         ),
 
-        /// BODY
+        //BODY
         const Expanded(
           child: Column(
             children: <Widget>[
-              /// Place body widgets here.
-              Center(
-                child: Text("Hi"),
-              ),
+              Row(),
+              Row(),
             ],
           ),
         ),
