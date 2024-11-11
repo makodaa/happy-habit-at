@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
-import "package:happy_habit_at/router.dart";
 
 class HabitsScreen extends StatelessWidget {
   const HabitsScreen({super.key});
@@ -8,7 +7,7 @@ class HabitsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      children: [
+      children: <Widget>[
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -20,12 +19,11 @@ class HabitsScreen extends StatelessWidget {
             ),
 
             /// BODY
-            Expanded(
+            const Expanded(
               child: Column(
                 children: <Widget>[
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
+                  Row(
+                    children: <Widget>[
                       Padding(
                         padding: EdgeInsets.all(8.0),
                         child: Text(
@@ -34,26 +32,27 @@ class HabitsScreen extends StatelessWidget {
                             fontSize: 16,
                             color: Colors.black,
                           ),
-                          ),
                         ),
+                      ),
                     ],
                   ),
-                  // Row(
-                  //   children: <Widget>[
-                  //     Container(
-                  //       width: 16.0,
-                  //       height: 16.0,
-                  //       decoration: BoxDecoration(
-                  //         color: Colors.green,
-                  //         shape: BoxShape.circle,
-                  //       ),
-                  //     ),
-
-                  //   ],
-                  // ),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
+                  ListTile(
+                    leading: Icon(Icons.add),
+                    title: Text(
+                      "Overdue Task Title",
+                      style: TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                    subtitle: Text(
+                      "Overdue Task Subtitle",
+                      style: TextStyle(
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: <Widget>[
                       Padding(
                         padding: EdgeInsets.all(8.0),
                         child: Text(
@@ -62,11 +61,11 @@ class HabitsScreen extends StatelessWidget {
                             fontSize: 16,
                             color: Colors.black,
                           ),
-                          ),
                         ),
+                      ),
                     ],
                   ),
-                  const Row(),
+                  Row(),
                 ],
               ),
             ),
@@ -75,12 +74,11 @@ class HabitsScreen extends StatelessWidget {
         Positioned(
           bottom: 12.0,
           right: 12.0,
-          child: FloatingActionButton.large(
+          child: FloatingActionButton(
             onPressed: () => context.goNamed("createHabit"),
             child: const Icon(Icons.add),
           ),
-        )
-      ]
+        ),
       ],
     );
   }

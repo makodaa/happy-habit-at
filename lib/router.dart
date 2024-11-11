@@ -28,6 +28,8 @@ final GoRouter router = GoRouter(
         StatefulNavigationShell navigationShell,
         List<Widget> children,
       ) {
+        print(navigationShell);
+
         return HomeScreen(
           navigationShell: navigationShell,
           children: ImmutableList<Widget>(children),
@@ -54,7 +56,8 @@ final GoRouter router = GoRouter(
               builder: (BuildContext context, GoRouterState state) => const HabitsScreen(),
               routes: <RouteBase>[
                 GoRoute(
-                  path: "createHabit",
+                  name: "createHabit",
+                  path: "create-habit",
                   builder: (BuildContext context, GoRouterState state) => const CreateHabitScreen(),
                 ),
               ],
