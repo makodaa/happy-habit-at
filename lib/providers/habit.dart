@@ -1,4 +1,5 @@
 import "package:flutter/foundation.dart";
+import "package:happy_habit_at/screens/create_habit_screen.dart";
 
 // CREATE TABLE IF NOT EXISTS habit (
 //   habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,6 +15,8 @@ class Habit extends ChangeNotifier {
     required this.habitDescription,
     required this.habitGoal,
     required this.habitIcon,
+    required this.date,
+    required this.time,
   });
 
   Habit.fromMap(Map<String, dynamic> map) {
@@ -35,6 +38,8 @@ class Habit extends ChangeNotifier {
   }
 
   late final int habitId;
+  late final List<DaysOfTheWeek> date;
+  late ({int minutes,int seconds}) time;
   late String habitName;
   late String habitDescription;
   late String habitGoal;
