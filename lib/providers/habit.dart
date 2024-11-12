@@ -39,7 +39,7 @@ class Habit extends ChangeNotifier {
 
   late final int habitId;
   late final List<DaysOfTheWeek> date;
-  late ({int hours,int minute}) time;
+  late ({int hour,int minute}) time;
   late String habitName;
   late String habitDescription;
   late String habitGoal;
