@@ -1,18 +1,29 @@
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:happy_habit_at/utils/extension_types/immutable_list.dart";
 
-enum DaysOfTheWeek {sunday,monday,tuesday,wednesday,thursday,friday, saturday}
-
+enum DaysOfTheWeek { sunday, monday, tuesday, wednesday, thursday, friday, saturday }
 
 class CreateHabitScreen extends StatefulWidget {
   const CreateHabitScreen({super.key});
 
   @override
   State<CreateHabitScreen> createState() => _CreateHabitScreenState();
-  
 }
 
+typedef ColorPair = ({Color background, Color foreground});
+
 class _CreateHabitScreenState extends State<CreateHabitScreen> {
+  static final ImmutableList<ColorPair> colors = ImmutableList<ColorPair>(<ColorPair>[
+    (background: Colors.red.shade200, foreground: Colors.red.shade400),
+    (background: Colors.orange.shade200, foreground: Colors.orange.shade400),
+    (background: Colors.yellow.shade200, foreground: Colors.yellow.shade400),
+    (background: Colors.green.shade200, foreground: Colors.green.shade400),
+    (background: Colors.blue.shade200, foreground: Colors.blue.shade400),
+    (background: Colors.indigo.shade200, foreground: Colors.indigo.shade400),
+    (background: Colors.purple.shade200, foreground: Colors.purple.shade400),
+  ]);
+
   late final TextEditingController habitNameController;
   late final TextEditingController habitDescriptionController;
   late final TextEditingController habitGoalController;
@@ -26,9 +37,8 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
 
   int? colorIndex;
 
-  List<bool> isDaySelected = List<bool>.filled(7, false); 
-  List<(DaysOfTheWeek,String)> daysOfTheWeekOptions = 
-  <(DaysOfTheWeek,String)>[
+  List<bool> isDaySelected = List<bool>.filled(7, false);
+  List<(DaysOfTheWeek, String)> daysOfTheWeekOptions = <(DaysOfTheWeek, String)>[
     (DaysOfTheWeek.sunday, "Su"),
     (DaysOfTheWeek.monday, "Mo"),
     (DaysOfTheWeek.tuesday, "Tu"),
@@ -37,7 +47,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
     (DaysOfTheWeek.friday, "Fr"),
     (DaysOfTheWeek.saturday, "Sa"),
   ];
-  
+
   @override
   void initState() {
     super.initState();
@@ -101,23 +111,24 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                       height: 48,
                       width: 48,
                       decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide())
+                        border: Border(bottom: BorderSide()),
                       ),
                       child: IconButton(
                         icon: Icon(
                           Icons.emoji_emotions,
-                          ),
+                        ),
                         onPressed: () {
                           print("Hi");
                         },
                       ),
                     ),
-                      Container(
-                        height: 48.0,
-                        width: 4.0,
-                        decoration: BoxDecoration(
-                          border: Border(bottom: BorderSide())
-                        ),),
+                    Container(
+                      height: 48.0,
+                      width: 4.0,
+                      decoration: BoxDecoration(
+                        border: Border(bottom: BorderSide()),
+                      ),
+                    ),
                     // TODO(water-mizuu):
                     Expanded(
                       child: TextField(
@@ -125,7 +136,8 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                         cursorColor: Colors.white,
                         decoration: const InputDecoration(
                           filled: true,
-                            hintText: "e.g. Meditate, Read a Book",),
+                          hintText: "e.g. Meditate, Read a Book",
+                        ),
                       ),
                     ),
                   ],
@@ -149,7 +161,8 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                         cursorColor: Colors.white,
                         decoration: const InputDecoration(
                           filled: true,
-                            hintText: "e.g. Clear and organize thoughts",),
+                          hintText: "e.g. Clear and organize thoughts",
+                        ),
                       ),
                     ),
                   ],
@@ -173,7 +186,8 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                         cursorColor: Colors.white,
                         decoration: const InputDecoration(
                           filled: true,
-                            hintText: "e.g. Spend at least 15 minutes",),
+                          hintText: "e.g. Spend at least 15 minutes",
+                        ),
                       ),
                     ),
                   ],
@@ -185,79 +199,100 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                   "Repeats on",
                   textAlign: TextAlign.left,
                 ),
-                SizedBox(
-                  height: 4.0,
-                ),
-                ToggleButtons(
-                  isSelected: isDaySelected,
-                  onPressed: (int index) {
-                    setState(() {
-                      isDaySelected[index] =!isDaySelected[index];
-                      });},
-                      children: daysOfTheWeekOptions.map(((DaysOfTheWeek, String) day) => Text(day.$2)).toList(),
+                const SizedBox(height: 4.0),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: ToggleButtons(
+                    isSelected: isDaySelected,
+                    onPressed: (int index) {
+                      setState(() {
+                        isDaySelected[index] = !isDaySelected[index];
+                      });
+                    },
+                    children: daysOfTheWeekOptions
+                        .map(((DaysOfTheWeek, String) day) => Text(day.$2))
+                        .toList(),
                   ),
-                  SizedBox(height: 16,),
-                  const Text(
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+                const Text(
                   "Time",
                   textAlign: TextAlign.left,
                 ),
-                SizedBox(height: 4,),
+                SizedBox(
+                  height: 4,
+                ),
                 TextField(
                   decoration: InputDecoration(
-                    labelText: selectedTime?.format(context) ?? TimeOfDay(hour: (TimeOfDay.now().hour + 1) % 24, minute: 0).format(context),
+                    labelText: selectedTime?.format(context) ??
+                        TimeOfDay(hour: (TimeOfDay.now().hour + 1) % 24, minute: 0).format(context),
                   ),
                   onTap: () async {
                     FocusScope.of(context).requestFocus(FocusNode());
                     TimeOfDay? time = await showTimePicker(
                       context: context,
-                      initialTime: selectedTime ?? TimeOfDay(hour: (TimeOfDay.now().hour + 1) % 24, minute: 0),
-                      builder: (BuildContext context, Widget? child){
+                      initialTime: selectedTime ??
+                          TimeOfDay(hour: (TimeOfDay.now().hour + 1) % 24, minute: 0),
+                      builder: (BuildContext context, Widget? child) {
                         return Theme(
                           data: Theme.of(context).copyWith(
-                              materialTapTargetSize: tapTargetSize,
-                            ),
+                            materialTapTargetSize: tapTargetSize,
+                          ),
                           child: Directionality(
-                            textDirection: textDirection, 
+                            textDirection: textDirection,
                             child: MediaQuery(
                               data: MediaQuery.of(context).copyWith(
-                                  alwaysUse24HourFormat: use24HourTime,
-                                ),
-                                child: child!,
-                                ),
-                                ),
-                                );
-                                },
-                                );
-                                setState(() {
-                                  selectedTime = time; });
+                                alwaysUse24HourFormat: use24HourTime,
+                              ),
+                              child: child!,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                    setState(() {
+                      selectedTime = time;
+                    });
                   },
                 ),
-                SizedBox(height: 16,),
-                  const Text(
+                SizedBox(
+                  height: 16,
+                ),
+                const Text(
                   "Color",
                   textAlign: TextAlign.left,
                 ),
                 SizedBox(height: 4.0),
                 // TODO: Make reusable? and make onPressed correspond to database value
-                Row(
-                  children: <Widget>[
-                    SizedBox(
-                      height: 48,
-                      width: 48,
-                      child: AspectRatio(
-                        aspectRatio: 1.0,
-                        child: FilledButton(
-                          style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Colors.red.shade400)),
-                          onPressed: (){},
-                          child: SizedBox(
-                            height: 48.0,
-                            width: 48.0,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    children: <Widget>[
+                      for (var (int index, (:Color background, :Color foreground))
+                          in colors.indexed)
+                        SizedBox(
+                          height: 48,
+                          width: 48,
+                          child: FilledButton(
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all<Color>(background),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                colorIndex = index;
+                              });
+                            },
+                            child: SizedBox(
+                              height: 48.0,
+                              width: 48.0,
+                            ),
                           ),
-                          ),
-                      ),
-                    ),
-                  ],
-                )
+                        ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
