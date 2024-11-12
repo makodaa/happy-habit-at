@@ -31,7 +31,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
       date: <DaysOfTheWeek>[
         DaysOfTheWeek.monday,
         DaysOfTheWeek.wednesday,
-        DaysOfTheWeek.friday
+        DaysOfTheWeek.friday,
       ],
       time: (hour: 14, minute: 45),
     ),
@@ -55,7 +55,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
         DaysOfTheWeek.tuesday,
         DaysOfTheWeek.wednesday,
         DaysOfTheWeek.thursday,
-        DaysOfTheWeek.friday
+        DaysOfTheWeek.friday,
       ],
       time: (hour: 19, minute: 30),
     ),
@@ -92,10 +92,13 @@ class _HabitsScreenState extends State<HabitsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     const SizedBox(height: 16.0),
-                    const Text(
-                      "Past Due",
-                      textAlign: TextAlign.left,
-                    ),
+                    if (habits.any(
+                      (Habit h) => h.time.hour < 12,
+                    ))
+                      const Text(
+                        "Past Due",
+                        textAlign: TextAlign.left,
+                      ),
                     const SizedBox(height: 4.0),
                     Expanded(
                       child: ListView(
@@ -110,10 +113,13 @@ class _HabitsScreenState extends State<HabitsScreen> {
                         ],
                       ),
                     ),
-                    const Text(
-                      "Afternoon",
-                      textAlign: TextAlign.left,
-                    ),
+                    if (habits.any(
+                      (Habit h) => 12 <= h.time.hour && h.time.hour < 18,
+                    ))
+                      const Text(
+                        "Afternoon",
+                        textAlign: TextAlign.left,
+                      ),
                     const SizedBox(height: 4.0),
                     Expanded(
                       child: ListView(
@@ -128,10 +134,13 @@ class _HabitsScreenState extends State<HabitsScreen> {
                         ],
                       ),
                     ),
-                    const Text(
-                      "Past Due",
-                      textAlign: TextAlign.left,
-                    ),
+                    if (habits.any(
+                      (Habit h) => 18 <= h.time.hour && h.time.hour < 24,
+                    ))
+                      const Text(
+                        "Evening",
+                        textAlign: TextAlign.left,
+                      ),
                     const SizedBox(height: 4.0),
                     Expanded(
                       child: ListView(
