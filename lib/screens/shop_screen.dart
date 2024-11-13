@@ -8,6 +8,8 @@ class ShopScreen extends StatefulWidget {
 }
 
 class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateMixin {
+  static const SizedBox separator = SizedBox(width: 8.0);
+
   late final TabController tabController;
 
   @override
@@ -63,6 +65,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                         ),
                         label: const Text("Beds"),
                       ),
+                      separator,
                       Chip(
                         avatar: CircleAvatar(
                           backgroundColor: Colors.grey.shade800,
@@ -70,6 +73,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                         ),
                         label: const Text("Walls"),
                       ),
+                      separator,
                       Chip(
                         avatar: CircleAvatar(
                           backgroundColor: Colors.grey.shade800,
@@ -77,6 +81,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                         ),
                         label: const Text("Floor"),
                       ),
+                      separator,
                       Chip(
                         avatar: CircleAvatar(
                           backgroundColor: Colors.grey.shade800,
@@ -84,6 +89,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                         ),
                         label: const Text("Lights"),
                       ),
+                      separator,
                       Chip(
                         avatar: CircleAvatar(
                           backgroundColor: Colors.grey.shade800,
@@ -94,9 +100,6 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                     ],
                   ),
                 ),
-              ),
-              const Center(
-                child: Text("andrei likes calizo"),
               ),
             ],
           ),

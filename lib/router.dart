@@ -4,8 +4,8 @@ import "package:happy_habit_at/screens/create_habit_screen.dart";
 import "package:happy_habit_at/screens/habitat_screen.dart";
 import "package:happy_habit_at/screens/habits_screen.dart";
 import "package:happy_habit_at/screens/home_screen.dart";
-import "package:happy_habit_at/screens/shop_screen.dart";
 import "package:happy_habit_at/screens/more_screen.dart";
+import "package:happy_habit_at/screens/shop_screen.dart";
 import "package:happy_habit_at/utils/extension_types/immutable_list.dart";
 
 // ignore: always_specify_types
@@ -19,68 +19,74 @@ final navigatorKeys = (
 );
 
 final GoRouter router = GoRouter(
-  navigatorKey: navigatorKeys.root,
   initialLocation: "/habitat",
   routes: <RouteBase>[
-    StatefulShellRoute(
-      navigatorContainerBuilder: (
-        BuildContext context,
-        StatefulNavigationShell navigationShell,
-        List<Widget> children,
-      ) {
-        print(navigationShell);
-
-        return HomeScreen(
-          navigationShell: navigationShell,
-          children: ImmutableList<Widget>(children),
-        );
-      },
-      builder: (_, __, StatefulNavigationShell navigationShell) => navigationShell,
-      branches: <StatefulShellBranch>[
-        StatefulShellBranch(
-          navigatorKey: navigatorKeys.habitat,
-          routes: <RouteBase>[
-            GoRoute(
-              name: "habitat",
-              path: "/habitat",
-              builder: (BuildContext context, GoRouterState state) => const HabitatScreen(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          navigatorKey: navigatorKeys.habits,
-          routes: <RouteBase>[
-            GoRoute(
-              name: "habits",
-              path: "/habits",
-              builder: (BuildContext context, GoRouterState state) => const HabitsScreen(),
+    ShellRoute(
+      navigatorKey: navigatorKeys.root,
+      builder: (BuildContext context, GoRouterState state, Widget child) => Scaffold(body: child),
+      routes: <RouteBase>[
+        StatefulShellRoute(
+          navigatorContainerBuilder: (
+            BuildContext context,
+            StatefulNavigationShell navigationShell,
+            List<Widget> children,
+          ) {
+            return HomeScreen(
+              navigationShell: navigationShell,
+              children: ImmutableList<Widget>(children),
+            );
+          },
+          builder: (_, __, StatefulNavigationShell navigationShell) =>
+              Material(child: navigationShell),
+          branches: <StatefulShellBranch>[
+            StatefulShellBranch(
+              navigatorKey: navigatorKeys.habitat,
               routes: <RouteBase>[
                 GoRoute(
-                  name: "createHabit",
-                  path: "create-habit",
-                  builder: (BuildContext context, GoRouterState state) => const CreateHabitScreen(),
+                  name: "habitat",
+                  path: "/habitat",
+                  builder: (BuildContext context, GoRouterState state) => const HabitatScreen(),
                 ),
               ],
             ),
-          ],
-        ),
-        StatefulShellBranch(
-          navigatorKey: navigatorKeys.shop,
-          routes: <RouteBase>[
-            GoRoute(
-              name: "shop",
-              path: "/shop",
-              builder: (BuildContext context, GoRouterState state) => const ShopScreen(),
+            StatefulShellBranch(
+              navigatorKey: navigatorKeys.habits,
+              routes: <RouteBase>[
+                GoRoute(
+                  name: "habits",
+                  path: "/habits",
+                  builder: (BuildContext context, GoRouterState state) => const HabitsScreen(),
+                  routes: <RouteBase>[
+                    GoRoute(
+                      parentNavigatorKey: navigatorKeys.root,
+                      name: "createHabit",
+                      path: "create-habit",
+                      builder: (BuildContext context, GoRouterState state) =>
+                          const CreateHabitScreen(),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
-        StatefulShellBranch(
-          navigatorKey: navigatorKeys.stats,
-          routes: <RouteBase>[
-            GoRoute(
-              name: "more",
-              path: "/more",
-              builder: (BuildContext context, GoRouterState state) => const MoreScreen(),
+            StatefulShellBranch(
+              navigatorKey: navigatorKeys.shop,
+              routes: <RouteBase>[
+                GoRoute(
+                  name: "shop",
+                  path: "/shop",
+                  builder: (BuildContext context, GoRouterState state) => const ShopScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              navigatorKey: navigatorKeys.stats,
+              routes: <RouteBase>[
+                GoRoute(
+                  name: "more",
+                  path: "/more",
+                  builder: (BuildContext context, GoRouterState state) => const MoreScreen(),
+                ),
+              ],
             ),
           ],
         ),

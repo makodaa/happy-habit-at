@@ -44,7 +44,7 @@ void main() async {
 
     await windowManager.ensureInitialized();
 
-    const Size recommendedSize = Size(375, 650);
+    const Size recommendedSize = Size(400, 700);
     const WindowOptions options = WindowOptions(
       minimumSize: recommendedSize,
       maximumSize: recommendedSize,

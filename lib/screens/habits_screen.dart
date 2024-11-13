@@ -12,7 +12,7 @@ class HabitsScreen extends StatefulWidget {
 
 class _HabitsScreenState extends State<HabitsScreen> {
   //dummy
-  List<Habit> habits = [
+  List<Habit> habits = <Habit>[
     Habit(
       habitId: 0,
       habitName: "Read something",
@@ -88,51 +88,45 @@ class _HabitsScreenState extends State<HabitsScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     const SizedBox(height: 16.0),
-                    if (habits.any(
-                      (Habit h) => h.time.hour < 12,
-                    ))
+                    if (habits.any((Habit h) => h.time.hour < 12))
                       const Text(
                         "Past Due",
                         textAlign: TextAlign.left,
                       ),
                     const SizedBox(height: 4.0),
-                    Expanded(
-                      child: ListView(
-                        children: <ListTile>[
-                          for (Habit habit in habits)
-                            if (habit.time.hour < 12)
-                              ListTile(
-                                leading: CircleAvatar(),
-                                title: Text(habit.habitName),
-                                subtitle: Text(habit.habitGoal),
-                              ),
-                        ],
-                      ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <ListTile>[
+                        for (Habit habit in habits)
+                          if (habit.time.hour < 12)
+                            ListTile(
+                              leading: CircleAvatar(),
+                              title: Text(habit.habitName),
+                              subtitle: Text(habit.habitGoal),
+                            ),
+                      ],
                     ),
-                    if (habits.any(
-                      (Habit h) => 12 <= h.time.hour && h.time.hour < 18,
-                    ))
+                    if (habits.any((Habit h) => 12 <= h.time.hour && h.time.hour < 18))
                       const Text(
                         "Afternoon",
                         textAlign: TextAlign.left,
                       ),
                     const SizedBox(height: 4.0),
-                    Expanded(
-                      child: ListView(
-                        children: <ListTile>[
-                          for (Habit habit in habits)
-                            if (12 <= habit.time.hour && habit.time.hour < 18)
-                              ListTile(
-                                leading: CircleAvatar(),
-                                title: Text(habit.habitName),
-                                subtitle: Text(habit.habitGoal),
-                              ),
-                        ],
-                      ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <ListTile>[
+                        for (Habit habit in habits)
+                          if (12 <= habit.time.hour && habit.time.hour < 18)
+                            ListTile(
+                              leading: CircleAvatar(),
+                              title: Text(habit.habitName),
+                              subtitle: Text(habit.habitGoal),
+                            ),
+                      ],
                     ),
                     if (habits.any(
                       (Habit h) => 18 <= h.time.hour && h.time.hour < 24,
@@ -142,18 +136,17 @@ class _HabitsScreenState extends State<HabitsScreen> {
                         textAlign: TextAlign.left,
                       ),
                     const SizedBox(height: 4.0),
-                    Expanded(
-                      child: ListView(
-                        children: <ListTile>[
-                          for (Habit habit in habits)
-                            if (18 <= habit.time.hour && habit.time.hour < 24)
-                              ListTile(
-                                leading: CircleAvatar(),
-                                title: Text(habit.habitName),
-                                subtitle: Text(habit.habitGoal),
-                              ),
-                        ],
-                      ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <ListTile>[
+                        for (Habit habit in habits)
+                          if (18 <= habit.time.hour && habit.time.hour < 24)
+                            ListTile(
+                              leading: CircleAvatar(),
+                              title: Text(habit.habitName),
+                              subtitle: Text(habit.habitGoal),
+                            ),
+                      ],
                     ),
                   ],
                 ),

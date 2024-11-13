@@ -6,7 +6,10 @@ import "package:happy_habit_at/screens/create_habit_screen.dart";
 //   habit_name TEXT NOT NULL,
 //   habit_description TEXT NOT NULL,
 //   habit_goal TEXT NOT NULL,
-//   habit_icon INTEGER NOT NULL
+//   habit_icon INTEGER NOT NULL,
+//   habit_days_of_the_week INTEGER NOT NULL,
+//   habit_hour INTEGER,
+//   habit_minute INTEGER
 // );
 class Habit extends ChangeNotifier {
   Habit({

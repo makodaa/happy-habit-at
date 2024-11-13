@@ -35,21 +35,12 @@ class DatabaseService {
               habit_name TEXT NOT NULL,
               habit_description TEXT NOT NULL,
               habit_goal TEXT NOT NULL,
-              habit_icon INTEGER NOT NULL
+              habit_icon INTEGER NOT NULL,
+              habit_days_of_the_week INTEGER NOT NULL,
+              habit_hour INTEGER,
+              habit_minute INTEGER
             );
-
-            CREATE TABLE IF NOT EXISTS regularity (
-              regularity_id INTEGER PRIMARY KEY AUTOINCREMENT,
-              habit_id INTEGER NOT NULL,
-              day_value INTEGER NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS time (
-              time_id INTEGER PRIMARY KEY AUTOINCREMENT,
-              habit_id INTEGER NOT NULL,
-              time TEXT NOT NULL
-            );
-
+            
             CREATE TABLE IF NOT EXISTS furniture (
               furniture_id INTEGER PRIMARY KEY AUTOINCREMENT,
               furniture_name TEXT NOT NULL,
