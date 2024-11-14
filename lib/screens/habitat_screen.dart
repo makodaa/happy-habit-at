@@ -67,6 +67,7 @@ class _HabitatScreenState extends State<HabitatScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               FloatingActionButton(
+                heroTag: "enterCustomizationButton",
                 backgroundColor: Colors.white,
                 onPressed: () {},
                 child: const Icon(
@@ -78,6 +79,7 @@ class _HabitatScreenState extends State<HabitatScreen> {
                 height: 16,
               ),
               FloatingActionButton(
+                heroTag: "feedPetButton",
                 onPressed: () {},
                 child: const Icon(Icons.rice_bowl_rounded),
               ),
