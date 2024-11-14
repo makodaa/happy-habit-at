@@ -21,9 +21,13 @@ final navigatorKeys = (
 final GoRouter router = GoRouter(
   initialLocation: "/habitat",
   routes: <RouteBase>[
+    /// This [ShellRoute] is necessary for the "root" of the navigator,
+    ///   which usually requires a [Scaffold] widget
+    /// (Which is not possible, as the inner [StatefulShellRoute] already has a [Scaffold].)
     ShellRoute(
       navigatorKey: navigatorKeys.root,
-      builder: (BuildContext context, GoRouterState state, Widget child) => Scaffold(body: child),
+      builder: (BuildContext context, GoRouterState state, Widget child) => //
+          Scaffold(body: child),
       routes: <RouteBase>[
         StatefulShellRoute(
           navigatorContainerBuilder: (
@@ -36,8 +40,7 @@ final GoRouter router = GoRouter(
               children: ImmutableList<Widget>(children),
             );
           },
-          builder: (_, __, StatefulNavigationShell navigationShell) =>
-              Material(child: navigationShell),
+          builder: (_, __, StatefulNavigationShell navigationShell) => navigationShell,
           branches: <StatefulShellBranch>[
             StatefulShellBranch(
               navigatorKey: navigatorKeys.habitat,
@@ -50,7 +53,6 @@ final GoRouter router = GoRouter(
               ],
             ),
             StatefulShellBranch(
-              navigatorKey: navigatorKeys.habits,
               routes: <RouteBase>[
                 GoRoute(
                   name: "habits",
@@ -58,6 +60,8 @@ final GoRouter router = GoRouter(
                   builder: (BuildContext context, GoRouterState state) => const HabitsScreen(),
                   routes: <RouteBase>[
                     GoRoute(
+                      /// This [parentNavigatorKey] is necessary to "override"
+                      ///   the [StatefulShellBranch] above.
                       parentNavigatorKey: navigatorKeys.root,
                       name: "createHabit",
                       path: "create-habit",
@@ -69,7 +73,6 @@ final GoRouter router = GoRouter(
               ],
             ),
             StatefulShellBranch(
-              navigatorKey: navigatorKeys.shop,
               routes: <RouteBase>[
                 GoRoute(
                   name: "shop",

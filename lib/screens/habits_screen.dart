@@ -1,9 +1,6 @@
-import "dart:ffi";
-
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/providers/habit.dart";
-import "package:happy_habit_at/screens/create_habit_screen.dart";
 
 class HabitsScreen extends StatefulWidget {
   const HabitsScreen({super.key});
@@ -127,7 +124,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),

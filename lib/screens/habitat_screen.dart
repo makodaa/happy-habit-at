@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
 import "package:intl/intl.dart";
-import "package:flutter/services.dart" show rootBundle;
 
 class HabitatScreen extends StatefulWidget {
   const HabitatScreen({super.key});
