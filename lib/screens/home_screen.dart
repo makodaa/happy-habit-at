@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
         currentIndex: navigationShell.currentIndex,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.animation_sharp, size: 14.0),
+            icon: Icon(Icons.grass, size: 14.0),
             label: "Habitat",
           ),
           BottomNavigationBarItem(
@@ -35,12 +35,12 @@ class HomeScreen extends StatelessWidget {
             label: "Habits",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.task, size: 14.0),
+            icon: Icon(Icons.shopping_bag, size: 14.0),
             label: "Shop",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.task, size: 14.0),
-            label: "Stats",
+            icon: Icon(Icons.more_horiz, size: 14.0),
+            label: "More",
           ),
         ],
         onTap: navigationShell.goBranch,

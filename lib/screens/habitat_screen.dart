@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:intl/intl.dart";
+import "package:flutter/services.dart" show rootBundle;
 
 class HabitatScreen extends StatefulWidget {
   const HabitatScreen({super.key});
@@ -25,7 +26,7 @@ class _HabitatScreenState extends State<HabitatScreen> {
               shadowColor: Colors.black,
             ),
             Expanded(
-              child: Container(
+              child: ColoredBox(
                 color: Colors.green.shade500,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -45,6 +46,13 @@ class _HabitatScreenState extends State<HabitatScreen> {
                           ),
                         ],
                       ),
+                      Expanded(
+                        child: Image(
+                          image: AssetImage("assets/images/dog.png"),
+                          height: 96,
+                          width: 96,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -59,15 +67,19 @@ class _HabitatScreenState extends State<HabitatScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               FloatingActionButton(
+                backgroundColor: Colors.white,
                 onPressed: () {},
-                child: const Icon(Icons.build),
+                child: const Icon(
+                  Icons.build,
+                  color: Colors.green,
+                ),
               ),
               SizedBox(
                 height: 16,
               ),
               FloatingActionButton(
                 onPressed: () {},
-                child: const Icon(Icons.food_bank),
+                child: const Icon(Icons.rice_bowl_rounded),
               ),
             ],
           ),
