@@ -2,7 +2,15 @@ import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/utils/extension_types/immutable_list.dart";
 
-enum DaysOfTheWeek { sunday, monday, tuesday, wednesday, thursday, friday, saturday }
+enum DaysOfTheWeek {
+  sunday,
+  monday,
+  tuesday,
+  wednesday,
+  thursday,
+  friday,
+  saturday
+}
 
 class CreateHabitScreen extends StatefulWidget {
   const CreateHabitScreen({super.key});
@@ -14,7 +22,8 @@ class CreateHabitScreen extends StatefulWidget {
 typedef ColorPair = ({Color background, Color foreground});
 
 class _CreateHabitScreenState extends State<CreateHabitScreen> {
-  static final ImmutableList<ColorPair> colors = ImmutableList<ColorPair>(<ColorPair>[
+  static final ImmutableList<ColorPair> colors =
+      ImmutableList<ColorPair>(<ColorPair>[
     (background: Colors.red.shade200, foreground: Colors.red.shade400),
     (background: Colors.orange.shade200, foreground: Colors.orange.shade400),
     (background: Colors.yellow.shade200, foreground: Colors.yellow.shade400),
@@ -38,7 +47,8 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
   int? colorIndex;
 
   List<bool> isDaySelected = List<bool>.filled(7, false);
-  List<(DaysOfTheWeek, String)> daysOfTheWeekOptions = <(DaysOfTheWeek, String)>[
+  List<(DaysOfTheWeek, String)> daysOfTheWeekOptions =
+      <(DaysOfTheWeek, String)>[
     (DaysOfTheWeek.sunday, "Su"),
     (DaysOfTheWeek.monday, "Mo"),
     (DaysOfTheWeek.tuesday, "Tu"),
@@ -116,8 +126,9 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                       child: IconButton(
                         icon: Icon(
                           Icons.emoji_emotions,
-                          color:
-                              colorIndex != null ? colors[colorIndex!].foreground : Colors.black54,
+                          color: colorIndex != null
+                              ? colors[colorIndex!].foreground
+                              : Colors.black54,
                         ),
                         onPressed: () {
                           print("Hi");
@@ -273,13 +284,14 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                   textAlign: TextAlign.left,
                 ),
                 SizedBox(height: 4.0),
-                // TODO: Make reusable? and make onPressed correspond to database value
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Row(
                     children: <Widget>[
-                      for (var (int index, (:Color background, :Color foreground))
-                          in colors.indexed)
+                      for (var (
+                            int index,
+                            (:Color background, :Color foreground)
+                          ) in colors.indexed)
                         InkWell(
                           onTap: () => setState(() {
                             colorIndex = index;
