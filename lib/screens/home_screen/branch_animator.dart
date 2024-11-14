@@ -22,7 +22,7 @@ class BranchAnimator extends StatelessWidget {
               > 0 => const Offset(1, 0),
               _ => Offset.zero,
             },
-            curve: Curves.easeOutCubic,
+            curve: Curves.ease,
             duration: const Duration(milliseconds: 380),
             child: IgnorePointer(
               ignoring: i != currentIndex,

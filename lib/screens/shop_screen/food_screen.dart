@@ -8,18 +8,7 @@ class FoodScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-
-        /// BODY
-        const Expanded(
-          child: Column(
-            children: <Widget>[
-              /// Place body widgets here.
-              Center(
-                child: Text("Hi"),
-              ),
-            ],
-          ),
-        ),
+        Text("Food Screen"),
       ],
     );
   }
