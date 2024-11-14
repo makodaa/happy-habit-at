@@ -1,15 +1,23 @@
 import "package:flutter/material.dart";
+import "package:go_router/go_router.dart";
+import "package:happy_habit_at/screens/home_screen/branch_animator.dart";
+import "package:happy_habit_at/utils/extension_types/immutable_list.dart";
 
 class ShopScreen extends StatefulWidget {
-  const ShopScreen({super.key});
+  const ShopScreen({
+    required this.navigationShell,
+    required this.children,
+    super.key,
+  });
+
+  final StatefulNavigationShell navigationShell;
+  final ImmutableList<Widget> children;
 
   @override
   State<ShopScreen> createState() => _ShopScreenState();
 }
 
 class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateMixin {
-  static const SizedBox separator = SizedBox(width: 8.0);
-
   late final TabController tabController;
 
   @override
@@ -44,6 +52,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
             children: <Widget>[
               TabBar(
                 controller: tabController,
+                onTap: widget.navigationShell.goBranch,
                 tabs: const <Widget>[
                   Tab(text: "Furniture"),
                   Tab(text: "Food"),
@@ -51,54 +60,12 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
                   Tab(text: "Pet"),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Chip(
-                        avatar: CircleAvatar(
-                          backgroundColor: Colors.grey.shade800,
-                          child: const Icon(Icons.bed, size: 12.0),
-                        ),
-                        label: const Text("Beds"),
-                      ),
-                      separator,
-                      Chip(
-                        avatar: CircleAvatar(
-                          backgroundColor: Colors.grey.shade800,
-                          child: const Icon(Icons.bed, size: 12.0),
-                        ),
-                        label: const Text("Walls"),
-                      ),
-                      separator,
-                      Chip(
-                        avatar: CircleAvatar(
-                          backgroundColor: Colors.grey.shade800,
-                          child: const Icon(Icons.bed, size: 12.0),
-                        ),
-                        label: const Text("Floor"),
-                      ),
-                      separator,
-                      Chip(
-                        avatar: CircleAvatar(
-                          backgroundColor: Colors.grey.shade800,
-                          child: const Icon(Icons.bed, size: 12.0),
-                        ),
-                        label: const Text("Lights"),
-                      ),
-                      separator,
-                      Chip(
-                        avatar: CircleAvatar(
-                          backgroundColor: Colors.grey.shade800,
-                          child: const Icon(Icons.bed, size: 12.0),
-                        ),
-                        label: const Text("Whatever"),
-                      ),
-                    ],
-                  ),
+
+              /// Here is the shell thing.
+              Expanded(
+                child: BranchAnimator(
+                  currentIndex: widget.navigationShell.currentIndex,
+                  children: widget.children,
                 ),
               ),
             ],

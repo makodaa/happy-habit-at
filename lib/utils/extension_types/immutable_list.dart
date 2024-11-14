@@ -4,3 +4,7 @@
 extension type const ImmutableList<T>(List<T> _inner) implements Iterable<T> {
   T operator [](int index) => _inner[index];
 }
+
+extension ImmutableListGenerator<T> on List<T> {
+  ImmutableList<T> get immutable => ImmutableList<T>(this);
+}
