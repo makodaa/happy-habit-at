@@ -24,7 +24,10 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
 
-    tabController = TabController(length: 4, vsync: this);
+    tabController = TabController(length: 4, vsync: this)
+      ..addListener(() {
+        widget.navigationShell.goBranch(tabController.index);
+      });
   }
 
   @override
@@ -52,7 +55,6 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
             children: <Widget>[
               TabBar(
                 controller: tabController,
-                onTap: widget.navigationShell.goBranch,
                 tabs: const <Widget>[
                   Tab(text: "Furniture"),
                   Tab(text: "Food"),

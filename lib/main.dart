@@ -6,6 +6,7 @@ import "package:google_fonts/google_fonts.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/router.dart";
 import "package:provider/provider.dart";
+import "package:scroll_animator/scroll_animator.dart";
 import "package:sqflite_common_ffi/sqflite_ffi.dart";
 import "package:window_manager/window_manager.dart";
 
@@ -58,7 +59,7 @@ void main() async {
   await state.init();
 
   runApp(
-    ChangeNotifierProvider<AppState>.value(
+    Provider<AppState>.value(
       value: state,
       child: const HappyHabitAtApp(),
     ),
@@ -75,6 +76,10 @@ class HappyHabitAtApp extends StatelessWidget {
       theme: AppTheme.getAppTheme(),
       debugShowCheckedModeBanner: false,
       routerConfig: router,
+      actions: <Type, Action<Intent>>{
+        ...WidgetsApp.defaultActions,
+        ScrollIntent: AnimatedScrollAction(),
+      },
     );
   }
 }

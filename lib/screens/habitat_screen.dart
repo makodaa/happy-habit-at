@@ -1,3 +1,5 @@
+// ignore_for_file: always_specify_types
+
 import "dart:math" as math;
 
 import "package:flutter/material.dart";
@@ -93,13 +95,8 @@ class GamePanel extends StatefulWidget {
 }
 
 class _GamePanelState extends State<GamePanel> {
-  static const int tileWidth = 32;
-  static const int tileHeight = 16;
-  static const int width = 8;
-  static const int height = 8;
-
   late final FocusNode focusNode = FocusNode();
-  late (int, int) position = (0, 0);
+  late (int y, int x) position = (0, 0);
 
   @override
   void initState() {
@@ -115,26 +112,32 @@ class _GamePanelState extends State<GamePanel> {
     super.dispose();
   }
 
-  (double, double) diagonalFloorPosition((int, int) position) {
-    if (position case (int tileY, int tileX)) {
-      tileY *= -1;
+  /// This is under the assumption that the tile is a square.
+  static const tileWidth = 64.0 * math.sqrt1_2;
+  static const rotatedTileWidth = 64.0;
+  static const rotatedTileHeight = rotatedTileWidth / 2.0;
+  static const iHat = (y: 1.0 * rotatedTileHeight * 0.5, x: 0.5 * rotatedTileWidth);
+  static const jHat = (y: -1.0 * rotatedTileHeight * 0.5, x: 0.5 * rotatedTileWidth);
 
-      return (
-        ((height - tileY - 1) * tileHeight) / 2 +
-            (width * tileHeight) / 2 -
-            (tileX * tileHeight) / 2,
-        (tileWidth * tileX) / 2 + (height * tileHeight) / 2 - (tileY * tileWidth) / 2,
-      );
-    }
+  (double, double) diagonalFloorPosition((int, int) position) {
+    var (y: a, x: c) = iHat;
+    var (y: b, x: d) = jHat;
+    var (y, x) = position;
+
+    return (a * y + b * x, c * y + d * x);
+  }
+
+  (int, int) diagonalCeilPosition((double, double) position) {
+    var (y: a, x: c) = iHat;
+    var (y: b, x: d) = jHat;
+    var (y, x) = position;
+
+    return ((a * y + c * x).round(), (b * y + d * x).round());
   }
 
   @override
   Widget build(BuildContext context) {
-    double tileYXRatio = tileHeight / tileWidth;
-
-    double actualWidth = width * tileWidth.toDouble();
-    double platformWidth = width * tileWidth * math.sqrt1_2;
-
+    print(diagonalFloorPosition((3, 1)));
     return KeyboardListener(
       focusNode: focusNode,
       onKeyEvent: _move,
@@ -143,31 +146,32 @@ class _GamePanelState extends State<GamePanel> {
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) => Stack(
             children: <Widget>[
-              Container(
-                width: constraints.maxWidth,
-                height: constraints.maxWidth,
-                color: Colors.red,
-                child: Transform.scale(
-                  scaleY: tileYXRatio * (platformWidth / actualWidth),
-                  scaleX: platformWidth / actualWidth,
-                  child: Transform.rotate(
-                    angle: math.pi / 4,
-                    child: Container(
-                      width: width * tileWidth.toDouble(),
-                      height: height * tileWidth.toDouble(),
-                      color: Colors.green,
+              for (int y = 0; y < 8; y++)
+                for (int x = 0; x < 8; x++)
+                  if (diagonalFloorPosition((y, x)) case (double ny, double nx))
+                    Positioned(
+                      top: ny,
+                      left: nx,
+                      child: Transform.scale(
+                        scaleY: 0.5,
+                        child: Transform.rotate(
+                          angle: math.pi / 4,
+                          child: Container(
+                            width: tileWidth,
+                            height: tileWidth,
+                            color: (x + y) % 2 == 0 ? Colors.brown : Colors.yellow,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
               if (diagonalFloorPosition(position) case (double y, double x)) //
                 Positioned(
                   top: y,
                   left: x,
                   child: Image(
                     image: AssetImage("assets/images/dog.png"),
-                    height: tileWidth.toDouble(),
-                    width: tileWidth.toDouble(),
+                    height: 32.0,
+                    width: 32.0,
                   ),
                 ),
             ],

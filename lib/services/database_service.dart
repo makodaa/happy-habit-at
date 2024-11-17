@@ -3,6 +3,7 @@
 import "dart:async";
 
 import "package:flutter/foundation.dart";
+import "package:flutter/material.dart";
 import "package:path/path.dart";
 import "package:sqflite/sqflite.dart";
 
@@ -27,80 +28,94 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 1,
-        onCreate: (Database db, int version) async {
-          await db.execute("""
-            CREATE TABLE IF NOT EXISTS habit (
-              habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
-              habit_name TEXT NOT NULL,
-              habit_description TEXT NOT NULL,
-              habit_goal TEXT NOT NULL,
-              habit_icon INTEGER NOT NULL,
-              habit_days_of_the_week INTEGER NOT NULL,
-              habit_hour INTEGER,
-              habit_minute INTEGER
-            );
-            
-            CREATE TABLE IF NOT EXISTS furniture (
-              furniture_id INTEGER PRIMARY KEY AUTOINCREMENT,
-              furniture_name TEXT NOT NULL,
-              furniture_description TEXT NOT NULL,
-              sale_price INTEGER NOT NULL,
-              resale_price INTEGER NOT NULL,
-              quantity_owned INTEGER NOT NULL,
-              happiness_buff REAL NOT NULL,
-              energy_buff REAL NOT NULL,
-              placement_plane INTEGER NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS food (
-              food_id INTEGER PRIMARY KEY AUTOINCREMENT,
-              food_name TEXT NOT NULL,
-              food_description TEXT NOT NULL,
-              sale_price INTEGER NOT NULL,
-              quantity_owned INTEGER NOT NULL,
-              happiness_buff REAL NOT NULL,
-              hunger_buff REAL NOT NULL,
-              energy_buff REAL NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS pet (
-              pet_id INTEGER PRIMARY KEY AUTOINCREMENT,
-              pet_name TEXT NOT NULL,
-              pet_model TEXT NOT NULL,
-              pet_rarity TEXT NOT NULL,
-              is_owned INTEGER NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS activity (
-              activity_id INTEGER PRIMARY KEY AUTOINCREMENT,
-              day STRING NOT NULL,
-              habits BLOB NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS room (
-              room_id INTEGER PRIMARY KEY AUTOINCREMENT,
-              room_name TEXT NOT NULL,
-              pet_id INTEGER NOT NULL,
-              pet_hunger INTEGER NOT NULL,
-              pet_happiness INTEGER NOT NULL,
-              pet_energy INTEGER NOT NULL,
-              pet_x INTEGER NOT NULL,
-              pet_y INTEGER NOT NULL,
-              pet_orientation INTEGER NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS placement (
-              placement_id INTEGER PRIMARY KEY AUTOINCREMENT,
-              room_id INTEGER NOT NULL,
-              furniture_id INTEGER NOT NULL,
-              x_coordinate INTEGER NOT NULL,
-              y_coordinate INTEGER NOT NULL,
-              placement_plane INTEGER NOT NULL
-            );
+        version: 3,
+        onUpgrade: (Database db, int oldVersion, int newVersion) {
+          /// Drop all tables.
+          if (kDebugMode) {
+            print("Upgraded database. Removing all tables.");
+          }
+          db.execute("""
+            DROP TABLE IF EXISTS habit;
+            DROP TABLE IF EXISTS furniture;
+            DROP TABLE IF EXISTS food;
+            DROP TABLE IF EXISTS pet;
+            DROP TABLE IF EXISTS activity;
+            DROP TABLE IF EXISTS room;
+            DROP TABLE IF EXISTS placement;
           """);
         },
       );
+
+      await _database?.execute("""
+        CREATE TABLE IF NOT EXISTS habit (
+          habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          habit_name TEXT NOT NULL,
+          habit_description TEXT,
+          habit_goal TEXT,
+          habit_icon INTEGER NOT NULL,
+          habit_days_of_the_week INTEGER NOT NULL,
+          habit_hour INTEGER,
+          habit_minute INTEGER
+        );
+        
+        CREATE TABLE IF NOT EXISTS furniture (
+          furniture_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          furniture_name TEXT NOT NULL,
+          furniture_description TEXT NOT NULL,
+          sale_price INTEGER NOT NULL,
+          resale_price INTEGER NOT NULL,
+          quantity_owned INTEGER NOT NULL,
+          happiness_buff REAL NOT NULL,
+          energy_buff REAL NOT NULL,
+          placement_plane INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS food (
+          food_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          food_name TEXT NOT NULL,
+          food_description TEXT NOT NULL,
+          sale_price INTEGER NOT NULL,
+          quantity_owned INTEGER NOT NULL,
+          happiness_buff REAL NOT NULL,
+          hunger_buff REAL NOT NULL,
+          energy_buff REAL NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS pet (
+          pet_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          pet_name TEXT NOT NULL,
+          pet_model TEXT NOT NULL,
+          pet_rarity TEXT NOT NULL,
+          is_owned INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS activity (
+          activity_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          day STRING NOT NULL,
+          habits BLOB NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS room (
+          room_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          room_name TEXT NOT NULL,
+          pet_id INTEGER NOT NULL,
+          pet_hunger INTEGER NOT NULL,
+          pet_happiness INTEGER NOT NULL,
+          pet_energy INTEGER NOT NULL,
+          pet_x INTEGER NOT NULL,
+          pet_y INTEGER NOT NULL,
+          pet_orientation INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS placement (
+          placement_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          room_id INTEGER NOT NULL,
+          furniture_id INTEGER NOT NULL,
+          x_coordinate INTEGER NOT NULL,
+          y_coordinate INTEGER NOT NULL,
+          placement_plane INTEGER NOT NULL
+        );
+      """);
 
       if (kDebugMode) {
         String query = "SELECT name FROM sqlite_master WHERE type='table' "
@@ -121,6 +136,71 @@ class DatabaseService {
   }
 
   // CRUD operations
+
+  // CREATE
+  Future<int?> createHabit({
+    required String habitName,
+    required String? habitDescription,
+    required String? habitGoal,
+    required int habitIcon,
+    required int daysOfTheWeek,
+    required TimeOfDay? time,
+  }) async {
+    if (_database case Database database) {
+      int id = await database.insert("habit", <String, Object?>{
+        "habit_name": habitName,
+        "habit_description": habitDescription,
+        "habit_goal": habitGoal,
+        "habit_icon": habitIcon,
+        "habit_days_of_the_week": daysOfTheWeek,
+        "habit_hour": time?.hour,
+        "habit_minute": time?.minute,
+      });
+
+      if (kDebugMode) {
+        print("Habit created: $habitName with id $id");
+        print("The current habits are: ");
+
+        print(await database.query("habit"));
+      }
+
+      return id;
+    }
+
+    return null;
+  }
+
+  // READ
+  Future<List<Map<String, Object?>>> readHabits() async {
+    if (_database case Database database) {
+      return database.query("habit");
+    }
+
+    return <Map<String, Object?>>[];
+  }
+
+  // UPDATE
+  Future<bool> deleteHabit({required int habitId}) async {
+    if (_database case Database database) {
+      await database.delete(
+        "habit",
+        where: "habit_id = ?",
+        whereArgs: <int>[habitId],
+      );
+
+      if (kDebugMode) {
+        print("Habit deleted: $habitId");
+        print("The current habits are: ");
+        print(await database.query("habit"));
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+
+  // DELETE
 
   /// Close the database when done
   Future<void> closeDB() async {
