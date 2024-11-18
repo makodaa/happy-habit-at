@@ -1,9 +1,6 @@
-// ignore_for_file: always_specify_types
-
 import "dart:math" as math;
 
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
 import "package:intl/intl.dart";
 
 class HabitatScreen extends StatefulWidget {
@@ -94,9 +91,29 @@ class GamePanel extends StatefulWidget {
   State<GamePanel> createState() => _GamePanelState();
 }
 
+typedef Vector = (double, double);
+typedef IntVector = (int, int);
+
 class _GamePanelState extends State<GamePanel> {
+  /// This is under the assumption that the tile is a square.
+  static const double tileSize = 48.0;
+
+  static const double rotatedTileWidth = tileSize * math.sqrt2;
+  static const double rotatedTileHeight = rotatedTileWidth / 2.0;
+
+  static const double sheeredTileWidth = rotatedTileWidth / 2;
+  static const double sheeredTileHeight = sheeredTileWidth;
+
+  static const int rightTileCount = 4;
+  static const int leftTileCount = 4;
+
   late final FocusNode focusNode = FocusNode();
-  late (int y, int x) position = (0, 0);
+
+  Offset wallTileOffset = Offset(0, 0);
+  IntVector wallTilePosition = (0, 0);
+
+  Offset petOffset = Offset(0, 0);
+  IntVector petPosition = (0, 0);
 
   @override
   void initState() {
@@ -112,97 +129,213 @@ class _GamePanelState extends State<GamePanel> {
     super.dispose();
   }
 
-  /// This is under the assumption that the tile is a square.
-  static const tileWidth = 64.0 * math.sqrt1_2;
-  static const rotatedTileWidth = 64.0;
-  static const rotatedTileHeight = rotatedTileWidth / 2.0;
-  static const iHat = (y: 1.0 * rotatedTileHeight * 0.5, x: 0.5 * rotatedTileWidth);
-  static const jHat = (y: -1.0 * rotatedTileHeight * 0.5, x: 0.5 * rotatedTileWidth);
-
-  (double, double) diagonalFloorPosition((int, int) position) {
-    var (y: a, x: c) = iHat;
-    var (y: b, x: d) = jHat;
-    var (y, x) = position;
-
-    return (a * y + b * x, c * y + d * x);
-  }
-
-  (int, int) diagonalCeilPosition((double, double) position) {
-    var (y: a, x: c) = iHat;
-    var (y: b, x: d) = jHat;
-    var (y, x) = position;
-
-    return ((a * y + c * x).round(), (b * y + d * x).round());
-  }
-
   @override
   Widget build(BuildContext context) {
-    print(diagonalFloorPosition((3, 1)));
-    return KeyboardListener(
-      focusNode: focusNode,
-      onKeyEvent: _move,
-      child: ColoredBox(
-        color: Colors.blue,
-        child: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) => Stack(
-            children: <Widget>[
-              for (int y = 0; y < 8; y++)
-                for (int x = 0; x < 8; x++)
-                  if (diagonalFloorPosition((y, x)) case (double ny, double nx))
-                    Positioned(
-                      top: ny,
-                      left: nx,
-                      child: Transform.scale(
-                        scaleY: 0.5,
-                        child: Transform.rotate(
-                          angle: math.pi / 4,
-                          child: Container(
-                            width: tileWidth,
-                            height: tileWidth,
-                            color: (x + y) % 2 == 0 ? Colors.brown : Colors.yellow,
-                          ),
-                        ),
-                      ),
-                    ),
-              if (diagonalFloorPosition(position) case (double y, double x)) //
-                Positioned(
-                  top: y,
-                  left: x,
-                  child: Image(
-                    image: AssetImage("assets/images/dog.png"),
-                    height: 32.0,
-                    width: 32.0,
+    return ColoredBox(
+      color: Colors.purple,
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) => Stack(
+          children: <Widget>[
+            ..._rightWallTileWidgets(constraints),
+            ..._floorTileWidgets(constraints),
+            _petWidget(constraints),
+            _purpleWidget(constraints),
+            Positioned(
+              left: constraints.maxWidth / 2,
+              child: Container(height: constraints.maxHeight, width: 1, color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _rightWallTileWidgets(BoxConstraints constraints) {
+    return <Widget>[
+      for (int y = 0; y < 4; ++y)
+        for (int x = 0; x < rightTileCount; ++x)
+
+          /// Variables..?
+          /// These are variable declarations. :)
+          if (_screenPositionFromRightWallTile((x, y), constraints) case (double nx, double ny))
+            Positioned(
+              top: ny,
+              left: nx,
+              child: Transform(
+                transform: Matrix4.identity()..setEntry(1, 0, 0.5),
+                child: Container(
+                  width: sheeredTileWidth,
+                  height: sheeredTileHeight,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+    ];
+  }
+
+  List<Widget> _floorTileWidgets(BoxConstraints constraints) {
+    return <Widget>[
+      for (int y = 0; y < leftTileCount; ++y)
+        for (int x = 0; x < rightTileCount; ++x)
+
+          /// Variables..?
+          /// These are variable declarations. :)
+          if (_screenPositionFromFloorTile((x, y), constraints) case (double nx, double ny))
+            Positioned(
+              top: ny,
+              left: nx,
+              child: Transform.scale(
+                scaleY: 0.5,
+                child: Transform.rotate(
+                  angle: math.pi / 4,
+                  child: Container(
+                    width: tileSize,
+                    height: tileSize,
+                    color: (x + y).isEven ? Colors.brown : Colors.yellow,
                   ),
                 ),
-            ],
+              ),
+            ),
+    ];
+  }
+
+  Widget _petWidget(BoxConstraints constraints) {
+    var (double x, double y) = _screenPositionFromFloorTile(petPosition - (1, 1), constraints);
+
+    return Positioned(
+      top: y,
+      left: x,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onPanUpdate: (DragUpdateDetails details) {
+          petOffset += details.delta;
+
+          IntVector tilePosition = petPosition;
+          tilePosition = _floorTilePositionFromRelativeOffset(petOffset.pair);
+          tilePosition = tilePosition.clamp((0, 0), (rightTileCount - 1, leftTileCount - 1));
+          if (tilePosition != petPosition) {
+            setState(() {
+              petPosition = tilePosition;
+            });
+          }
+        },
+        child: Image(
+          image: AssetImage("assets/images/dog.png"),
+          height: 60.0,
+          width: 60.0,
+        ),
+      ),
+    );
+  }
+
+  Widget _purpleWidget(BoxConstraints constraints) {
+    var (double x, double y) = _screenPositionFromRightWallTile(wallTilePosition, constraints);
+
+    return Positioned(
+      top: y,
+      left: x,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onPanStart: (DragStartDetails details) {
+          wallTileOffset = Offset(0, 0);
+        },
+        onPanEnd: (DragEndDetails details) {
+          wallTileOffset = Offset(0, 0);
+        },
+        onPanUpdate: (DragUpdateDetails details) {
+          Offset invertedOffset = Offset(details.delta.dx, -details.delta.dy);
+          wallTileOffset += invertedOffset;
+
+          IntVector tilePosition = wallTilePosition;
+          tilePosition = _wallTilePositionFromRelativeOffset(wallTileOffset.pair);
+          print(tilePosition);
+          if (tilePosition.exceeds((0, 0), (rightTileCount - 1, 3))) {
+            wallTileOffset -= invertedOffset;
+            return;
+          }
+
+          tilePosition = tilePosition.clamp((0, 0), (rightTileCount - 1, 3));
+          if (tilePosition != wallTilePosition) {
+            setState(() {
+              wallTilePosition = tilePosition;
+            });
+          }
+        },
+        child: Transform(
+          transform: Matrix4.identity()..setEntry(1, 0, 0.5),
+          child: Container(
+            width: sheeredTileWidth,
+            height: sheeredTileHeight,
+            color: Colors.purple,
           ),
         ),
       ),
     );
   }
 
-  void _move(KeyEvent event) {
-    if (event is KeyDownEvent) {
-      return;
-    }
+  IntVector _floorTilePositionFromRelativeOffset(Vector relativeOffset) {
+    var (double x, double y) = relativeOffset;
+    var (double nx, double ny) = (
+      x / rotatedTileWidth + y / rotatedTileHeight,
+      -x / rotatedTileWidth + y / rotatedTileHeight,
+    );
 
-    setState(() {
-      switch (event.logicalKey) {
-        case LogicalKeyboardKey.arrowUp:
-          position = (position.$1, position.$2 + 1);
-        case LogicalKeyboardKey.arrowDown:
-          position = (position.$1, position.$2 - 1);
-        case LogicalKeyboardKey.arrowLeft:
-          position = (position.$1 - 1, position.$2);
-        case LogicalKeyboardKey.arrowRight:
-          position = (position.$1 + 1, position.$2);
-      }
-
-      // if (position case (int y, int x)) {
-      //   position = (y.clamp(0, 7), x.clamp(0, 7));
-      // }
-
-      print(position);
-    });
+    return (nx.floor(), ny.floor());
   }
+
+  Vector _screenPositionFromFloorTile(IntVector position, BoxConstraints constraints) {
+    double middleOffset = (constraints.maxWidth - tileSize) / 2;
+    double topOffset = constraints.maxHeight / 2;
+    print((middleOffsetFloorTile: middleOffset));
+
+    var (int x, int y) = position;
+    var (double nx, double ny) = (
+      x * (0.5 * rotatedTileWidth) + y * (-0.5 * rotatedTileWidth) + middleOffset,
+      x * (0.5 * rotatedTileHeight) + y * (0.5 * rotatedTileHeight) + topOffset,
+    );
+
+    return (nx, ny);
+  }
+
+  IntVector _wallTilePositionFromRelativeOffset(Vector relativeOffset) {
+    var (double x, double y) = relativeOffset;
+    var (double nx, double ny) = (
+      x / sheeredTileWidth,
+      -0.5 * x / sheeredTileWidth + y / sheeredTileHeight,
+    );
+
+    return (nx.floor(), ny.floor());
+  }
+
+  Vector _screenPositionFromRightWallTile(IntVector position, BoxConstraints constraints) {
+    double middleOffset = constraints.maxWidth / 2;
+    double topOffset = constraints.maxHeight / 2 - (27 /* This constant is magical. */);
+
+    var (int x, int y) = position;
+    var (double nx, double ny) = (
+      x * sheeredTileWidth + middleOffset,
+      x * 0.5 * sheeredTileHeight - y * sheeredTileHeight + topOffset,
+    );
+
+    return (nx, ny);
+  }
+}
+
+extension on Offset {
+  Vector get pair => (dx, dy);
+}
+
+extension on IntVector {
+  IntVector clamp(IntVector min, IntVector max) {
+    return (
+      math.max(min.$1, math.min(max.$1, this.$1)),
+      math.max(min.$2, math.min(max.$2, this.$2)),
+    );
+  }
+
+  bool exceeds(IntVector min, IntVector max) {
+    return this.$1 < min.$1 || this.$1 > max.$1 || this.$2 < min.$2 || this.$2 > max.$2;
+  }
+
+  IntVector operator -(IntVector other) => (this.$1 - other.$1, this.$2 - other.$2);
 }

@@ -93,34 +93,6 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
     super.dispose();
   }
 
-  Future<void> _submitForm() async {
-    AppState appState = context.read<AppState>();
-
-    if (_formKey.currentState case FormState state when state.validate()) {
-      await appState.updateHabit(
-        id: habit.id,
-        name: habitNameController.text,
-        description: habitDescriptionController.text.emptyAsNull,
-        goal: habitGoalController.text.emptyAsNull,
-        icon: 0,
-        daysOfTheWeek: isDaySelected.indexed
-            .where(((int, bool) p) => p.$2) // Filter out the selected days
-            .map(((int, bool) p) => DaysOfTheWeek.values[p.$1]) // Get the corresponding day
-            .map((DaysOfTheWeek p) => p.bitValue) // Get the bit value (2^n)
-            .fold<int>(0, (int acc, int bit) => acc | bit), // Combine the bit values.
-        time: selectedTime,
-        colorIndex: colorIndex,
-      );
-
-      if (!context.mounted) {
-        return;
-      }
-
-      // ignore: use_build_context_synchronously
-      context.pop();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -189,7 +161,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
         ),
         IconButton(
           onPressed: () async {
-            await _submitForm();
+            await _submitForm(context);
           },
           icon: const Icon(Icons.check),
         ),
@@ -438,6 +410,27 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
 
   void _unfocus() {
     FocusScope.of(context).unfocus();
+  }
+
+  Future<void> _submitForm(BuildContext context) async {
+    AppState appState = context.read<AppState>();
+
+    if (_formKey.currentState case FormState state when state.validate()) {
+      await appState.updateHabit(
+        id: habit.id,
+        name: habitNameController.text,
+        description: habitDescriptionController.text.emptyAsNull,
+        goal: habitGoalController.text.emptyAsNull,
+        icon: 0,
+        daysOfTheWeek: DaysOfTheWeek.bitValuesFromBooleans(isDaySelected),
+        time: selectedTime,
+        colorIndex: colorIndex,
+      );
+
+      if (context.mounted) {
+        context.pop();
+      }
+    }
   }
 
   static const SizedBox _fieldSeparator = SizedBox(height: 16.0);

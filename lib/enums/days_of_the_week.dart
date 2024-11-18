@@ -24,5 +24,18 @@ enum DaysOfTheWeek {
     ];
   }
 
+  static int bitValuesFromBooleans(List<bool> isSelected) {
+    assert(isSelected.length == DaysOfTheWeek.values.length);
+
+    int bitValue = 0;
+    for (int i = 0; i < isSelected.length; i++) {
+      if (isSelected[i]) {
+        bitValue |= DaysOfTheWeek.values[i].bitValue;
+      }
+    }
+
+    return bitValue;
+  }
+
   int get bitValue => 1 << _value;
 }

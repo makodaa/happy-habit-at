@@ -25,7 +25,7 @@ final navigatorKeys = (
 );
 
 final router = GoRouter(
-  initialLocation: "/habits",
+  initialLocation: "/habitat",
   routes: [
     GoRoute(
       path: "/",
