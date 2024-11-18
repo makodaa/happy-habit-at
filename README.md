@@ -1,7 +1,9 @@
 # happy-habit-at
+
 Flutter based gamified habit tracker application.
 
 ## Feature Checklist
+
 - [ ] Habitat System
   - [ ] Habitat Display
   - [ ] Custom Pets
@@ -10,5 +12,7 @@ Flutter based gamified habit tracker application.
   - [ ] Shop
   - [ ] Asset Loading
 - [ ] Habit System
-  - [ ] Adding Habits
-  - [ ] Modifying Habits
+  - [x] Adding Habits
+  - [x] Modifying Habits
+  - [ ] Completing Habits
+  - [ ] Horizontal Calendar Widget

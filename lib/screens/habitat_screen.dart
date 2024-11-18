@@ -93,10 +93,19 @@ class GamePanel extends StatefulWidget {
 
 typedef Vector = (double, double);
 typedef IntVector = (int, int);
+typedef PetIcon = (
+  String path,
+  (double width, double height),
+  (int x, int y) baseOffset,
+);
 
 class _GamePanelState extends State<GamePanel> {
   /// This is under the assumption that the tile is a square.
   static const double tileSize = 48.0;
+
+  static const List<PetIcon> petIcons = <PetIcon>[
+    ("assets/images/dog.png", (60.0, 60.0), (-1, -1)),
+  ];
 
   static const double rotatedTileWidth = tileSize * math.sqrt2;
   static const double rotatedTileHeight = rotatedTileWidth / 2.0;
@@ -138,8 +147,8 @@ class _GamePanelState extends State<GamePanel> {
           children: <Widget>[
             ..._rightWallTileWidgets(constraints),
             ..._floorTileWidgets(constraints),
-            _petWidget(constraints),
             _purpleWidget(constraints),
+            _petWidget(constraints),
             Positioned(
               left: constraints.maxWidth / 2,
               child: Container(height: constraints.maxHeight, width: 1, color: Colors.white),
@@ -200,7 +209,8 @@ class _GamePanelState extends State<GamePanel> {
   }
 
   Widget _petWidget(BoxConstraints constraints) {
-    var (double x, double y) = _screenPositionFromFloorTile(petPosition - (1, 1), constraints);
+    var (String path, (double width, double height), IntVector offset) = petIcons[0];
+    var (double x, double y) = _screenPositionFromFloorTile(petPosition + offset, constraints);
 
     return Positioned(
       top: y,
@@ -220,9 +230,9 @@ class _GamePanelState extends State<GamePanel> {
           }
         },
         child: Image(
-          image: AssetImage("assets/images/dog.png"),
-          height: 60.0,
-          width: 60.0,
+          image: AssetImage(path),
+          width: width,
+          height: height,
         ),
       ),
     );
@@ -337,5 +347,5 @@ extension on IntVector {
     return this.$1 < min.$1 || this.$1 > max.$1 || this.$2 < min.$2 || this.$2 > max.$2;
   }
 
-  IntVector operator -(IntVector other) => (this.$1 - other.$1, this.$2 - other.$2);
+  IntVector operator +(IntVector other) => (this.$1 + other.$1, this.$2 + other.$2);
 }
