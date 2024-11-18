@@ -1,9 +1,12 @@
+import "dart:io";
+
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/constants/habit_colors.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:provider/provider.dart";
+import "package:scroll_animator/scroll_animator.dart";
 
 class CreateHabitScreen extends StatefulWidget {
   const CreateHabitScreen({super.key});
@@ -18,35 +21,42 @@ class CreateHabitScreen extends StatefulWidget {
 ///     2. Implement a way to select an icon. (modal?)
 
 class _CreateHabitScreenState extends State<CreateHabitScreen> {
+  // Private constants
+  static const TextDirection textDirection = TextDirection.ltr;
+  static const MaterialTapTargetSize tapTargetSize = MaterialTapTargetSize.padded;
+
+  // Immutable state
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  late final AnimatedScrollController scrollController;
   late final TextEditingController habitNameController;
   late final TextEditingController habitDescriptionController;
   late final TextEditingController habitGoalController;
 
-  TimeOfDay? selectedTime;
-  TimePickerEntryMode entryMode = TimePickerEntryMode.dial;
-  Orientation? orientation;
-  TextDirection textDirection = TextDirection.ltr;
-  MaterialTapTargetSize tapTargetSize = MaterialTapTargetSize.padded;
-  bool use24HourTime = false;
-
-  int? colorIndex;
-
-  List<bool> isDaySelected = List<bool>.filled(7, false);
+  late TimeOfDay? selectedTime;
+  late int? colorIndex;
+  late final List<bool> isDaySelected;
 
   @override
   void initState() {
     super.initState();
 
+    scrollController = AnimatedScrollController(animationFactory: ChromiumImpulse());
     habitNameController = TextEditingController();
     habitDescriptionController = TextEditingController();
     habitGoalController = TextEditingController();
+
+    selectedTime = null;
+    colorIndex = null;
+    isDaySelected = List<bool>.filled(DaysOfTheWeek.values.length, false);
   }
 
   @override
   void dispose() {
+    scrollController.dispose();
     habitNameController.dispose();
+    habitDescriptionController.dispose();
+    habitGoalController.dispose();
 
     super.dispose();
   }
@@ -88,45 +98,31 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             /// APPBAR
-            AppBar(
-              centerTitle: true,
-              title: const Text("New Habit"),
-              leading: IconButton(
-                onPressed: () {
-                  context.pop();
-                },
-                icon: const Icon(Icons.arrow_back),
-              ),
-              actions: <Widget>[
-                IconButton(
-                  onPressed: () {
-                    _submitForm();
-                  },
-                  icon: const Icon(Icons.check),
-                ),
-              ],
-            ),
+            _appBar(context),
 
             //BODY
             Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    _iconAndName(),
-                    _fieldSeparator,
-                    _description(),
-                    _fieldSeparator,
-                    _goal(),
-                    _fieldSeparator,
-                    _repeatsOn(),
-                    _fieldSeparator,
-                    _time(context),
-                    _fieldSeparator,
-                    _color(),
-                  ],
+              child: SingleChildScrollView(
+                controller: scrollController,
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      _iconAndName(),
+                      _fieldSeparator,
+                      _description(),
+                      _fieldSeparator,
+                      _goal(),
+                      _fieldSeparator,
+                      _repeatsOn(),
+                      _fieldSeparator,
+                      _time(context),
+                      _fieldSeparator,
+                      _color(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -136,19 +132,35 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
     );
   }
 
+  AppBar _appBar(BuildContext context) {
+    return AppBar(
+      centerTitle: true,
+      title: const Text("New Habit"),
+      leading: IconButton(
+        onPressed: () {
+          context.pop();
+        },
+        icon: const Icon(Icons.arrow_back),
+      ),
+      actions: <Widget>[
+        IconButton(
+          onPressed: () async {
+            await _submitForm();
+          },
+          icon: const Icon(Icons.check),
+        ),
+      ],
+    );
+  }
+
   Widget _iconAndName() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Text(
-          "Icon and Name",
-          textAlign: TextAlign.left,
-        ),
+        const Text("Icon and Name"),
         _labelSeparator,
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Container(
               decoration: BoxDecoration(
@@ -156,7 +168,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
               ),
 
               /// Arbitarily chosen. Can be changed.
-              padding: EdgeInsets.only(top: 7.0),
+              padding: Platform.isAndroid ? null : EdgeInsets.only(top: 7.0),
               child: IconButton(
                 icon: Icon(
                   Icons.emoji_emotions,
@@ -180,6 +192,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                   filled: true,
                   hintText: "e.g. Meditate, Read a Book",
                   hintStyle: TextStyle(color: Colors.grey),
+                  contentPadding: EdgeInsets.only(bottom: 2.0),
                 ),
               ),
             ),
@@ -194,10 +207,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Text(
-          "Description (Optional)",
-          textAlign: TextAlign.left,
-        ),
+        const Text("Description (Optional)"),
         _labelSeparator,
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -205,7 +215,6 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
             Expanded(
               child: TextFormField(
                 controller: habitDescriptionController,
-                cursorColor: Colors.white,
                 decoration: const InputDecoration(
                   filled: true,
                   hintText: "e.g. Clear and organize thoughts",
@@ -224,10 +233,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Text(
-          "Goal (Optional)",
-          textAlign: TextAlign.left,
-        ),
+        const Text("Goal (Optional)"),
         _labelSeparator,
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -235,7 +241,6 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
             Expanded(
               child: TextField(
                 controller: habitGoalController,
-                cursorColor: Colors.white,
                 decoration: const InputDecoration(
                   filled: true,
                   hintText: "e.g. Spend at least 15 minutes",
@@ -254,10 +259,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Text(
-          "Repeats on",
-          textAlign: TextAlign.left,
-        ),
+        const Text("Repeats on"),
         const SizedBox(height: 4.0),
         FittedBox(
           fit: BoxFit.scaleDown,
@@ -283,10 +285,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Text(
-          "Time",
-          textAlign: TextAlign.left,
-        ),
+        const Text("Time"),
         SizedBox(
           height: 4,
         ),
@@ -311,9 +310,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                   child: Directionality(
                     textDirection: textDirection,
                     child: MediaQuery(
-                      data: MediaQuery.of(context).copyWith(
-                        alwaysUse24HourFormat: use24HourTime,
-                      ),
+                      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
                       child: child!,
                     ),
                   ),
@@ -336,10 +333,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Text(
-          "Color",
-          textAlign: TextAlign.left,
-        ),
+        const Text("Color"),
         _labelSeparator,
         FittedBox(
           fit: BoxFit.scaleDown,

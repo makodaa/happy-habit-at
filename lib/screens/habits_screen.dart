@@ -5,8 +5,8 @@ import "package:go_router/go_router.dart";
 import "package:happy_habit_at/constants/habit_colors.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habit.dart";
-import "package:happy_habit_at/utils/extension_types/dated_habit.dart";
 import "package:happy_habit_at/utils/extension_types/listenable_immutable_list.dart";
+import "package:happy_habit_at/utils/extension_types/timed_habit.dart";
 import "package:happy_habit_at/utils/extensions/monadic_nullable.dart";
 import "package:provider/provider.dart";
 import "package:scroll_animator/scroll_animator.dart";
@@ -20,7 +20,7 @@ class HabitsScreen extends StatefulWidget {
 
 class _HabitsScreenState extends State<HabitsScreen> {
   late final AnimatedScrollController scrollController =
-      AnimatedScrollController(animationFactory: ChromiumEaseInOut());
+      AnimatedScrollController(animationFactory: ChromiumImpulse());
 
   ListenableImmutableList<Habit>? habits;
 
@@ -41,9 +41,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
           children: <Widget>[
             /// APPBAR
             AppBar(
-              title: const Text("Today"),
-              elevation: 1.0,
-              shadowColor: Colors.black,
+              title: const Center(child: Text("More")),
             ),
 
             /// BODY
@@ -71,6 +69,12 @@ class _HabitsScreenState extends State<HabitsScreen> {
   }
 
   Column _displayedHabits() {
+    const List<(String title, (int start, int end))> partitions = <(String, (int, int))>[
+      ("Morning", (0, 12)),
+      ("Afternoon", (12, 18)),
+      ("Evening", (18, 24)),
+    ];
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,60 +85,40 @@ class _HabitsScreenState extends State<HabitsScreen> {
           const Center(
             child: CircularProgressIndicator(),
           ),
-        ] else if (habits case ListenableImmutableList<Habit> habits) ...<Widget>[
+        ],
+        if (habits case ListenableImmutableList<Habit> habits) ...<Widget>[
           if (habits.isEmpty)
             Center(
               child: Text("You have no habits for today!"),
             ),
-          if (habits.undatedHabits case Iterable<Habit> undatedHabits
-              when undatedHabits.isNotEmpty) ...<Widget>[
+          if (habits.noTimeHabits case Iterable<Habit> noTimeHabits
+              when noTimeHabits.isNotEmpty) ...<Widget>[
             const Text(
-              "Undated",
+              "No time set",
             ),
             const SizedBox(height: 4.0),
             Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                for (Habit habit in undatedHabits) _habitTile(habit),
+                for (Habit habit in noTimeHabits) _habitTile(habit),
               ],
             ),
           ],
-          if (habits.datedHabits.where((DatedHabit h) => h.time!.hour.isWithin(0, 12)).toList()
-              case List<Habit> capturedHabits //
-              when capturedHabits.isNotEmpty) ...<Widget>[
-            const Text("Morning"),
-            const SizedBox(height: 4.0),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                for (Habit habit in capturedHabits) _habitTile(habit),
-              ],
-            ),
-          ],
-          if (habits.datedHabits.where((DatedHabit h) => h.time!.hour.isWithin(12, 18)).toList()
-              case List<Habit> capturedHabits //
-              when capturedHabits.isNotEmpty) ...<Widget>[
-            const Text("Afternoon"),
-            const SizedBox(height: 4.0),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                for (Habit habit in capturedHabits) _habitTile(habit),
-              ],
-            ),
-          ],
-          if (habits.datedHabits.where((DatedHabit h) => h.time!.hour.isWithin(18, 24)).toList()
-              case List<Habit> capturedHabits //
-              when capturedHabits.isNotEmpty) ...<Widget>[
-            const Text("Evening"),
-            const SizedBox(height: 4.0),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                for (Habit habit in capturedHabits) _habitTile(habit),
-              ],
-            ),
-          ],
+          for (var (String title, (int start, int end)) in partitions)
+            if (habits.timedHabits
+                    .where((TimedHabit h) => h.time.hour.isWithin(start, end))
+                    .toList()
+                case List<Habit> capturedHabits //
+                when capturedHabits.isNotEmpty) ...<Widget>[
+              Text(title),
+              const SizedBox(height: 4.0),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  for (Habit habit in capturedHabits) _habitTile(habit),
+                ],
+              ),
+            ],
         ],
       ],
     );
@@ -256,15 +240,15 @@ class _HabitsScreenState extends State<HabitsScreen> {
 }
 
 extension on ListenableImmutableList<Habit> {
-  Iterable<DatedHabit> get datedHabits sync* {
+  Iterable<TimedHabit> get timedHabits sync* {
     for (Habit habit in this) {
       if (habit.time != null) {
-        yield DatedHabit(habit);
+        yield TimedHabit(habit);
       }
     }
   }
 
-  Iterable<Habit> get undatedHabits sync* {
+  Iterable<Habit> get noTimeHabits sync* {
     for (Habit habit in this) {
       if (habit.time == null) {
         yield habit;

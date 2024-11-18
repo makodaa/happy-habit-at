@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:io";
 
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
@@ -7,6 +8,7 @@ import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habit.dart";
 import "package:provider/provider.dart";
+import "package:scroll_animator/scroll_animator.dart";
 
 class ModifyHabitScreen extends StatefulWidget {
   const ModifyHabitScreen({required this.habitId, super.key});
@@ -33,12 +35,12 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
   // Immutable state
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  late final AnimatedScrollController scrollController;
   late final TextEditingController habitNameController;
   late final TextEditingController habitDescriptionController;
   late final TextEditingController habitGoalController;
 
   late TimeOfDay? selectedTime;
-  late bool use24HourTime;
   late int? colorIndex;
   late final List<bool> isDaySelected;
 
@@ -48,6 +50,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
 
     habit = context.read<AppState>().habitOfId(widget.habitId);
 
+    scrollController = AnimatedScrollController(animationFactory: ChromiumImpulse());
     habitNameController = TextEditingController()..text = habit.name;
     habitDescriptionController = TextEditingController()..text = habit.description ?? "";
     habitGoalController = TextEditingController()..text = habit.goal ?? "";
@@ -82,6 +85,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
 
   @override
   void dispose() {
+    scrollController.dispose();
     habitNameController.dispose();
     habitDescriptionController.dispose();
     habitGoalController.dispose();
@@ -131,24 +135,27 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
 
             //BODY
             Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    _iconAndName(),
-                    _fieldSeparator,
-                    _description(),
-                    _fieldSeparator,
-                    _goal(),
-                    _fieldSeparator,
-                    _repeatsOn(),
-                    _fieldSeparator,
-                    _time(context),
-                    _fieldSeparator,
-                    _color(),
-                  ],
+              child: SingleChildScrollView(
+                controller: scrollController,
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      _iconAndName(),
+                      _fieldSeparator,
+                      _description(),
+                      _fieldSeparator,
+                      _goal(),
+                      _fieldSeparator,
+                      _repeatsOn(),
+                      _fieldSeparator,
+                      _time(context),
+                      _fieldSeparator,
+                      _color(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -192,7 +199,6 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
 
   Widget _iconAndName() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         const Text(
@@ -210,7 +216,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
               ),
 
               /// Arbitarily chosen. Can be changed.
-              padding: EdgeInsets.only(top: 7.0),
+              padding: Platform.isAndroid ? null : EdgeInsets.only(top: 7.0),
               child: IconButton(
                 icon: Icon(
                   Icons.emoji_emotions,
@@ -234,6 +240,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
                   filled: true,
                   hintText: "e.g. Meditate, Read a Book",
                   hintStyle: TextStyle(color: Colors.grey),
+                  contentPadding: EdgeInsets.only(bottom: 2.0),
                 ),
               ),
             ),
@@ -259,7 +266,6 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
             Expanded(
               child: TextFormField(
                 controller: habitDescriptionController,
-                cursorColor: Colors.white,
                 decoration: const InputDecoration(
                   filled: true,
                   hintText: "e.g. Clear and organize thoughts",
@@ -289,7 +295,6 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
             Expanded(
               child: TextField(
                 controller: habitGoalController,
-                cursorColor: Colors.white,
                 decoration: const InputDecoration(
                   filled: true,
                   hintText: "e.g. Spend at least 15 minutes",
@@ -365,9 +370,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
                   child: Directionality(
                     textDirection: textDirection,
                     child: MediaQuery(
-                      data: MediaQuery.of(context).copyWith(
-                        alwaysUse24HourFormat: use24HourTime,
-                      ),
+                      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
                       child: child!,
                     ),
                   ),

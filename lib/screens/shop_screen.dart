@@ -44,9 +44,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
       children: <Widget>[
         /// APPBAR
         AppBar(
-          title: const Text("Shop"),
-          elevation: 2.0,
-          shadowColor: Colors.black,
+          title: const Center(child: Text("Shop")),
         ),
 
         /// BODY
