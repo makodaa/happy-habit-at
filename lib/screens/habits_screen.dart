@@ -2,10 +2,12 @@ import "dart:async";
 
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:happy_habit_at/constants/habit_colors.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habit.dart";
 import "package:happy_habit_at/utils/extension_types/dated_habit.dart";
 import "package:happy_habit_at/utils/extension_types/listenable_immutable_list.dart";
+import "package:happy_habit_at/utils/extensions/monadic_nullable.dart";
 import "package:provider/provider.dart";
 import "package:scroll_animator/scroll_animator.dart";
 
@@ -26,9 +28,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
   void initState() {
     super.initState();
 
-    AppState state = context.read<AppState>();
-
-    habits = state.habits..addListener(() => setState(() {}));
+    habits = context.read<AppState>().habits //
+      ..addListener(() => setState(() {}));
   }
 
   @override
@@ -70,7 +71,6 @@ class _HabitsScreenState extends State<HabitsScreen> {
   }
 
   Column _displayedHabits() {
-    print((habits: habits));
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,7 +94,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
             const SizedBox(height: 4.0),
             Column(
               mainAxisSize: MainAxisSize.min,
-              children: <ListTile>[
+              children: <Widget>[
                 for (Habit habit in undatedHabits) _habitTile(habit),
               ],
             ),
@@ -106,7 +106,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
             const SizedBox(height: 4.0),
             Column(
               mainAxisSize: MainAxisSize.min,
-              children: <ListTile>[
+              children: <Widget>[
                 for (Habit habit in capturedHabits) _habitTile(habit),
               ],
             ),
@@ -118,7 +118,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
             const SizedBox(height: 4.0),
             Column(
               mainAxisSize: MainAxisSize.min,
-              children: <ListTile>[
+              children: <Widget>[
                 for (Habit habit in capturedHabits) _habitTile(habit),
               ],
             ),
@@ -130,7 +130,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
             const SizedBox(height: 4.0),
             Column(
               mainAxisSize: MainAxisSize.min,
-              children: <ListTile>[
+              children: <Widget>[
                 for (Habit habit in capturedHabits) _habitTile(habit),
               ],
             ),
@@ -140,13 +140,20 @@ class _HabitsScreenState extends State<HabitsScreen> {
     );
   }
 
-  ListTile _habitTile(Habit habit) {
-    return ListTile(
-      leading: CircleAvatar(),
-      title: Text(habit.habitName),
-      subtitle: habit.habitGoal != null ? Text(habit.habitGoal!) : null,
-      onTap: () async {
-        await _showModal(habit);
+  Widget _habitTile(Habit habit) {
+    return ListenableBuilder(
+      listenable: habit,
+      builder: (BuildContext context, Widget? child) {
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundColor: habit.colorIndex.nullableMap((int i) => habitColors[i].background),
+          ),
+          title: Text(habit.name),
+          subtitle: habit.goal.nullableMap((String g) => Text(g)),
+          onTap: () async {
+            await _showModal(habit);
+          },
+        );
       },
     );
   }
@@ -175,7 +182,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
               children: <Widget>[
                 SizedBox(height: 16.0),
                 Text(
-                  habit.habitName,
+                  habit.name,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 28,
@@ -183,7 +190,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                   textAlign: TextAlign.left,
                 ),
                 SizedBox(height: 16.0),
-                if (habit.habitDescription case String description) ...<Widget>[
+                if (habit.description case String description) ...<Widget>[
                   Text(
                     "Description",
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -192,7 +199,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                   Text(description),
                   SizedBox(height: 16.0),
                 ],
-                if (habit.habitGoal case String goal) ...<Widget>[
+                if (habit.goal case String goal) ...<Widget>[
                   Text(
                     "Goal",
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -207,9 +214,11 @@ class _HabitsScreenState extends State<HabitsScreen> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
                       TextButton(
-                        onPressed: () {
-                          context.read<AppState>().deleteHabit(habitId: habit.habitId);
-                          Navigator.of(context).pop();
+                        onPressed: () async {
+                          await context.read<AppState>().deleteHabit(habitId: habit.id);
+                          if (context.mounted) {
+                            context.pop();
+                          }
                         },
                         child: Text(
                           "Delete Habit",
@@ -217,7 +226,11 @@ class _HabitsScreenState extends State<HabitsScreen> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          /// We need to pop the modal first before navigating
+                          context.pop();
+                          context.go("/habits/edit-habit/${habit.id}");
+                        },
                         child: Text(
                           "View Habit",
                           style: TextStyle(fontSize: 16),

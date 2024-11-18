@@ -6,6 +6,7 @@ import "package:happy_habit_at/screens/create_habit_screen.dart";
 import "package:happy_habit_at/screens/habitat_screen.dart";
 import "package:happy_habit_at/screens/habits_screen.dart";
 import "package:happy_habit_at/screens/home_screen.dart";
+import "package:happy_habit_at/screens/modify_habit_screen.dart";
 import "package:happy_habit_at/screens/more_screen.dart";
 import "package:happy_habit_at/screens/shop_screen.dart";
 import "package:happy_habit_at/screens/shop_screen/expansion_screen.dart";
@@ -69,6 +70,19 @@ final router = GoRouter(
                       name: "createHabit",
                       path: "create-habit",
                       builder: (_, state) => const CreateHabitScreen(),
+                    ),
+                    GoRoute(
+                      parentNavigatorKey: navigatorKeys.root,
+                      name: "editHabit",
+                      path: "edit-habit/:habitId",
+                      builder: (_, state) {
+                        String stringId = state.pathParameters["habitId"]!;
+                        if (int.tryParse(stringId) case int id) {
+                          return ModifyHabitScreen(habitId: id);
+                        } else {
+                          throw Exception("Invalid habit id: $stringId");
+                        }
+                      },
                     ),
                   ],
                 ),

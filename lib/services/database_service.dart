@@ -28,7 +28,7 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 3,
+        version: 4,
         onUpgrade: (Database db, int oldVersion, int newVersion) {
           /// Drop all tables.
           if (kDebugMode) {
@@ -55,7 +55,8 @@ class DatabaseService {
           habit_icon INTEGER NOT NULL,
           habit_days_of_the_week INTEGER NOT NULL,
           habit_hour INTEGER,
-          habit_minute INTEGER
+          habit_minute INTEGER,
+          habit_color_index INTEGER
         );
         
         CREATE TABLE IF NOT EXISTS furniture (
@@ -139,29 +140,30 @@ class DatabaseService {
 
   // CREATE
   Future<int?> createHabit({
-    required String habitName,
-    required String? habitDescription,
-    required String? habitGoal,
-    required int habitIcon,
+    required String name,
+    required String? description,
+    required String? goal,
+    required int icon,
     required int daysOfTheWeek,
     required TimeOfDay? time,
+    required int? colorIndex,
   }) async {
     if (_database case Database database) {
       int id = await database.insert("habit", <String, Object?>{
-        "habit_name": habitName,
-        "habit_description": habitDescription,
-        "habit_goal": habitGoal,
-        "habit_icon": habitIcon,
+        "habit_name": name,
+        "habit_description": description,
+        "habit_goal": goal,
+        "habit_icon": icon,
         "habit_days_of_the_week": daysOfTheWeek,
         "habit_hour": time?.hour,
         "habit_minute": time?.minute,
+        "habit_color_index": colorIndex,
       });
 
       if (kDebugMode) {
-        print("Habit created: $habitName with id $id");
+        print("Habit created: $name with id $id");
         print("The current habits are: ");
-
-        print(await database.query("habit"));
+        print(await habitDebugDisplay());
       }
 
       return id;
@@ -180,6 +182,48 @@ class DatabaseService {
   }
 
   // UPDATE
+  Future<int?> updateHabit({
+    required int id,
+    required String name,
+    required String? description,
+    required String? goal,
+    required int icon,
+    required int daysOfTheWeek,
+    required TimeOfDay? time,
+    required int? colorIndex,
+  }) async {
+    if (_database case Database database) {
+      try {
+        await database.update(
+          "habit",
+          <String, Object?>{
+            "habit_name": name,
+            "habit_description": description,
+            "habit_goal": goal,
+            "habit_icon": icon,
+            "habit_days_of_the_week": daysOfTheWeek,
+            "habit_hour": time?.hour,
+            "habit_minute": time?.minute,
+            "habit_color_index": colorIndex,
+          },
+          where: "habit_id = ?",
+          whereArgs: <int>[id],
+        );
+
+        if (kDebugMode) {
+          print("Habit updated: $name with id $id");
+          print("The current habits are: ");
+          print(await habitDebugDisplay());
+        }
+      } on Object catch (e) {
+        print("Error updating habit: $e");
+      }
+    }
+
+    return null;
+  }
+
+  // DELETE
   Future<bool> deleteHabit({required int habitId}) async {
     if (_database case Database database) {
       await database.delete(
@@ -191,7 +235,7 @@ class DatabaseService {
       if (kDebugMode) {
         print("Habit deleted: $habitId");
         print("The current habits are: ");
-        print(await database.query("habit"));
+        print(await habitDebugDisplay());
       }
 
       return true;
@@ -200,10 +244,12 @@ class DatabaseService {
     return false;
   }
 
-  // DELETE
-
   /// Close the database when done
   Future<void> closeDB() async {
     await _database?.close();
   }
+
+  // Minor operations:
+  Future<String?> habitDebugDisplay() async =>
+      _database?.query("habit").then((List<Map<String, Object?>> o) => o.join("\n"));
 }

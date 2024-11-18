@@ -34,41 +34,86 @@ class AppState {
     _hasInitialized = true;
   }
 
+  // CREATE
+
   Future<void> createHabit({
-    required String habitName,
-    required String? habitDescription,
-    required String? habitGoal,
-    required int habitIcon,
+    required String name,
+    required String? description,
+    required String? goal,
+    required int icon,
     required int daysOfTheWeek,
     required TimeOfDay? time,
+    required int? colorIndex,
   }) async {
     int? id = await _database.createHabit(
-      habitName: habitName,
-      habitDescription: habitDescription,
-      habitGoal: habitGoal,
-      habitIcon: habitIcon,
+      name: name,
+      description: description,
+      goal: goal,
+      icon: icon,
       daysOfTheWeek: daysOfTheWeek,
       time: time,
+      colorIndex: colorIndex,
     );
 
     if (id != null) {
       _habits.add(
         Habit(
-          habitId: id,
-          habitName: habitName,
-          habitDescription: habitDescription,
-          habitGoal: habitGoal,
-          habitIcon: habitIcon,
+          id: id,
+          name: name,
+          description: description,
+          goal: goal,
+          icon: icon,
           daysOfTheWeek: DaysOfTheWeek.fromBitValues(daysOfTheWeek),
           time: time,
+          colorIndex: colorIndex,
         ),
       );
     }
   }
 
+  // READ
+  Habit habitOfId(int habitId) {
+    return _habits.singleWhere((Habit habit) => habit.id == habitId);
+  }
+
+  // UPDATE
+
+  Future<void> updateHabit({
+    required int id,
+    required String name,
+    required String? description,
+    required String? goal,
+    required int icon,
+    required int daysOfTheWeek,
+    required TimeOfDay? time,
+    required int? colorIndex,
+  }) async {
+    habitOfId(id).updateHabit(
+      name: name,
+      description: description,
+      goal: goal,
+      icon: icon,
+      daysOfTheWeek: DaysOfTheWeek.fromBitValues(daysOfTheWeek),
+      time: time,
+      colorIndex: colorIndex,
+    );
+
+    await _database.updateHabit(
+      id: id,
+      name: name,
+      description: description,
+      goal: goal,
+      icon: icon,
+      daysOfTheWeek: daysOfTheWeek,
+      time: time,
+      colorIndex: colorIndex,
+    );
+  }
+
+  // DELETE
   Future<void> deleteHabit({required int habitId}) async {
     if (await _database.deleteHabit(habitId: habitId)) {
-      _habits.removeWhere((Habit habit) => habit.habitId == habitId);
+      _habits.removeWhere((Habit habit) => habit.id == habitId);
     }
   }
 }

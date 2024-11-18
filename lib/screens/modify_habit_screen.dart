@@ -1,15 +1,20 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/constants/habit_colors.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/providers/app_state.dart";
+import "package:happy_habit_at/providers/habit.dart";
 import "package:provider/provider.dart";
 
-class CreateHabitScreen extends StatefulWidget {
-  const CreateHabitScreen({super.key});
+class ModifyHabitScreen extends StatefulWidget {
+  const ModifyHabitScreen({required this.habitId, super.key});
+
+  final int habitId;
 
   @override
-  State<CreateHabitScreen> createState() => _CreateHabitScreenState();
+  State<ModifyHabitScreen> createState() => _ModifyHabitScreenState();
 }
 
 /// TODO(@anyone): Implement the icon picker.
@@ -17,36 +22,69 @@ class CreateHabitScreen extends StatefulWidget {
 ///     1. Define a set of usable icons.
 ///     2. Implement a way to select an icon. (modal?)
 
-class _CreateHabitScreenState extends State<CreateHabitScreen> {
+class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
+  // Private constants
+  static const TextDirection textDirection = TextDirection.ltr;
+  static const MaterialTapTargetSize tapTargetSize = MaterialTapTargetSize.padded;
+
+  // Inherited state from widget.
+  late Habit habit;
+
+  // Immutable state
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   late final TextEditingController habitNameController;
   late final TextEditingController habitDescriptionController;
   late final TextEditingController habitGoalController;
 
-  TimeOfDay? selectedTime;
-  TimePickerEntryMode entryMode = TimePickerEntryMode.dial;
-  Orientation? orientation;
-  TextDirection textDirection = TextDirection.ltr;
-  MaterialTapTargetSize tapTargetSize = MaterialTapTargetSize.padded;
-  bool use24HourTime = false;
-
-  int? colorIndex;
-
-  List<bool> isDaySelected = List<bool>.filled(7, false);
+  late TimeOfDay? selectedTime;
+  late bool use24HourTime;
+  late int? colorIndex;
+  late final List<bool> isDaySelected;
 
   @override
   void initState() {
     super.initState();
 
-    habitNameController = TextEditingController();
-    habitDescriptionController = TextEditingController();
-    habitGoalController = TextEditingController();
+    habit = context.read<AppState>().habitOfId(widget.habitId);
+
+    habitNameController = TextEditingController()..text = habit.name;
+    habitDescriptionController = TextEditingController()..text = habit.description ?? "";
+    habitGoalController = TextEditingController()..text = habit.goal ?? "";
+
+    selectedTime = habit.time;
+    colorIndex = habit.colorIndex;
+    print(habit.daysOfTheWeek);
+    isDaySelected = <bool>[
+      for (int i = 0; i < 7; ++i) //
+        habit.daysOfTheWeek.contains(DaysOfTheWeek.values[i]),
+    ];
+  }
+
+  /// Called whenever the widget [ModifyHabitScreen] is updated.
+  @override
+  void didUpdateWidget(ModifyHabitScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    habit = context.read<AppState>().habitOfId(widget.habitId);
+
+    habitNameController.text = habit.name;
+    habitDescriptionController.text = habit.description ?? "";
+    habitGoalController.text = habit.goal ?? "";
+
+    selectedTime = habit.time;
+    colorIndex = habit.colorIndex;
+
+    for (int i = 0; i < 7; ++i) {
+      isDaySelected[i] = habit.daysOfTheWeek.contains(DaysOfTheWeek.values[i]);
+    }
   }
 
   @override
   void dispose() {
     habitNameController.dispose();
+    habitDescriptionController.dispose();
+    habitGoalController.dispose();
 
     super.dispose();
   }
@@ -55,7 +93,8 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
     AppState appState = context.read<AppState>();
 
     if (_formKey.currentState case FormState state when state.validate()) {
-      await appState.createHabit(
+      await appState.updateHabit(
+        id: habit.id,
         name: habitNameController.text,
         description: habitDescriptionController.text.emptyAsNull,
         goal: habitGoalController.text.emptyAsNull,
@@ -88,24 +127,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             /// APPBAR
-            AppBar(
-              centerTitle: true,
-              title: const Text("New Habit"),
-              leading: IconButton(
-                onPressed: () {
-                  context.pop();
-                },
-                icon: const Icon(Icons.arrow_back),
-              ),
-              actions: <Widget>[
-                IconButton(
-                  onPressed: () {
-                    _submitForm();
-                  },
-                  icon: const Icon(Icons.check),
-                ),
-              ],
-            ),
+            _appBar(context),
 
             //BODY
             Expanded(
@@ -133,6 +155,38 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  AppBar _appBar(BuildContext context) {
+    return AppBar(
+      centerTitle: true,
+      title: const Text("Edit Habit"),
+      leading: IconButton(
+        onPressed: () {
+          context.pop();
+        },
+        icon: const Icon(Icons.arrow_back),
+      ),
+      actions: <Widget>[
+        IconButton(
+          onPressed: () async {
+            await context.read<AppState>().deleteHabit(habitId: habit.id);
+
+            /// Since we are in the habit screen, we just pop the screen.
+            if (context.mounted) {
+              context.pop();
+            }
+          },
+          icon: const Icon(Icons.delete),
+        ),
+        IconButton(
+          onPressed: () async {
+            await _submitForm();
+          },
+          icon: const Icon(Icons.check),
+        ),
+      ],
     );
   }
 
