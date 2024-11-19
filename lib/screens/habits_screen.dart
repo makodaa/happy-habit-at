@@ -22,7 +22,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
   late final AnimatedScrollController scrollController =
       AnimatedScrollController(animationFactory: ChromiumImpulse());
 
-  ListenableImmutableList<Habit>? habits;
+  late final ListenableImmutableList<Habit> habits;
 
   @override
   void initState() {
@@ -81,45 +81,32 @@ class _HabitsScreenState extends State<HabitsScreen> {
       children: <Widget>[
         _horizontalCalendar(),
         const SizedBox(height: 16.0),
-        if (habits == null) ...<Widget>[
-          const Center(
-            child: CircularProgressIndicator(),
+        if (habits.isEmpty) Center(child: Text("You have no habits for today!")),
+        if (habits.noTimeHabits //
+            case Iterable<Habit> noTimeHabits //
+            when noTimeHabits.isNotEmpty) ...<Widget>[
+          const Text("No time set"),
+          const SizedBox(height: 4.0),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              for (Habit habit in noTimeHabits) _habitTile(habit),
+            ],
           ),
         ],
-        if (habits case ListenableImmutableList<Habit> habits) ...<Widget>[
-          if (habits.isEmpty)
-            Center(
-              child: Text("You have no habits for today!"),
-            ),
-          if (habits.noTimeHabits case Iterable<Habit> noTimeHabits
-              when noTimeHabits.isNotEmpty) ...<Widget>[
-            const Text(
-              "No time set",
-            ),
+        for (var (String title, (int s, int e)) in partitions)
+          if (habits.timedHabits.where((TimedHabit h) => h.time.hour.isWithin(s, e)).toList()
+              case List<Habit> capturedHabits //
+              when capturedHabits.isNotEmpty) ...<Widget>[
+            Text(title),
             const SizedBox(height: 4.0),
             Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                for (Habit habit in noTimeHabits) _habitTile(habit),
+                for (Habit habit in capturedHabits) _habitTile(habit),
               ],
             ),
           ],
-          for (var (String title, (int start, int end)) in partitions)
-            if (habits.timedHabits
-                    .where((TimedHabit h) => h.time.hour.isWithin(start, end))
-                    .toList()
-                case List<Habit> capturedHabits //
-                when capturedHabits.isNotEmpty) ...<Widget>[
-              Text(title),
-              const SizedBox(height: 4.0),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  for (Habit habit in capturedHabits) _habitTile(habit),
-                ],
-              ),
-            ],
-        ],
       ],
     );
   }

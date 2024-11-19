@@ -239,7 +239,8 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Expanded(
-              child: TextField(
+              child: TextFormField(
+                
                 controller: habitGoalController,
                 decoration: const InputDecoration(
                   filled: true,
@@ -289,7 +290,8 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
         SizedBox(
           height: 4,
         ),
-        TextField(
+        TextFormField(
+          
           decoration: InputDecoration(
             labelText: selectedTime?.format(context) ?? "Select a time",
           ),

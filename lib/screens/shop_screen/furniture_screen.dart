@@ -24,7 +24,6 @@ class FurnitureIcons extends StatelessWidget {
   static const SizedBox separator = SizedBox(width: 8.0);
   static const List<(IconData icon, String label)> icons = <(IconData, String)>[
     (Icons.bed, "Beds"),
-    (Icons.wallpaper, "Walls"),
     (Icons.bed_outlined, "Floor"),
     (Icons.lightbulb, "Lights"),
     (Icons.more_horiz, "Whatever"),

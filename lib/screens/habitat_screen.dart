@@ -1,6 +1,7 @@
 import "dart:math" as math;
 
 import "package:flutter/material.dart";
+import "package:flutter/src/gestures/events.dart";
 import "package:intl/intl.dart";
 
 class HabitatScreen extends StatefulWidget {
@@ -28,10 +29,7 @@ class _HabitatScreenState extends State<HabitatScreen> {
                 title: const Text("Habitat Page"),
               ),
               Expanded(
-                child: const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: GamePanel(),
-                ),
+                child: GamePanel(),
               ),
             ],
           ),
@@ -96,33 +94,40 @@ typedef IntVector = (int, int);
 typedef PetIcon = (
   String path,
   (double width, double height),
+  (double dx, double dy) defaultOffset,
+  (double dx, double dy) flippedOffset,
   (int x, int y) baseOffset,
+  bool isFacingLeft,
 );
 
 class _GamePanelState extends State<GamePanel> {
   /// This is under the assumption that the tile is a square.
-  static const double tileSize = 48.0;
+  static const double tileSize = 36.0;
 
   static const List<PetIcon> petIcons = <PetIcon>[
-    ("assets/images/dog.png", (60.0, 60.0), (-1, -1)),
+    (
+      "assets/images/dog.png",
+      (48.0, 48.0),
+      (2.0, 8.0),
+      (-6.0, 8.0),
+      (-1, -1),
+      false,
+    ),
   ];
 
   static const double rotatedTileWidth = tileSize * math.sqrt2;
   static const double rotatedTileHeight = rotatedTileWidth / 2.0;
 
-  static const double sheeredTileWidth = rotatedTileWidth / 2;
-  static const double sheeredTileHeight = sheeredTileWidth;
-
-  static const int rightTileCount = 4;
-  static const int leftTileCount = 4;
+  static const int tileCount = 7;
 
   late final FocusNode focusNode = FocusNode();
-
-  Offset wallTileOffset = Offset(0, 0);
-  IntVector wallTilePosition = (0, 0);
+  late final List<ValueNotifier<Offset>> floorOffsets = <ValueNotifier<Offset>>[
+    for ((int, int) _ in tileCount.times(tileCount)) ValueNotifier<Offset>(Offset.zero),
+  ];
 
   Offset petOffset = Offset(0, 0);
   IntVector petPosition = (0, 0);
+  bool isPetFacingLeft = false;
 
   @override
   void initState() {
@@ -141,142 +146,125 @@ class _GamePanelState extends State<GamePanel> {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: Colors.purple,
+      color: Colors.transparent,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) => Stack(
           children: <Widget>[
-            ..._rightWallTileWidgets(constraints),
+            // if (_screenPositionFromRightSideTile((0, 0), constraints) case (double nx, double ny))
+            //   Positioned(
+            //     top: ny,
+            //     left: nx,
+            //     child: Transform(
+            //       transform: Matrix4.identity()..setEntry(1, 0, -0.5),
+            //       child: Container(
+            //         width: tileSideWidth,
+            //         height: tileSideHeight,
+            //         color: Colors.blue,
+            //       ),
+            //     ),
+            //   ),
             ..._floorTileWidgets(constraints),
-            _purpleWidget(constraints),
             _petWidget(constraints),
-            Positioned(
-              left: constraints.maxWidth / 2,
-              child: Container(height: constraints.maxHeight, width: 1, color: Colors.white),
-            ),
           ],
         ),
       ),
     );
   }
 
-  List<Widget> _rightWallTileWidgets(BoxConstraints constraints) {
-    return <Widget>[
-      for (int y = 0; y < 4; ++y)
-        for (int x = 0; x < rightTileCount; ++x)
-
-          /// Variables..?
-          /// These are variable declarations. :)
-          if (_screenPositionFromRightWallTile((x, y), constraints) case (double nx, double ny))
-            Positioned(
-              top: ny,
-              left: nx,
-              child: Transform(
-                transform: Matrix4.identity()..setEntry(1, 0, 0.5),
-                child: Container(
-                  width: sheeredTileWidth,
-                  height: sheeredTileHeight,
-                  color: Colors.blue,
-                ),
-              ),
-            ),
-    ];
-  }
-
   List<Widget> _floorTileWidgets(BoxConstraints constraints) {
     return <Widget>[
-      for (int y = 0; y < leftTileCount; ++y)
-        for (int x = 0; x < rightTileCount; ++x)
-
-          /// Variables..?
-          /// These are variable declarations. :)
-          if (_screenPositionFromFloorTile((x, y), constraints) case (double nx, double ny))
-            Positioned(
-              top: ny,
-              left: nx,
-              child: Transform.scale(
-                scaleY: 0.5,
-                child: Transform.rotate(
-                  angle: math.pi / 4,
-                  child: Container(
-                    width: tileSize,
-                    height: tileSize,
-                    color: (x + y).isEven ? Colors.brown : Colors.yellow,
+      for (var (int y, int x) in tileCount.times(tileCount))
+        if (_screenPositionFromFloorTile((x, y), constraints) case (double nx, double ny))
+          Positioned(
+            top: ny,
+            left: nx,
+            child: MouseRegion(
+              onEnter: (PointerEnterEvent event) {
+                floorOffsets[y * tileCount + x].value -= Offset(0.0, 0.15);
+              },
+              onExit: (PointerExitEvent event) {
+                floorOffsets[y * tileCount + x].value += Offset(0.0, 0.15);
+              },
+              child: ListenableBuilder(
+                listenable: floorOffsets[y * tileCount + x],
+                builder: (BuildContext context, Widget? child) {
+                  return AnimatedSlide(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    offset: floorOffsets[y * tileCount + x].value,
+                    child: child,
+                  );
+                },
+                child: Transform.scale(
+                  scale: 1.62,
+                  child: Image.asset(
+                    "assets/images/tile_022.png",
+                    width: rotatedTileWidth,
                   ),
                 ),
               ),
             ),
+          ),
+      // Positioned(
+      //   top: ny,
+      //   left: nx,
+      //   child: Transform.scale(
+      //     scaleY: 0.5,
+      //     child: Transform.rotate(
+      //       angle: math.pi / 4,
+      //       child: Container(
+      //         width: tileSize,
+      //         height: tileSize,
+      //         color: (x + y).isEven ? Colors.brown : Colors.yellow,
+      //       ),
+      //     ),
+      //   ),
+      // ),
     ];
   }
 
   Widget _petWidget(BoxConstraints constraints) {
-    var (String path, (double width, double height), IntVector offset) = petIcons[0];
+    var (
+      String path,
+      (double width, double height),
+      (double dx, double dy),
+      (double dxF, double dyF),
+      IntVector offset,
+      bool isFacingLeft,
+    ) = petIcons[0];
     var (double x, double y) = _screenPositionFromFloorTile(petPosition + offset, constraints);
 
     return Positioned(
       top: y,
       left: x,
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onPanUpdate: (DragUpdateDetails details) {
-          petOffset += details.delta;
-
-          IntVector tilePosition = petPosition;
-          tilePosition = _floorTilePositionFromRelativeOffset(petOffset.pair);
-          tilePosition = tilePosition.clamp((0, 0), (rightTileCount - 1, leftTileCount - 1));
-          if (tilePosition != petPosition) {
+      child: Transform.translate(
+        offset: isFacingLeft ^ isPetFacingLeft ? Offset(dxF, dyF) : Offset(dx, dy),
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onDoubleTap: () {
             setState(() {
-              petPosition = tilePosition;
+              isPetFacingLeft ^= true;
             });
-          }
-        },
-        child: Image(
-          image: AssetImage(path),
-          width: width,
-          height: height,
-        ),
-      ),
-    );
-  }
+          },
+          onPanUpdate: (DragUpdateDetails details) {
+            petOffset += details.delta;
 
-  Widget _purpleWidget(BoxConstraints constraints) {
-    var (double x, double y) = _screenPositionFromRightWallTile(wallTilePosition, constraints);
-
-    return Positioned(
-      top: y,
-      left: x,
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onPanStart: (DragStartDetails details) {
-          wallTileOffset = Offset(0, 0);
-        },
-        onPanEnd: (DragEndDetails details) {
-          wallTileOffset = Offset(0, 0);
-        },
-        onPanUpdate: (DragUpdateDetails details) {
-          Offset invertedOffset = Offset(details.delta.dx, -details.delta.dy);
-          wallTileOffset += invertedOffset;
-
-          IntVector tilePosition = wallTilePosition;
-          tilePosition = _wallTilePositionFromRelativeOffset(wallTileOffset.pair);
-          print(tilePosition);
-          if (tilePosition.exceeds((0, 0), (rightTileCount - 1, 3))) {
-            wallTileOffset -= invertedOffset;
-            return;
-          }
-
-          tilePosition = tilePosition.clamp((0, 0), (rightTileCount - 1, 3));
-          if (tilePosition != wallTilePosition) {
-            setState(() {
-              wallTilePosition = tilePosition;
-            });
-          }
-        },
-        child: Transform(
-          transform: Matrix4.identity()..setEntry(1, 0, 0.5),
-          child: Container(
-            width: sheeredTileWidth,
-            height: sheeredTileHeight,
-            color: Colors.purple,
+            IntVector tilePosition = petPosition;
+            tilePosition = _floorTilePositionFromRelativeOffset(petOffset.pair);
+            tilePosition = tilePosition.clamp((0, 0), (tileCount - 1, tileCount - 1));
+            if (tilePosition != petPosition) {
+              setState(() {
+                petPosition = tilePosition;
+              });
+            }
+          },
+          child: Transform.flip(
+            flipX: isFacingLeft ^ isPetFacingLeft,
+            child: Image(
+              image: AssetImage(path),
+              width: width,
+              height: height,
+            ),
           ),
         ),
       ),
@@ -306,28 +294,15 @@ class _GamePanelState extends State<GamePanel> {
 
     return (nx, ny);
   }
+}
 
-  IntVector _wallTilePositionFromRelativeOffset(Vector relativeOffset) {
-    var (double x, double y) = relativeOffset;
-    var (double nx, double ny) = (
-      x / sheeredTileWidth,
-      -0.5 * x / sheeredTileWidth + y / sheeredTileHeight,
-    );
-
-    return (nx.floor(), ny.floor());
-  }
-
-  Vector _screenPositionFromRightWallTile(IntVector position, BoxConstraints constraints) {
-    double middleOffset = constraints.maxWidth / 2;
-    double topOffset = constraints.maxHeight / 2 - (27 /* This constant is magical. */);
-
-    var (int x, int y) = position;
-    var (double nx, double ny) = (
-      x * sheeredTileWidth + middleOffset,
-      x * 0.5 * sheeredTileHeight - y * sheeredTileHeight + topOffset,
-    );
-
-    return (nx, ny);
+extension on int {
+  Iterable<(int, int)> times(int right) sync* {
+    for (int y = 0; y < this; ++y) {
+      for (int x = 0; x < right; ++x) {
+        yield (y, x);
+      }
+    }
   }
 }
 

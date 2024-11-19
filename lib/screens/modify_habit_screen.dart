@@ -57,7 +57,6 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
 
     selectedTime = habit.time;
     colorIndex = habit.colorIndex;
-    print(habit.daysOfTheWeek);
     isDaySelected = <bool>[
       for (int i = 0; i < 7; ++i) //
         habit.daysOfTheWeek.contains(DaysOfTheWeek.values[i]),
@@ -69,17 +68,19 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
   void didUpdateWidget(ModifyHabitScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    habit = context.read<AppState>().habitOfId(widget.habitId);
+    if (widget.habitId != oldWidget.habitId) {
+      habit = context.read<AppState>().habitOfId(widget.habitId);
 
-    habitNameController.text = habit.name;
-    habitDescriptionController.text = habit.description ?? "";
-    habitGoalController.text = habit.goal ?? "";
+      habitNameController.text = habit.name;
+      habitDescriptionController.text = habit.description ?? "";
+      habitGoalController.text = habit.goal ?? "";
 
-    selectedTime = habit.time;
-    colorIndex = habit.colorIndex;
+      selectedTime = habit.time;
+      colorIndex = habit.colorIndex;
 
-    for (int i = 0; i < 7; ++i) {
-      isDaySelected[i] = habit.daysOfTheWeek.contains(DaysOfTheWeek.values[i]);
+      for (int i = 0; i < 7; ++i) {
+        isDaySelected[i] = habit.daysOfTheWeek.contains(DaysOfTheWeek.values[i]);
+      }
     }
   }
 
@@ -265,7 +266,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Expanded(
-              child: TextField(
+              child: TextFormField(
                 controller: habitGoalController,
                 decoration: const InputDecoration(
                   filled: true,
@@ -321,7 +322,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
         SizedBox(
           height: 4,
         ),
-        TextField(
+        TextFormField(
           decoration: InputDecoration(
             labelText: selectedTime?.format(context) ?? "Select a time",
           ),
