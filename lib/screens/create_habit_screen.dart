@@ -3,6 +3,7 @@ import "dart:io";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/constants/habit_colors.dart";
+import "package:happy_habit_at/constants/habit_icons.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:provider/provider.dart";
@@ -15,7 +16,7 @@ class CreateHabitScreen extends StatefulWidget {
   State<CreateHabitScreen> createState() => _CreateHabitScreenState();
 }
 
-// TODO(water-mizuu): Implement the icon picker.
+/// TODO(@anyone): Implement the icon picker.
 ///   Requirements:
 ///     1. Define a set of usable icons.
 ///     2. Implement a way to select an icon. (modal?)
@@ -35,6 +36,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
 
   late TimeOfDay? selectedTime;
   late int? colorIndex;
+  late int? iconIndex;
   late final List<bool> isDaySelected;
 
   @override
@@ -46,6 +48,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
     habitDescriptionController = TextEditingController();
     habitGoalController = TextEditingController();
 
+    iconIndex = null;
     selectedTime = null;
     colorIndex = null;
     isDaySelected = List<bool>.filled(DaysOfTheWeek.values.length, false);
@@ -171,11 +174,11 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
               padding: Platform.isAndroid ? null : EdgeInsets.only(top: 7.0),
               child: IconButton(
                 icon: Icon(
-                  Icons.emoji_emotions,
+                  iconIndex != null ? habitIcons[iconIndex!] : habitIcons[0],
                   color: colorIndex != null ? habitColors[colorIndex!].foreground : Colors.black54,
                 ),
-                onPressed: () {
-                  print("Hi");
+                onPressed: () async {
+                  await _showIconDialog();
                 },
               ),
             ),
@@ -375,6 +378,51 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
 
   void _unfocus() {
     FocusScope.of(context).unfocus();
+  }
+
+  Widget _iconList(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.spaceEvenly,
+      children: <Widget>[
+        for (int i = 0; i < habitIcons.length; ++i) _iconButton(i, context),
+      ],
+    );
+  }
+
+  Widget _iconButton(int i, BuildContext context) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          iconIndex = i;
+        });
+        Navigator.pop(context);
+      },
+      child: Ink(
+        decoration: BoxDecoration(),
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Icon(
+            habitIcons[i],
+            color: colorIndex != null ? habitColors[colorIndex!].foreground : Colors.black54,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showIconDialog() async {
+    await showDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Choose an Icon"),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[_iconList(context)],
+              ),
+            ),
+          );
+        });
   }
 
   static const SizedBox _fieldSeparator = SizedBox(height: 16.0);
