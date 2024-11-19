@@ -114,7 +114,7 @@ class DatabaseService {
           furniture_id INTEGER NOT NULL,
           x_coordinate INTEGER NOT NULL,
           y_coordinate INTEGER NOT NULL,
-          placement_plane INTEGER NOT NULL
+          is_facing_left INTEGER NOT NULL
         );
       """);
 

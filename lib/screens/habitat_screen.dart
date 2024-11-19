@@ -2,6 +2,7 @@ import "dart:math" as math;
 
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
+import "package:happy_habit_at/constants/pets.dart";
 import "package:intl/intl.dart";
 
 class HabitatScreen extends StatefulWidget {
@@ -91,29 +92,10 @@ class GamePanel extends StatefulWidget {
 
 typedef Vector = (double, double);
 typedef IntVector = (int, int);
-typedef PetIcon = (
-  String path,
-  (double width, double height),
-  (double dx, double dy) defaultOffset,
-  (double dx, double dy) flippedOffset,
-  (int x, int y) baseOffset,
-  bool isFacingLeft,
-);
 
 class _GamePanelState extends State<GamePanel> {
   /// This is under the assumption that the tile is a square.
   static const double tileSize = 36.0;
-
-  static const List<PetIcon> petIcons = <PetIcon>[
-    (
-      "assets/images/dog.png",
-      (48.0, 48.0),
-      (2.0, 8.0),
-      (-6.0, 8.0),
-      (-1, -1),
-      true,
-    ),
-  ];
 
   static const double rotatedTileWidth = tileSize * math.sqrt2;
   static const double rotatedTileHeight = rotatedTileWidth / 2.0;
@@ -236,13 +218,15 @@ class _GamePanelState extends State<GamePanel> {
 
             IntVector tilePosition = petPosition;
             tilePosition = _floorTilePositionFromRelativeOffset(petOffset.pair);
+
+            /// If this current delta results in the pet exceeding the tile bounds,
+            ///   disregard this delta.
             if (tilePosition.exceeds((0, 0), (tileCount, tileCount))) {
               petOffset -= details.delta;
               return;
             }
 
             tilePosition = tilePosition.clamp((0, 0), (tileCount - 1, tileCount - 1));
-
             if (tilePosition != petPosition) {
               setState(() {
                 petPosition = tilePosition;
