@@ -44,7 +44,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
           children: <Widget>[
             /// APPBAR
             AppBar(
-              title: const Center(child: Text("More")),
+              title: const Center(child: Text("Habits")),
             ),
 
             /// BODY

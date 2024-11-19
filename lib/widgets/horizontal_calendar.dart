@@ -23,18 +23,18 @@ class HorizontalCalendar extends StatefulWidget {
 class _HorizontalCalendarState extends State<HorizontalCalendar> {
   static const List<String> _months = <String>[
     "",
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
+    "January",
+    "Febuary",
+    "March",
+    "April",
     "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   static const List<String> _days = <String>[
     "",
@@ -75,18 +75,28 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
   Widget build(BuildContext context) {
     int daysSinceJan1 = widget.initialDate.difference(DateTime(widget.initialDate.year)).inDays;
 
-    return PrototypeHeight(
-      prototype: _buildTile(0),
-      scrollView: ScrollablePositionedList.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 365 + (_isLeapYear(widget.initialDate.year) ? 1 : 0),
-        itemScrollController: itemScrollController,
-        scrollOffsetController: scrollOffsetController,
-        itemPositionsListener: itemPositionsListener,
-        scrollOffsetListener: scrollOffsetListener,
-        initialScrollIndex: daysSinceJan1 - 2,
-        itemBuilder: (BuildContext context, int index) => _buildTile(index),
-      ),
+    return Column(
+      children: <Widget>[
+        Center(
+          child: Text("${_months[widget.selectedDate!.month]} ${widget.selectedDate!.year}"),
+        ),
+        SizedBox(
+          height: 4,
+        ),
+        PrototypeHeight(
+          prototype: _buildTile(0),
+          scrollView: ScrollablePositionedList.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 365 + (_isLeapYear(widget.initialDate.year) ? 1 : 0),
+            itemScrollController: itemScrollController,
+            scrollOffsetController: scrollOffsetController,
+            itemPositionsListener: itemPositionsListener,
+            scrollOffsetListener: scrollOffsetListener,
+            initialScrollIndex: daysSinceJan1 - 2,
+            itemBuilder: (BuildContext context, int index) => _buildTile(index),
+          ),
+        ),
+      ],
     );
   }
 
@@ -111,7 +121,6 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
             padding: EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(
               children: <Widget>[
-                Text(_months[date.month], style: TextStyle(fontSize: 12.0)),
                 Text(_days[date.weekday]),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(1000.00),
