@@ -8,6 +8,7 @@ import "package:happy_habit_at/providers/habit.dart";
 import "package:happy_habit_at/utils/extension_types/listenable_immutable_list.dart";
 import "package:happy_habit_at/utils/extension_types/timed_habit.dart";
 import "package:happy_habit_at/utils/extensions/monadic_nullable.dart";
+import "package:happy_habit_at/widgets/horizontal_calendar.dart";
 import "package:provider/provider.dart";
 import "package:scroll_animator/scroll_animator.dart";
 
@@ -68,46 +69,50 @@ class _HabitsScreenState extends State<HabitsScreen> {
     );
   }
 
-  Column _displayedHabits() {
+  Widget _displayedHabits() {
     const List<(String title, (int start, int end))> partitions = <(String, (int, int))>[
       ("Morning", (0, 12)),
       ("Afternoon", (12, 18)),
       ("Evening", (18, 24)),
     ];
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        _horizontalCalendar(),
-        const SizedBox(height: 16.0),
-        if (habits.isEmpty) Center(child: Text("You have no habits for today!")),
-        if (habits.noTimeHabits //
-            case Iterable<Habit> noTimeHabits //
-            when noTimeHabits.isNotEmpty) ...<Widget>[
-          const Text("No time set"),
-          const SizedBox(height: 4.0),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              for (Habit habit in noTimeHabits) _habitTile(habit),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _horizontalCalendar(constraints),
+            const SizedBox(height: 16.0),
+            if (habits.isEmpty) Center(child: Text("You have no habits for today!")),
+            if (habits.noTimeHabits //
+                case Iterable<Habit> noTimeHabits //
+                when noTimeHabits.isNotEmpty) ...<Widget>[
+              const Text("No time set"),
+              const SizedBox(height: 4.0),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  for (Habit habit in noTimeHabits) _habitTile(habit),
+                ],
+              ),
             ],
-          ),
-        ],
-        for (var (String title, (int s, int e)) in partitions)
-          if (habits.timedHabits.where((TimedHabit h) => h.time.hour.isWithin(s, e)).toList()
-              case List<Habit> capturedHabits //
-              when capturedHabits.isNotEmpty) ...<Widget>[
-            Text(title),
-            const SizedBox(height: 4.0),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                for (Habit habit in capturedHabits) _habitTile(habit),
+            for (var (String title, (int s, int e)) in partitions)
+              if (habits.timedHabits.where((TimedHabit h) => h.time.hour.isWithin(s, e)).toList()
+                  case List<Habit> capturedHabits //
+                  when capturedHabits.isNotEmpty) ...<Widget>[
+                Text(title),
+                const SizedBox(height: 4.0),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    for (Habit habit in capturedHabits) _habitTile(habit),
+                  ],
+                ),
               ],
-            ),
           ],
-      ],
+        );
+      },
     );
   }
 
@@ -129,14 +134,22 @@ class _HabitsScreenState extends State<HabitsScreen> {
     );
   }
 
-  ColoredBox _horizontalCalendar() {
-    return ColoredBox(
-      color: Colors.lightBlue.shade300,
-      child: SizedBox(
-        height: 64,
-        child: Center(child: Text("To Implement: Horizontal Calendar")),
+  Widget _horizontalCalendar(BoxConstraints constraints) {
+    print(constraints.maxWidth);
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: constraints.maxWidth,
+        maxHeight: 32,
       ),
+      child: HorizontalCalendar(),
     );
+    // return ColoredBox(
+    //   color: Colors.lightBlue.shade300,
+    //   child: SizedBox(
+    //     height: 64,
+    //     child: Center(child: Text("To Implement: Horizontal Calendar")),
+    //   ),
+    // );
   }
 
   Future<void> _showModal(Habit habit) async {
