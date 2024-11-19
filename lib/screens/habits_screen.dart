@@ -136,20 +136,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
 
   Widget _horizontalCalendar(BoxConstraints constraints) {
     print(constraints.maxWidth);
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxWidth: constraints.maxWidth,
-        maxHeight: 32,
-      ),
-      child: HorizontalCalendar(),
-    );
-    // return ColoredBox(
-    //   color: Colors.lightBlue.shade300,
-    //   child: SizedBox(
-    //     height: 64,
-    //     child: Center(child: Text("To Implement: Horizontal Calendar")),
-    //   ),
-    // );
+
+    return HorizontalCalendar(initialDate: DateTime.now());
   }
 
   Future<void> _showModal(Habit habit) async {

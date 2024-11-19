@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
-import "package:happy_habit_at/screens/home_screen/branch_animator.dart";
 import "package:happy_habit_at/utils/extension_types/immutable_list.dart";
+import "package:happy_habit_at/widgets/branch_animator.dart";
 
 class ShopScreen extends StatefulWidget {
   const ShopScreen({

@@ -1,4 +1,5 @@
 import "dart:io";
+import "dart:ui";
 
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
@@ -76,6 +77,12 @@ class HappyHabitAtApp extends StatelessWidget {
       theme: AppTheme.getAppTheme(),
       debugShowCheckedModeBanner: false,
       routerConfig: router,
+      scrollBehavior: MaterialScrollBehavior().copyWith(
+        dragDevices: <PointerDeviceKind>{
+          PointerDeviceKind.touch,
+          PointerDeviceKind.mouse,
+        },
+      ),
       actions: <Type, Action<Intent>>{
         ...WidgetsApp.defaultActions,
         ScrollIntent: AnimatedScrollAction(),

@@ -1,7 +1,7 @@
 import "dart:math" as math;
 
 import "package:flutter/material.dart";
-import "package:flutter/src/gestures/events.dart";
+import "package:flutter/services.dart";
 import "package:intl/intl.dart";
 
 class HabitatScreen extends StatefulWidget {
@@ -111,7 +111,7 @@ class _GamePanelState extends State<GamePanel> {
       (2.0, 8.0),
       (-6.0, 8.0),
       (-1, -1),
-      false,
+      true,
     ),
   ];
 
@@ -205,21 +205,6 @@ class _GamePanelState extends State<GamePanel> {
               ),
             ),
           ),
-      // Positioned(
-      //   top: ny,
-      //   left: nx,
-      //   child: Transform.scale(
-      //     scaleY: 0.5,
-      //     child: Transform.rotate(
-      //       angle: math.pi / 4,
-      //       child: Container(
-      //         width: tileSize,
-      //         height: tileSize,
-      //         color: (x + y).isEven ? Colors.brown : Colors.yellow,
-      //       ),
-      //     ),
-      //   ),
-      // ),
     ];
   }
 
@@ -251,7 +236,13 @@ class _GamePanelState extends State<GamePanel> {
 
             IntVector tilePosition = petPosition;
             tilePosition = _floorTilePositionFromRelativeOffset(petOffset.pair);
+            if (tilePosition.exceeds((0, 0), (tileCount, tileCount))) {
+              petOffset -= details.delta;
+              return;
+            }
+
             tilePosition = tilePosition.clamp((0, 0), (tileCount - 1, tileCount - 1));
+
             if (tilePosition != petPosition) {
               setState(() {
                 petPosition = tilePosition;
@@ -284,7 +275,6 @@ class _GamePanelState extends State<GamePanel> {
   Vector _screenPositionFromFloorTile(IntVector position, BoxConstraints constraints) {
     double middleOffset = (constraints.maxWidth - tileSize) / 2;
     double topOffset = constraints.maxHeight / 2;
-    print((middleOffsetFloorTile: middleOffset));
 
     var (int x, int y) = position;
     var (double nx, double ny) = (
@@ -319,7 +309,7 @@ extension on IntVector {
   }
 
   bool exceeds(IntVector min, IntVector max) {
-    return this.$1 < min.$1 || this.$1 > max.$1 || this.$2 < min.$2 || this.$2 > max.$2;
+    return this.$1 < min.$1 || this.$1 >= max.$1 || this.$2 < min.$2 || this.$2 >= max.$2;
   }
 
   IntVector operator +(IntVector other) => (this.$1 + other.$1, this.$2 + other.$2);
