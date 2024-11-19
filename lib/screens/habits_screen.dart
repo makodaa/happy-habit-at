@@ -3,6 +3,7 @@ import "dart:async";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/constants/habit_colors.dart";
+import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habit.dart";
 import "package:happy_habit_at/utils/extension_types/listenable_immutable_list.dart";
@@ -24,6 +25,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
       AnimatedScrollController(animationFactory: ChromiumImpulse());
 
   late final ListenableImmutableList<Habit> habits;
+  late DateTime selectedDate = _currentDay();
 
   @override
   void initState() {
@@ -85,7 +87,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
             _horizontalCalendar(constraints),
             const SizedBox(height: 16.0),
             if (habits.isEmpty) Center(child: Text("You have no habits for today!")),
-            if (habits.noTimeHabits //
+            if (habits.noTimeHabits(selectedDate) //
                 case Iterable<Habit> noTimeHabits //
                 when noTimeHabits.isNotEmpty) ...<Widget>[
               const Text("No time set"),
@@ -98,7 +100,10 @@ class _HabitsScreenState extends State<HabitsScreen> {
               ),
             ],
             for (var (String title, (int s, int e)) in partitions)
-              if (habits.timedHabits.where((TimedHabit h) => h.time.hour.isWithin(s, e)).toList()
+              if (habits
+                      .timedHabits(selectedDate)
+                      .where((TimedHabit h) => h.time.hour.isWithin(s, e))
+                      .toList()
                   case List<Habit> capturedHabits //
                   when capturedHabits.isNotEmpty) ...<Widget>[
                 Text(title),
@@ -120,6 +125,11 @@ class _HabitsScreenState extends State<HabitsScreen> {
     return ListenableBuilder(
       listenable: habit,
       builder: (BuildContext context, Widget? child) {
+        if (habit.daysOfTheWeek.isNotEmpty &&
+            !habit.daysOfTheWeek.contains(DaysOfTheWeek.values[selectedDate.weekday % 7])) {
+          return const SizedBox.shrink();
+        }
+
         return ListTile(
           leading: CircleAvatar(
             backgroundColor: habit.colorIndex.nullableMap((int i) => habitColors[i].background),
@@ -135,9 +145,17 @@ class _HabitsScreenState extends State<HabitsScreen> {
   }
 
   Widget _horizontalCalendar(BoxConstraints constraints) {
-    print(constraints.maxWidth);
+    DateTime now = _currentDay();
 
-    return HorizontalCalendar(initialDate: DateTime.now());
+    return HorizontalCalendar(
+      initialDate: now,
+      selectedDate: selectedDate,
+      onTap: (DateTime date) {
+        setState(() {
+          selectedDate = date;
+        });
+      },
+    );
   }
 
   Future<void> _showModal(Habit habit) async {
@@ -225,20 +243,33 @@ class _HabitsScreenState extends State<HabitsScreen> {
       },
     );
   }
+
+  static DateTime _currentDay() => DateTime.now().copyWith(
+        hour: 0,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+        microsecond: 0,
+        isUtc: false,
+      );
 }
 
 extension on ListenableImmutableList<Habit> {
-  Iterable<TimedHabit> get timedHabits sync* {
+  Iterable<TimedHabit> timedHabits(DateTime day) sync* {
     for (Habit habit in this) {
-      if (habit.time != null) {
+      if (habit.time != null &&
+          (habit.daysOfTheWeek.isEmpty ||
+              habit.daysOfTheWeek.contains(DaysOfTheWeek.values[day.weekday % 7]))) {
         yield TimedHabit(habit);
       }
     }
   }
 
-  Iterable<Habit> get noTimeHabits sync* {
+  Iterable<Habit> noTimeHabits(DateTime day) sync* {
     for (Habit habit in this) {
-      if (habit.time == null) {
+      if (habit.time == null &&
+          (habit.daysOfTheWeek.isEmpty ||
+              habit.daysOfTheWeek.contains(DaysOfTheWeek.values[day.weekday % 7]))) {
         yield habit;
       }
     }

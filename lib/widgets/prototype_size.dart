@@ -1,6 +1,6 @@
+// https://stackoverflow.com/questions/50155738/flutter-minimum-height-on-horizontal-list-view
 import "package:flutter/material.dart";
 
-// https://stackoverflow.com/questions/50155738/flutter-minimum-height-on-horizontal-list-view
 class PrototypeHeight extends StatelessWidget {
   const PrototypeHeight({
     required this.prototype,
@@ -9,7 +9,7 @@ class PrototypeHeight extends StatelessWidget {
   });
 
   final Widget prototype;
-  final ScrollView scrollView;
+  final Widget scrollView;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class PrototypeWidth extends StatelessWidget {
   });
 
   final Widget prototype;
-  final ScrollView scrollView;
+  final Widget scrollView;
 
   @override
   Widget build(BuildContext context) {

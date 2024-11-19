@@ -42,6 +42,7 @@ dependencies:
   path: ^1.9.0
   provider: ^6.1.2
   scroll_animator: ^0.3.0
+  scrollable_positioned_list: ^0.3.8
   sqflite: ^2.4.0
   sqflite_common_ffi: ^2.3.4
   sqflite_common_ffi_web:

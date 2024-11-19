@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
-import "package:happy_habit_at/widgets/branch_animator.dart";
 import "package:happy_habit_at/utils/extension_types/immutable_list.dart";
+import "package:happy_habit_at/widgets/branch_animator.dart";
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({

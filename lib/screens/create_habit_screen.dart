@@ -15,7 +15,7 @@ class CreateHabitScreen extends StatefulWidget {
   State<CreateHabitScreen> createState() => _CreateHabitScreenState();
 }
 
-/// TODO(@anyone): Implement the icon picker.
+// TODO(water-mizuu): Implement the icon picker.
 ///   Requirements:
 ///     1. Define a set of usable icons.
 ///     2. Implement a way to select an icon. (modal?)
@@ -240,7 +240,6 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
           children: <Widget>[
             Expanded(
               child: TextFormField(
-                
                 controller: habitGoalController,
                 decoration: const InputDecoration(
                   filled: true,
@@ -291,7 +290,6 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
           height: 4,
         ),
         TextFormField(
-          
           decoration: InputDecoration(
             labelText: selectedTime?.format(context) ?? "Select a time",
           ),
