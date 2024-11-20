@@ -28,7 +28,12 @@ class _HabitsScreenState extends State<HabitsScreen> {
 
   late final ListenableImmutableList<Habit> habits;
   late DateTime selectedDate = _currentDay();
-  double _sliderValue = 0;
+  double _currentSliderValue = 0;
+
+  // TODO: Create a function that shall evaluate an input string based on length and repetition of words / letters.
+  int _evaluateReflection() {
+    return 0;
+  }
 
   @override
   void initState() {
@@ -140,6 +145,16 @@ class _HabitsScreenState extends State<HabitsScreen> {
           ),
           title: Text(habit.name),
           subtitle: habit.goal.nullableMap((String g) => Text(g)),
+          trailing: Text(
+            habit.time != null
+                ? TimeOfDay.now().hour * 60 + TimeOfDay.now().minute <
+                        habit.time!.hour * 60 + habit.time!.minute
+                    ? TimeOfDay.now().hour - habit.time!.hour == 0
+                        ? "in ${habit.time!.minute - TimeOfDay.now().minute} min."
+                        : "in ${habit.time!.hour - TimeOfDay.now().hour} hr. ${habit.time!.minute - TimeOfDay.now().minute} min."
+                    : "No"
+                : "in ${24 - TimeOfDay.now().hour}hr.",
+          ),
           onTap: () async {
             await _showModal(habit);
           },
@@ -257,74 +272,87 @@ class _HabitsScreenState extends State<HabitsScreen> {
     await showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(
-                  habit.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 28,
-                  ),
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    Text(
+                      habit.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 28,
+                      ),
+                    ),
+                    SizedBox(height: 16.0),
+                    if (habit.description case String description) ...<Widget>[
+                      Text(
+                        "Description",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 4.0),
+                      Text(description),
+                      SizedBox(height: 16.0),
+                    ],
+                    if (habit.goal case String goal) ...<Widget>[
+                      Text(
+                        "Goal",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 4.0),
+                      Text(goal),
+                      SizedBox(height: 16.0),
+                    ],
+                    Text(
+                      "Confidence of Completion",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 4.0),
+                    Slider(
+                      label: _currentSliderValue.round().toString(),
+                      value: _currentSliderValue,
+                      max: 5,
+                      divisions: 5,
+                      onChanged: (double value) {
+                        setState(() {
+                          _currentSliderValue = value;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 16.0),
+                    Text("Any valueable insights or comments?"),
+                    SizedBox(
+                      height: 4.0,
+                    ),
+                    TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    )
+                  ],
                 ),
-                SizedBox(height: 16.0),
-                if (habit.description case String description) ...<Widget>[
-                  Text(
-                    "Description",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 4.0),
-                  Text(description),
-                  SizedBox(height: 16.0),
-                ],
-                if (habit.goal case String goal) ...<Widget>[
-                  Text(
-                    "Goal",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 4.0),
-                  Text(goal),
-                  SizedBox(height: 16.0),
-                ],
-                Text(
-                  "Confidence of ",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 4.0),
-                Slider(
-                  value: _sliderValue,
-                  max: 100,
-                  divisions: 5,
-                  onChanged: (double value) {
-                    setState(() {
-                      _sliderValue = value;
-                    });
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    if (context.mounted) {
+                      context.pop();
+                    }
                   },
+                  child: Text("Cancel"),
                 ),
-                SizedBox(height: 16.0),
-                Text("Any valueable insights or comments?"),
-                SizedBox(
-                  height: 4.0,
-                ),
-                TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
+                TextButton(
+                  onPressed: () {
+                    if (context.mounted) {
+                      context.pop();
+                    }
+                  },
+                  child: Text("Submit"),
                 )
               ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {},
-              child: Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: Text("Submit"),
-            )
-          ],
+            );
+          },
         );
       },
     );
