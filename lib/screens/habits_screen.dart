@@ -1,8 +1,10 @@
 import "dart:async";
+import "dart:collection";
 
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/constants/habit_colors.dart";
+import "package:happy_habit_at/constants/habit_icons.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habit.dart";
@@ -26,6 +28,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
 
   late final ListenableImmutableList<Habit> habits;
   late DateTime selectedDate = _currentDay();
+  double _sliderValue = 0;
 
   @override
   void initState() {
@@ -133,6 +136,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
         return ListTile(
           leading: CircleAvatar(
             backgroundColor: habit.colorIndex.nullableMap((int i) => habitColors[i].background),
+            child: Icon(habitIcons[habit.icon!]),
           ),
           title: Text(habit.name),
           subtitle: habit.goal.nullableMap((String g) => Text(g)),
@@ -227,7 +231,12 @@ class _HabitsScreenState extends State<HabitsScreen> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () async {
+                          if (context.mounted) {
+                            context.pop();
+                          }
+                          await _showCompletionDialog(habit);
+                        },
                         child: Text(
                           "Complete Habit",
                           style: TextStyle(fontSize: 16),
@@ -239,6 +248,83 @@ class _HabitsScreenState extends State<HabitsScreen> {
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showCompletionDialog(Habit habit) async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  habit.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 28,
+                  ),
+                ),
+                SizedBox(height: 16.0),
+                if (habit.description case String description) ...<Widget>[
+                  Text(
+                    "Description",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4.0),
+                  Text(description),
+                  SizedBox(height: 16.0),
+                ],
+                if (habit.goal case String goal) ...<Widget>[
+                  Text(
+                    "Goal",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4.0),
+                  Text(goal),
+                  SizedBox(height: 16.0),
+                ],
+                Text(
+                  "Confidence of ",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4.0),
+                Slider(
+                  value: _sliderValue,
+                  max: 100,
+                  divisions: 5,
+                  onChanged: (double value) {
+                    setState(() {
+                      _sliderValue = value;
+                    });
+                  },
+                ),
+                SizedBox(height: 16.0),
+                Text("Any valueable insights or comments?"),
+                SizedBox(
+                  height: 4.0,
+                ),
+                TextField(
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {},
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: Text("Submit"),
+            )
+          ],
         );
       },
     );

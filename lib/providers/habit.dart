@@ -32,7 +32,7 @@ class Habit extends ChangeNotifier {
       "habit_name": String habitName,
       "habit_description": String? habitDescription,
       "habit_goal": String? habitGoal,
-      "habit_icon": int habitIcon,
+      "habit_icon": int? habitIcon,
       "habit_days_of_the_week": int daysOfTheWeek,
       "habit_hour": int? hour,
       "habit_minute": int? minute,
@@ -55,7 +55,7 @@ class Habit extends ChangeNotifier {
   String name;
   String? description;
   String? goal;
-  int icon;
+  int? icon;
   List<DaysOfTheWeek> _daysOfTheWeek;
   ImmutableList<DaysOfTheWeek> get daysOfTheWeek => ImmutableList<DaysOfTheWeek>(_daysOfTheWeek);
   TimeOfDay? time;
@@ -65,7 +65,7 @@ class Habit extends ChangeNotifier {
     required String name,
     required String? description,
     required String? goal,
-    required int icon,
+    required int? icon,
     required List<DaysOfTheWeek> daysOfTheWeek,
     required TimeOfDay? time,
     required int? colorIndex,

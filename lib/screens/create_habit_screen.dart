@@ -72,7 +72,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
         name: habitNameController.text,
         description: habitDescriptionController.text.emptyAsNull,
         goal: habitGoalController.text.emptyAsNull,
-        icon: 0,
+        icon: iconIndex,
         daysOfTheWeek: isDaySelected.indexed
             .where(((int, bool) p) => p.$2) // Filter out the selected days
             .map(((int, bool) p) => DaysOfTheWeek.values[p.$1]) // Get the corresponding day

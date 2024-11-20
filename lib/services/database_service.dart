@@ -143,7 +143,7 @@ class DatabaseService {
     required String name,
     required String? description,
     required String? goal,
-    required int icon,
+    required int? icon,
     required int daysOfTheWeek,
     required TimeOfDay? time,
     required int? colorIndex,
