@@ -6,14 +6,14 @@ import "package:happy_habit_at/constants/pet_icons.dart";
 typedef Vector = (double, double);
 typedef IntVector = (int, int);
 
-class GamePanel extends StatefulWidget {
-  const GamePanel({super.key});
+class GameDisplay extends StatefulWidget {
+  const GameDisplay({super.key});
 
   @override
-  State<GamePanel> createState() => _GamePanelState();
+  State<GameDisplay> createState() => _GameDisplayState();
 }
 
-class _GamePanelState extends State<GamePanel> {
+class _GameDisplayState extends State<GameDisplay> {
   /// This is under the assumption that the tile is a square.
   static const double tileSize = 36.0;
 
@@ -23,9 +23,6 @@ class _GamePanelState extends State<GamePanel> {
   static const int tileCount = 7;
 
   late final FocusNode focusNode = FocusNode();
-  late final List<ValueNotifier<Offset>> floorOffsets = <ValueNotifier<Offset>>[
-    for ((int, int) _ in tileCount.times(tileCount)) ValueNotifier<Offset>(Offset.zero),
-  ];
 
   Offset petOffset = Offset(0, 0);
   IntVector petPosition = (0, 0);
@@ -67,22 +64,11 @@ class _GamePanelState extends State<GamePanel> {
           Positioned(
             top: ny,
             left: nx,
-            child: ListenableBuilder(
-              listenable: floorOffsets[y * tileCount + x],
-              builder: (BuildContext context, Widget? child) {
-                return AnimatedSlide(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeInOut,
-                  offset: floorOffsets[y * tileCount + x].value,
-                  child: child,
-                );
-              },
-              child: Transform.scale(
-                scale: 1.62,
-                child: Image.asset(
-                  "assets/images/tiles/grass_dirt/grass_dirt_1.png",
-                  width: rotatedTileWidth,
-                ),
+            child: Transform.scale(
+              scale: 1.62,
+              child: Image.asset(
+                "assets/images/tiles/grass_dirt/grass_dirt_1.png",
+                width: rotatedTileWidth,
               ),
             ),
           ),
@@ -107,54 +93,16 @@ class _GamePanelState extends State<GamePanel> {
       left: x,
       child: Transform.translate(
         offset: isFlipped ? Offset(dxF, dyF) : Offset(dx, dy),
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onDoubleTap: () {
-            setState(() {
-              isPetFacingLeft ^= true;
-            });
-          },
-          onPanUpdate: (DragUpdateDetails details) {
-            petOffset += details.delta;
-
-            IntVector tilePosition = petPosition;
-            tilePosition = _floorTilePositionFromRelativeOffset(petOffset.pair);
-
-            /// If this current delta results in the pet exceeding the tile bounds,
-            ///   disregard this delta.
-            if (tilePosition.exceeds((0, 0), (tileCount, tileCount))) {
-              petOffset -= details.delta;
-              return;
-            }
-
-            tilePosition = tilePosition.clamp((0, 0), (tileCount - 1, tileCount - 1));
-            if (tilePosition != petPosition) {
-              setState(() {
-                petPosition = tilePosition;
-              });
-            }
-          },
-          child: Transform.flip(
-            flipX: isFlipped,
-            child: Image(
-              image: AssetImage(path),
-              width: width,
-              height: height,
-            ),
+        child: Transform.flip(
+          flipX: isFlipped,
+          child: Image(
+            image: AssetImage(path),
+            width: width,
+            height: height,
           ),
         ),
       ),
     );
-  }
-
-  IntVector _floorTilePositionFromRelativeOffset(Vector relativeOffset) {
-    var (double x, double y) = relativeOffset;
-    var (double nx, double ny) = (
-      x / rotatedTileWidth + y / rotatedTileHeight,
-      -x / rotatedTileWidth + y / rotatedTileHeight,
-    );
-
-    return (nx.floor(), ny.floor());
   }
 
   Vector _screenPositionFromFloorTile(IntVector position, BoxConstraints constraints) {
@@ -181,21 +129,6 @@ extension on int {
   }
 }
 
-extension on Offset {
-  Vector get pair => (dx, dy);
-}
-
 extension on IntVector {
-  IntVector clamp(IntVector min, IntVector max) {
-    return (
-      math.max(min.$1, math.min(max.$1, this.$1)),
-      math.max(min.$2, math.min(max.$2, this.$2)),
-    );
-  }
-
-  bool exceeds(IntVector min, IntVector max) {
-    return this.$1 < min.$1 || this.$1 >= max.$1 || this.$2 < min.$2 || this.$2 >= max.$2;
-  }
-
   IntVector operator +(IntVector other) => (this.$1 + other.$1, this.$2 + other.$2);
 }

@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:happy_habit_at/screens/habitat_screen.dart";
 
 // CREATE TABLE IF NOT EXISTS room (
 //   room_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,6 +44,6 @@ class Room extends ChangeNotifier {
   int petHunger;
   int petHappiness;
   int petEnergy;
-  IntVector petPosition;
+  (int, int) petPosition;
   int petOrientation;
 }

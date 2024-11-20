@@ -4,9 +4,11 @@ import "dart:io";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/constants/habit_colors.dart";
+import "package:happy_habit_at/constants/habit_icons.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habit.dart";
+import "package:happy_habit_at/widgets/icon_dialog.dart";
 import "package:provider/provider.dart";
 import "package:scroll_animator/scroll_animator.dart";
 
@@ -42,6 +44,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
 
   late TimeOfDay? selectedTime;
   late int? colorIndex;
+  late int iconIndex;
   late final List<bool> isDaySelected;
 
   @override
@@ -57,6 +60,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
 
     selectedTime = habit.time;
     colorIndex = habit.colorIndex;
+    iconIndex = habit.icon;
     isDaySelected = <bool>[
       for (int i = 0; i < 7; ++i) //
         habit.daysOfTheWeek.contains(DaysOfTheWeek.values[i]),
@@ -192,12 +196,23 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
               padding: Platform.isAndroid ? null : EdgeInsets.only(top: 7.0),
               child: IconButton(
                 icon: Icon(
-                  Icons.emoji_emotions,
+                  habitIcons[iconIndex],
                   color: colorIndex != null ? habitColors[colorIndex!].foreground : Colors.black54,
                 ),
-                onPressed: () {
-                  print("Hi");
-                },
+                onPressed: () => unawaited(
+                  showIconDialog(
+                    context: context,
+                    color: colorIndex != null //
+                        ? habitColors[colorIndex!].foreground
+                        : Colors.black54,
+                    onSelect: (BuildContext context, int i) {
+                      setState(() {
+                        iconIndex = i;
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
               ),
             ),
             Expanded(
@@ -422,7 +437,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
         name: habitNameController.text,
         description: habitDescriptionController.text.emptyAsNull,
         goal: habitGoalController.text.emptyAsNull,
-        icon: 0,
+        icon: iconIndex,
         daysOfTheWeek: DaysOfTheWeek.bitValuesFromBooleans(isDaySelected),
         time: selectedTime,
         colorIndex: colorIndex,

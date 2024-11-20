@@ -1,8 +1,6 @@
-
-
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
-import "package:happy_habit_at/screens/habitat_screen.dart";
+import "package:happy_habit_at/widgets/movable_game_panel.dart";
 import "package:intl/intl.dart";
 
 class ModifyHabitatScreen extends StatefulWidget {
@@ -34,7 +32,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
                       automaticallyImplyLeading: false,
                     ),
                     Expanded(
-                      child: GamePanel(),
+                      child: MovableGamePanel(),
                     ),
                   ],
                 ),
@@ -63,22 +61,16 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
               Positioned(
                 bottom: 12.0,
                 right: 12.0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    FloatingActionButton(
-                      heroTag: "enterCustomizationButton",
-                      backgroundColor: Colors.blue.shade200,
-                      onPressed: () {
-                        print("Pressed!");
-                        context.go("/habitat");
-                      },
-                      child: Icon(
-                        Icons.build,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+                child: FloatingActionButton(
+                  heroTag: "enterCustomizationButton",
+                  backgroundColor: Colors.blue.shade200,
+                  onPressed: () {
+                    context.go("/habitat");
+                  },
+                  child: Icon(
+                    Icons.build,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
@@ -89,7 +81,6 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
     );
   }
 }
-
 
 class InventoryPanel extends StatelessWidget {
   const InventoryPanel({super.key});

@@ -4,7 +4,7 @@ import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/global/shared_preferences.dart";
 import "package:happy_habit_at/providers/habit.dart";
 import "package:happy_habit_at/providers/room.dart";
-import "package:happy_habit_at/providers/services/database_service.dart";
+import "package:happy_habit_at/services/database_service.dart";
 import "package:happy_habit_at/utils/data_types/listenable_list.dart";
 import "package:happy_habit_at/utils/extension_types/immutable_listenable_list.dart";
 
@@ -24,8 +24,7 @@ class AppState {
   final ListenableList<Room> _rooms = ListenableList<Room>();
   ImmutableListenableList<Room> get rooms => _rooms.immutable;
 
-  Room? _activeRoom;
-  Room get activeRoom => _activeRoom!;
+  late Room activeRoom;
 
   Future<void> init() async {
     if (_hasInitialized) {
@@ -43,8 +42,13 @@ class AppState {
       _rooms.add(Room.fromMap(roomMap));
     }
 
-    // TODO(water-mizuu): Finish this
-    int? lastRoom = sharedPreferences.getInt("last_open_room");
+    int? lastRoomId = sharedPreferences.getInt("last_open_room");
+    if (lastRoomId == null) {
+      activeRoom = _rooms.first;
+      await sharedPreferences.setInt("last_open_room", activeRoom.id);
+    } else {
+      activeRoom = _rooms.singleWhere((Room room) => room.id == lastRoomId);
+    }
 
     _hasInitialized = true;
   }

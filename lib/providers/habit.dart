@@ -31,7 +31,7 @@ class Habit extends ChangeNotifier {
         name = map["habit_name"] as String,
         description = map["habit_description"] as String?,
         goal = map["habit_goal"] as String?,
-        icon = map["habit_icon"] as int?,
+        icon = map["habit_icon"] as int,
         _daysOfTheWeek = DaysOfTheWeek.fromBitValues(map["habit_days_of_the_week"] as int),
         time = map["habit_hour"] == null && map["habit_minute"] == null
             ? null
@@ -45,7 +45,7 @@ class Habit extends ChangeNotifier {
   String name;
   String? description;
   String? goal;
-  int? icon;
+  int icon;
 
   List<DaysOfTheWeek> _daysOfTheWeek;
   ImmutableList<DaysOfTheWeek> get daysOfTheWeek => ImmutableList<DaysOfTheWeek>(_daysOfTheWeek);
@@ -57,7 +57,7 @@ class Habit extends ChangeNotifier {
     required String name,
     required String? description,
     required String? goal,
-    required int? icon,
+    required int icon,
     required List<DaysOfTheWeek> daysOfTheWeek,
     required TimeOfDay? time,
     required int? colorIndex,
