@@ -24,7 +24,8 @@ class AppState {
   final ListenableList<Room> _rooms = ListenableList<Room>();
   ImmutableListenableList<Room> get rooms => _rooms.immutable;
 
-  late Room activeRoom;
+  late final ValueNotifier<int> currency = ValueNotifier<int>(0);
+  late final ValueNotifier<Room> activeRoom;
 
   Future<void> init() async {
     if (_hasInitialized) {
@@ -42,12 +43,25 @@ class AppState {
       _rooms.add(Room.fromMap(roomMap));
     }
 
+    /// Initialize the last active room.
     int? lastRoomId = sharedPreferences.getInt("last_open_room");
     if (lastRoomId == null) {
-      activeRoom = _rooms.first;
-      await sharedPreferences.setInt("last_open_room", activeRoom.id);
+      /// Initialize new room.
+      activeRoom = ValueNotifier<Room>(_rooms.first);
+      await sharedPreferences.setInt("last_open_room", activeRoom.value.id);
     } else {
-      activeRoom = _rooms.singleWhere((Room room) => room.id == lastRoomId);
+      /// Reload last room.
+      activeRoom = ValueNotifier<Room>(_rooms.singleWhere((Room room) => room.id == lastRoomId));
+    }
+
+    /// Initialize the currency.
+    int? currency = sharedPreferences.getInt("currency");
+    if (currency == null) {
+      /// Initialize
+      this.currency.value = 0;
+      await sharedPreferences.setInt("currency", 0);
+    } else {
+      this.currency.value = currency;
     }
 
     _hasInitialized = true;
@@ -126,6 +140,22 @@ class AppState {
       daysOfTheWeek: daysOfTheWeek,
       time: time,
       colorIndex: colorIndex,
+    );
+  }
+
+  /// In committing the habitat changes, it will override the data of [activeRoom] in the database.
+  Future<void> commitRoomChanges() async {
+    await _database.updateRoom(
+      id: activeRoom.value.id,
+      name: activeRoom.value.name,
+      size: activeRoom.value.size,
+      tileId: activeRoom.value.tileId,
+      petId: activeRoom.value.petId,
+      petHunger: activeRoom.value.petHunger,
+      petHappiness: activeRoom.value.petHappiness,
+      petEnergy: activeRoom.value.petEnergy,
+      petPosition: activeRoom.value.petPosition,
+      petIsFlipped: activeRoom.value.petIsFlipped,
     );
   }
 

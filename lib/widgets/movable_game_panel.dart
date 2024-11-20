@@ -2,6 +2,10 @@ import "dart:math" as math;
 
 import "package:flutter/material.dart";
 import "package:happy_habit_at/constants/pet_icons.dart";
+import "package:happy_habit_at/constants/tile_icons.dart";
+import "package:happy_habit_at/providers/app_state.dart";
+import "package:happy_habit_at/providers/room.dart";
+import "package:provider/provider.dart";
 
 typedef Vector = (double, double);
 typedef IntVector = (int, int);
@@ -20,29 +24,51 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
   static const double rotatedTileWidth = tileSize * math.sqrt2;
   static const double rotatedTileHeight = rotatedTileWidth / 2.0;
 
-  static const int tileCount = 7;
+  late final AppState appState;
+  late Room activeRoom;
 
-  late final FocusNode focusNode = FocusNode();
-  late final List<ValueNotifier<Offset>> floorOffsets = <ValueNotifier<Offset>>[
-    for ((int, int) _ in tileCount.times(tileCount)) ValueNotifier<Offset>(Offset.zero),
-  ];
+  bool hasInitialized = false;
 
-  Offset petOffset = Offset(0, 0);
-  IntVector petPosition = (0, 0);
-  bool isPetFacingLeft = false;
+  /// This is the screen offset of the pet.
+  Offset temporaryPetOffset = Offset.zero;
+  IntVector temporaryPetTileOffset = (0, 0);
+
+  /// This is the position of the pet in the tile grid.
+  IntVector get petPosition => activeRoom.petPosition;
+  set petPosition(IntVector value) {
+    activeRoom.petPosition = value;
+  }
+
+  bool get petIsFlipped => activeRoom.petIsFlipped;
+  set petIsFlipped(bool value) {
+    activeRoom.petIsFlipped = value;
+  }
 
   @override
   void initState() {
     super.initState();
-
-    focusNode.requestFocus();
   }
 
   @override
   void dispose() {
-    focusNode.dispose();
+    activeRoom.removeListener(_listener);
+    appState.activeRoom.removeListener(_changeRoom);
 
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!hasInitialized) {
+      appState = context.read<AppState>();
+      activeRoom = appState.activeRoom.value;
+      appState.activeRoom.addListener(_changeRoom);
+      appState.activeRoom.value.addListener(_listener);
+
+      hasInitialized = true;
+    }
   }
 
   @override
@@ -53,7 +79,7 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
         builder: (BuildContext context, BoxConstraints constraints) => Stack(
           children: <Widget>[
             ..._floorTileWidgets(constraints),
-            _petWidget(constraints),
+            if (_petWidget(constraints) case Widget widget) widget,
           ],
         ),
       ),
@@ -61,35 +87,31 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
   }
 
   List<Widget> _floorTileWidgets(BoxConstraints constraints) {
+    Room room = appState.activeRoom.value;
+
     return <Widget>[
-      for (var (int y, int x) in tileCount.times(tileCount))
+      for (var (int y, int x) in room.size.times(room.size))
         if (_screenPositionFromFloorTile((x, y), constraints) case (double nx, double ny))
           Positioned(
             top: ny,
             left: nx,
-            child: ListenableBuilder(
-              listenable: floorOffsets[y * tileCount + x],
-              builder: (BuildContext context, Widget? child) {
-                return AnimatedSlide(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeInOut,
-                  offset: floorOffsets[y * tileCount + x].value,
-                  child: child,
-                );
-              },
-              child: Transform.scale(
-                scale: 1.62,
-                child: Image.asset(
-                  "assets/images/tiles/grass_dirt/grass_dirt_1.png",
-                  width: rotatedTileWidth,
-                ),
+            child: Transform.scale(
+              scale: 1.62,
+              child: Image.asset(
+                tileIcons[room.tileId]!.path,
+                width: rotatedTileWidth,
               ),
             ),
           ),
     ];
   }
 
-  Widget _petWidget(BoxConstraints constraints) {
+  Widget? _petWidget(BoxConstraints constraints) {
+    PetIcon? petIcon = petIcons[appState.activeRoom.value.petId];
+    if (petIcon == null) {
+      return null;
+    }
+
     var PetIcon(
       :String path,
       dimensions: (double width, double height),
@@ -97,43 +119,49 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
       flippedOffset: (double dxF, double dyF),
       baseOffset: IntVector offset,
       :bool imageIsFacingLeft,
-    ) = petIcons["dog"]!;
+    ) = petIcon;
 
-    var (double x, double y) = _screenPositionFromFloorTile(petPosition + offset, constraints);
-    bool isFlipped = imageIsFacingLeft ^ isPetFacingLeft;
+    var (double x, double y) = _screenPositionFromFloorTile(
+      petPosition + offset + temporaryPetTileOffset,
+      constraints,
+    );
+    bool isFlipped = imageIsFacingLeft ^ petIsFlipped;
 
     return Positioned(
       top: y,
       left: x,
-      child: Transform.translate(
-        offset: isFlipped ? Offset(dxF, dyF) : Offset(dx, dy),
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onDoubleTap: () {
-            setState(() {
-              isPetFacingLeft ^= true;
-            });
-          },
-          onPanUpdate: (DragUpdateDetails details) {
-            petOffset += details.delta;
+      child: GestureDetector(
+        onDoubleTap: () {
+          setState(() {
+            petIsFlipped ^= true;
+          });
+        },
+        onPanEnd: (DragEndDetails details) {
+          setState(() {
+            /// Commit the temporary offset.
+            petPosition += temporaryPetTileOffset;
 
-            IntVector tilePosition = petPosition;
-            tilePosition = _floorTilePositionFromRelativeOffset(petOffset.pair);
+            /// Reset the temporary offsets.
+            temporaryPetOffset = Offset.zero;
+            temporaryPetTileOffset = (0, 0);
+          });
+        },
+        onPanUpdate: (DragUpdateDetails details) {
+          temporaryPetOffset += details.delta;
 
-            /// If this current delta results in the pet exceeding the tile bounds,
-            ///   disregard this delta.
-            if (tilePosition.exceeds((0, 0), (tileCount, tileCount))) {
-              petOffset -= details.delta;
-              return;
-            }
+          /// We get the current screen offset of the pet
+          ///   (Where it is currently on the screen).
+          IntVector tileAdjustment = _floorTilePositionFromRelativeOffset(temporaryPetOffset.pair);
+          if ((tileAdjustment + petPosition).exceeds((0, 0), (activeRoom.size, activeRoom.size))) {
+            return;
+          }
 
-            tilePosition = tilePosition.clamp((0, 0), (tileCount - 1, tileCount - 1));
-            if (tilePosition != petPosition) {
-              setState(() {
-                petPosition = tilePosition;
-              });
-            }
-          },
+          setState(() {
+            temporaryPetTileOffset = tileAdjustment;
+          });
+        },
+        child: Transform.translate(
+          offset: isFlipped ? Offset(dxF, dyF) : Offset(dx, dy),
           child: Transform.flip(
             flipX: isFlipped,
             child: Image(
@@ -147,8 +175,9 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
     );
   }
 
-  IntVector _floorTilePositionFromRelativeOffset(Vector relativeOffset) {
-    var (double x, double y) = relativeOffset;
+  IntVector _floorTilePositionFromRelativeOffset(Vector offset) {
+    var (double x, double y) = offset;
+
     var (double nx, double ny) = (
       x / rotatedTileWidth + y / rotatedTileHeight,
       -x / rotatedTileWidth + y / rotatedTileHeight,
@@ -168,6 +197,19 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
     );
 
     return (nx, ny);
+  }
+
+  /// This should be attached to the active room of type [Room].
+  void _changeRoom() {
+    if (appState.activeRoom.value != activeRoom) {
+      activeRoom.removeListener(_listener);
+      activeRoom = appState.activeRoom.value..addListener(_listener);
+    }
+  }
+
+  /// This should be attached to the [AppState]'s [AppState.activeRoom] [ValueNotifier].
+  void _listener() {
+    setState(() {});
   }
 }
 
@@ -198,4 +240,10 @@ extension on IntVector {
   }
 
   IntVector operator +(IntVector other) => (this.$1 + other.$1, this.$2 + other.$2);
+}
+
+extension on Vector {
+  Offset get offset => Offset($1, $2);
+
+  Vector operator +(Vector other) => (this.$1 + other.$1, this.$2 + other.$2);
 }

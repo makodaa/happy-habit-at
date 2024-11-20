@@ -1,7 +1,9 @@
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/widgets/game_display.dart";
 import "package:intl/intl.dart";
+import "package:provider/provider.dart";
 
 class HabitatScreen extends StatefulWidget {
   const HabitatScreen({super.key});
@@ -11,8 +13,21 @@ class HabitatScreen extends StatefulWidget {
 }
 
 class _HabitatScreenState extends State<HabitatScreen> {
-  late int currency = 1434;
-  late String habitatName = "Keane's Habitat";
+  late final AppState appState;
+
+  bool initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!initialized) {
+      appState = context.read<AppState>();
+
+      initialized = true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -25,7 +40,7 @@ class _HabitatScreenState extends State<HabitatScreen> {
               AppBar(
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.transparent,
-                title: const Text("Habitat Page"),
+                title: Center(child: const Text("Habitat Page")),
               ),
               Expanded(
                 child: GameDisplay(),
@@ -40,7 +55,7 @@ class _HabitatScreenState extends State<HabitatScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
               Text(
-                NumberFormat("#,##0", "en_US").format(currency),
+                NumberFormat("#,##0", "en_US").format(appState.currency.value),
                 style: TextStyle(color: Colors.white),
               ),
               Icon(

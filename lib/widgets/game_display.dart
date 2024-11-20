@@ -2,6 +2,10 @@ import "dart:math" as math;
 
 import "package:flutter/material.dart";
 import "package:happy_habit_at/constants/pet_icons.dart";
+import "package:happy_habit_at/constants/tile_icons.dart";
+import "package:happy_habit_at/providers/app_state.dart";
+import "package:happy_habit_at/providers/room.dart";
+import "package:provider/provider.dart";
 
 typedef Vector = (double, double);
 typedef IntVector = (int, int);
@@ -20,24 +24,40 @@ class _GameDisplayState extends State<GameDisplay> {
   static const double rotatedTileWidth = tileSize * math.sqrt2;
   static const double rotatedTileHeight = rotatedTileWidth / 2.0;
 
-  static const int tileCount = 7;
+  late final AppState appState;
 
-  late final FocusNode focusNode = FocusNode();
+  bool hasInitialized = false;
+  late Room activeRoom;
 
+  /// This is the screen offset of the pet.
   Offset petOffset = Offset(0, 0);
-  IntVector petPosition = (0, 0);
-  bool isPetFacingLeft = false;
+
+  IntVector get petPosition => activeRoom.petPosition;
+  bool get petIsFlipped => activeRoom.petIsFlipped;
 
   @override
   void initState() {
     super.initState();
+  }
 
-    focusNode.requestFocus();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!hasInitialized) {
+      appState = context.read<AppState>();
+      activeRoom = appState.activeRoom.value;
+      appState.activeRoom.addListener(_changeRoom);
+      appState.activeRoom.value.addListener(_listener);
+
+      hasInitialized = true;
+    }
   }
 
   @override
   void dispose() {
-    focusNode.dispose();
+    activeRoom.removeListener(_listener);
+    appState.activeRoom.removeListener(_changeRoom);
 
     super.dispose();
   }
@@ -50,7 +70,7 @@ class _GameDisplayState extends State<GameDisplay> {
         builder: (BuildContext context, BoxConstraints constraints) => Stack(
           children: <Widget>[
             ..._floorTileWidgets(constraints),
-            _petWidget(constraints),
+            if (_petWidget(constraints) case Widget widget) widget,
           ],
         ),
       ),
@@ -58,6 +78,9 @@ class _GameDisplayState extends State<GameDisplay> {
   }
 
   List<Widget> _floorTileWidgets(BoxConstraints constraints) {
+    Room room = appState.activeRoom.value;
+    int tileCount = room.size;
+
     return <Widget>[
       for (var (int y, int x) in tileCount.times(tileCount))
         if (_screenPositionFromFloorTile((x, y), constraints) case (double nx, double ny))
@@ -67,7 +90,7 @@ class _GameDisplayState extends State<GameDisplay> {
             child: Transform.scale(
               scale: 1.62,
               child: Image.asset(
-                "assets/images/tiles/grass_dirt/grass_dirt_1.png",
+                tileIcons[room.tileId]!.path,
                 width: rotatedTileWidth,
               ),
             ),
@@ -75,7 +98,12 @@ class _GameDisplayState extends State<GameDisplay> {
     ];
   }
 
-  Widget _petWidget(BoxConstraints constraints) {
+  Widget? _petWidget(BoxConstraints constraints) {
+    PetIcon? petIcon = petIcons[appState.activeRoom.value.petId];
+    if (petIcon == null) {
+      return null;
+    }
+
     var PetIcon(
       :String path,
       dimensions: (double width, double height),
@@ -83,10 +111,9 @@ class _GameDisplayState extends State<GameDisplay> {
       flippedOffset: (double dxF, double dyF),
       baseOffset: IntVector offset,
       :bool imageIsFacingLeft,
-    ) = petIcons["dog"]!;
-
+    ) = petIcon;
     var (double x, double y) = _screenPositionFromFloorTile(petPosition + offset, constraints);
-    bool isFlipped = imageIsFacingLeft ^ isPetFacingLeft;
+    bool isFlipped = imageIsFacingLeft ^ petIsFlipped;
 
     return Positioned(
       top: y,
@@ -116,6 +143,19 @@ class _GameDisplayState extends State<GameDisplay> {
     );
 
     return (nx, ny);
+  }
+
+  void _changeRoom() {
+    if (appState.activeRoom.value != activeRoom) {
+      activeRoom.removeListener(_listener);
+      activeRoom = appState.activeRoom.value..addListener(_listener);
+    }
+  }
+
+  void _listener() {
+    if (context case StatefulElement element) {
+      element.markNeedsBuild();
+    }
   }
 }
 

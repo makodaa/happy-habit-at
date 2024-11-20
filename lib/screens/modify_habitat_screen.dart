@@ -1,7 +1,11 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
+import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/widgets/movable_game_panel.dart";
 import "package:intl/intl.dart";
+import "package:provider/provider.dart";
 
 class ModifyHabitatScreen extends StatefulWidget {
   const ModifyHabitatScreen({super.key});
@@ -11,8 +15,19 @@ class ModifyHabitatScreen extends StatefulWidget {
 }
 
 class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
-  late int currency = 1434;
-  late String habitatName = "Keane's Habitat";
+  bool hasInitialized = false;
+  late final AppState appState;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!hasInitialized) {
+      appState = context.read<AppState>();
+      hasInitialized = true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -46,7 +61,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     Text(
-                      NumberFormat("#,##0", "en_US").format(currency),
+                      NumberFormat("#,##0", "en_US").format(appState.currency.value),
                       style: TextStyle(color: Colors.white),
                     ),
                     Icon(
@@ -65,6 +80,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
                   heroTag: "enterCustomizationButton",
                   backgroundColor: Colors.blue.shade200,
                   onPressed: () {
+                    unawaited(appState.commitRoomChanges());
                     context.go("/habitat");
                   },
                   child: Icon(

@@ -29,7 +29,7 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 7,
+        version: 9,
         onUpgrade: (Database db, int oldVersion, int newVersion) {
           /// Drop all tables.
           if (kDebugMode) {
@@ -76,7 +76,7 @@ class DatabaseService {
             pet_energy INTEGER NOT NULL,
             pet_x INTEGER NOT NULL,
             pet_y INTEGER NOT NULL,
-            pet_orientation INTEGER NOT NULL
+            pet_is_flipped INTEGER NOT NULL
           );""");
 
         /// [furniture] represents the statistics of the furnitures owned by the user.
@@ -139,8 +139,11 @@ class DatabaseService {
         /// If there are no rooms, we create a default one.
         if (await database.query("room") case []) {
           String initialPet;
-          List<Map<String, Object?>> ownedPets =
-              await database.rawQuery("SELECT pet_id FROM pet WHERE is_owned = 1");
+
+          List<Map<String, Object?>> ownedPets = await database.rawQuery(
+            "SELECT pet_id FROM pet WHERE is_owned = 1",
+          );
+
           if (ownedPets.isNotEmpty) {
             initialPet = ownedPets.first["pet_id"]! as String;
           } else {
@@ -165,7 +168,10 @@ class DatabaseService {
           }
 
           /// Ensure that we have a pet.
-          print("There are no room objects!");
+          if (kDebugMode) {
+            print("There are no rooms. Creating a default room with pet $initialPet.");
+          }
+
           await database.insert("room", <String, Object?>{
             "room_name": "Room Uno",
             "room_size": 5,
@@ -176,7 +182,7 @@ class DatabaseService {
             "pet_energy": 100,
             "pet_x": 0,
             "pet_y": 0,
-            "pet_orientation": 0,
+            "pet_is_flipped": 0,
           });
         }
 
@@ -235,25 +241,16 @@ class DatabaseService {
     return null;
   }
 
-  // CREATE TABLE IF NOT EXISTS room (
-  //   room_id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //   room_name TEXT NOT NULL,
-  //   pet_id INTEGER NOT NULL,
-  //   pet_hunger INTEGER NOT NULL,
-  //   pet_happiness INTEGER NOT NULL,
-  //   pet_energy INTEGER NOT NULL,
-  //   pet_x INTEGER NOT NULL,
-  //   pet_y INTEGER NOT NULL,
-  //   pet_orientation INTEGER NOT NULL
-  // );
   Future<int?> createRoom({
     required String name,
+    required int size,
+    required String tileId,
     required int petId,
     required int petHunger,
     required int petHappiness,
     required int petEnergy,
     required (int, int) petPosition,
-    required bool petOrientation,
+    required bool petIsFlipped,
   }) async {
     if (_database case Database database) {
       int id = await database.insert("room", <String, Object?>{
@@ -264,7 +261,7 @@ class DatabaseService {
         "pet_energy": petEnergy,
         "pet_x": petPosition.$1,
         "pet_y": petPosition.$2,
-        "pet_orientation": petOrientation ? 1 : 0,
+        "pet_is_flipped": petIsFlipped ? 1 : 0,
       });
 
       if (kDebugMode) {
@@ -337,30 +334,46 @@ class DatabaseService {
 
   // Transformations:
   //    pet_x pet_y := petPosition
-  //    pet_orientation = (int)petOrientation
+  //    pet_is_flipped = (int)petIsFlipped
   Future<int?> updateRoom({
     required int id,
     required String name,
-    required int petId,
+    required int size,
+    required String tileId,
+    required String petId,
     required int petHunger,
     required int petHappiness,
     required int petEnergy,
     required (int, int) petPosition,
-    required bool petOrientation,
+    required bool petIsFlipped,
   }) async {
     if (_database case Database database) {
       try {
         await database.update(
-          "habit",
+          "room",
           <String, Object?>{
+            // room_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            // room_name TEXT NOT NULL,
+            // room_size INTEGER NOT NULL,
+            // room_tile_id TEXT NOT NULL,
             "room_name": name,
+            "room_size": size,
+            "room_tile_id": tileId,
+
+            // pet_id INTEGER NOT NULL,
+            // pet_hunger INTEGER NOT NULL,
+            // pet_happiness INTEGER NOT NULL,
+            // pet_energy INTEGER NOT NULL,
+            // pet_x INTEGER NOT NULL,
+            // pet_y INTEGER NOT NULL,
+            // pet_is_flipped INTEGER NOT NULL
             "pet_id": petId,
             "pet_hunger": petHunger,
             "pet_happiness": petHappiness,
             "pet_energy": petEnergy,
             "pet_x": petPosition.$1,
             "pet_y": petPosition.$2,
-            "pet_orientation": petOrientation ? 1 : 0,
+            "pet_is_flipped": petIsFlipped ? 1 : 0,
           },
           where: "room_id = ?",
           whereArgs: <int>[id],
