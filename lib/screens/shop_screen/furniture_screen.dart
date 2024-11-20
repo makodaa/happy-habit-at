@@ -71,7 +71,7 @@ class _FurnitureScreenState extends State<FurnitureScreen> {
               controller: scrollController,
               child: Column(
                 children: <Widget>[
-                  for (Furniture furniture in furnitures) _furnitureTile(furniture)
+                  for (Furniture furniture in furnitures) _furnitureTile(furniture),
                 ],
               ),
             ),
