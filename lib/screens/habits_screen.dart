@@ -140,7 +140,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
         return ListTile(
           leading: CircleAvatar(
             backgroundColor: habit.colorIndex.nullableMap((int i) => habitColors[i].background),
-            child: Icon(habitIcons[habit.icon!]),
+            child: Icon(habitIcons[habit.icon]),
           ),
           title: Text(habit.name),
           subtitle: habit.goal.nullableMap((String g) => Text(g)),

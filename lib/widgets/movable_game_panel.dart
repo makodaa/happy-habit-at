@@ -228,22 +228,9 @@ extension on Offset {
 }
 
 extension on IntVector {
-  IntVector clamp(IntVector min, IntVector max) {
-    return (
-      math.max(min.$1, math.min(max.$1, this.$1)),
-      math.max(min.$2, math.min(max.$2, this.$2)),
-    );
-  }
-
   bool exceeds(IntVector min, IntVector max) {
     return this.$1 < min.$1 || this.$1 >= max.$1 || this.$2 < min.$2 || this.$2 >= max.$2;
   }
 
   IntVector operator +(IntVector other) => (this.$1 + other.$1, this.$2 + other.$2);
-}
-
-extension on Vector {
-  Offset get offset => Offset($1, $2);
-
-  Vector operator +(Vector other) => (this.$1 + other.$1, this.$2 + other.$2);
 }

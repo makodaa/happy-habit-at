@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
+import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/food.dart";
+import "package:provider/provider.dart";
 import "package:scroll_animator/scroll_animator.dart";
 
 class FoodScreen extends StatefulWidget {
@@ -10,8 +12,35 @@ class FoodScreen extends StatefulWidget {
 }
 
 class _FoodScreenState extends State<FoodScreen> {
-  late final AnimatedScrollController scrollController =
-      AnimatedScrollController(animationFactory: ChromiumImpulse());
+  late final AnimatedScrollController scrollController;
+  late final AppState appState;
+  bool hasInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    scrollController = AnimatedScrollController(animationFactory: ChromiumImpulse());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!hasInitialized) {
+      appState = context.read<AppState>();
+
+      hasInitialized = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+
+    super.dispose();
+  }
+
   List<Food> foods = <Food>[
     Food(
       foodName: "Kibble Pack",
@@ -121,7 +150,7 @@ class _FoodScreenState extends State<FoodScreen> {
                   children: <Widget>[
                     FilledButton(onPressed: () {}, child: Text("Buy for ${food.salePrice}")),
                   ],
-                )
+                ),
               ],
             ),
           ),

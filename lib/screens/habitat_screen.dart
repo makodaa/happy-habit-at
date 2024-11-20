@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/providers/app_state.dart";
+import "package:happy_habit_at/providers/room.dart";
 import "package:happy_habit_at/widgets/game_display.dart";
 import "package:intl/intl.dart";
 import "package:provider/provider.dart";
@@ -14,18 +15,30 @@ class HabitatScreen extends StatefulWidget {
 
 class _HabitatScreenState extends State<HabitatScreen> {
   late final AppState appState;
-
-  bool initialized = false;
+  late Room activeRoom;
+  bool hasInitialized = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    if (!initialized) {
+    if (!hasInitialized) {
       appState = context.read<AppState>();
+      activeRoom = appState.activeRoom.value;
 
-      initialized = true;
+      appState.activeRoom.addListener(_changeRoom);
+      appState.activeRoom.value.addListener(_listener);
+
+      hasInitialized = true;
     }
+  }
+
+  @override
+  void dispose() {
+    appState.activeRoom.removeListener(_changeRoom);
+    appState.activeRoom.value.removeListener(_listener);
+
+    super.dispose();
   }
 
   @override
@@ -33,14 +46,16 @@ class _HabitatScreenState extends State<HabitatScreen> {
     return Stack(
       children: <Widget>[
         ColoredBox(
-          color: Colors.green.shade500,
+          color: Color(0xFF41B06E),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               AppBar(
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.transparent,
-                title: Center(child: const Text("Habitat Page")),
+                title: Center(
+                  child: Text(activeRoom.name),
+                ),
               ),
               Expanded(
                 child: GameDisplay(),
@@ -54,9 +69,16 @@ class _HabitatScreenState extends State<HabitatScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
-              Text(
-                NumberFormat("#,##0", "en_US").format(appState.currency.value),
-                style: TextStyle(color: Colors.white),
+              ValueListenableBuilder<int>(
+                valueListenable: appState.currency,
+                builder: (BuildContext context, int value, Widget? child) {
+                  NumberFormat formatter = NumberFormat("#,##0", "en_US");
+
+                  return Text(
+                    formatter.format(value),
+                    style: TextStyle(color: Colors.white),
+                  );
+                },
               ),
               Icon(
                 Icons.circle,
@@ -96,5 +118,18 @@ class _HabitatScreenState extends State<HabitatScreen> {
         ),
       ],
     );
+  }
+
+  /// This should be attached to the [AppState]'s [AppState.activeRoom] [ValueNotifier].
+  void _changeRoom() {
+    if (appState.activeRoom.value != activeRoom) {
+      activeRoom.removeListener(_listener);
+      activeRoom = appState.activeRoom.value..addListener(_listener);
+    }
+  }
+
+  /// This should be attached to the active room of type [Room].
+  void _listener() {
+    setState(() {});
   }
 }

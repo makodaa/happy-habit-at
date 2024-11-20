@@ -382,7 +382,7 @@ class DatabaseService {
         if (kDebugMode) {
           print("Habit updated: $name with id $id");
           print("The current habits are: ");
-          print(await habitDebugDisplay());
+          print(await roomDebugDisplay());
         }
       } on Object catch (e) {
         print("Error updating habit: $e");
@@ -424,12 +424,4 @@ class DatabaseService {
 
   Future<String?> roomDebugDisplay() async =>
       _database?.query("room").then((List<Map<String, Object?>> o) => o.join("\n"));
-}
-
-extension<K, V> on Map<K, V> {
-  Iterable<(K, V)> get pairs sync* {
-    for (var MapEntry<K, V>(key: K k, value: V v) in entries) {
-      yield (k, v);
-    }
-  }
 }

@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
+import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/furniture.dart";
 import "package:happy_habit_at/widgets/furniture_chips.dart";
+import "package:provider/provider.dart";
 import "package:scroll_animator/scroll_animator.dart";
 
 class FurnitureScreen extends StatefulWidget {
@@ -11,8 +13,35 @@ class FurnitureScreen extends StatefulWidget {
 }
 
 class _FurnitureScreenState extends State<FurnitureScreen> {
-  late final AnimatedScrollController scrollController =
-      AnimatedScrollController(animationFactory: ChromiumImpulse());
+  late final AnimatedScrollController scrollController;
+  late final AppState appState;
+  bool hasInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    scrollController = AnimatedScrollController(animationFactory: ChromiumImpulse());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!hasInitialized) {
+      appState = context.read<AppState>();
+
+      hasInitialized = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+
+    super.dispose();
+  }
+
   List<Furniture> furnitures = <Furniture>[
     Furniture(
       furnitureName: "Ball",
@@ -186,7 +215,7 @@ class _FurnitureScreenState extends State<FurnitureScreen> {
                       FilledButton(onPressed: () {}, child: Text("Buy for ${furniture.salePrice}")),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),
