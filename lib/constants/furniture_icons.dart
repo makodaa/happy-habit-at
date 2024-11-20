@@ -12,6 +12,7 @@
 typedef FurnitureIcon = ({
   String name,
   String description,
+  String imagePath,
   int salePrice,
   int resalePrice,
   int happinessBuff,
