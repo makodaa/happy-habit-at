@@ -75,6 +75,101 @@ flutter:
     - assets/images/tiles/grass_dirt.png
     - assets/images/tiles/stone.png
     - assets/images/tiles/stone_bricks.png
+    - assets/images/furniture/blue_table.png
+    - assets/images/furniture/burgundy_table.png
+    - assets/images/furniture/round_glass_table.png
+    - assets/images/furniture/black_steel_chair.png
+    - assets/images/furniture/mocha_couch.png
+    - assets/images/furniture/mocha_office_chair.png
+    - assets/images/furniture/mocha_kitchen_chair.png
+    - assets/images/furniture/kitchen_stove.png
+    - assets/images/furniture/water_dispenser.png
+    - assets/images/furniture/melamine_bookshelf.png
+    - assets/images/furniture/kitchen_drawer.png
+    - assets/images/land/land1.png
+    - assets/images/land/land2.png
+    - assets/images/land/land3.png
+    - assets/images/land/land4.png
+    - assets/images/land/pond.png
+    - assets/images/bush/bush1.png
+    - assets/images/bush/bush1.png
+    - assets/images/bush/bush2.png
+    - assets/images/bush/bush3.png
+    - assets/images/bush/bush4.png
+    - assets/images/bush/bush5.png
+    - assets/images/bush/bush6.png
+    - assets/images/bush/bush7.png
+    - assets/images/bush/ybush1.png
+    - assets/images/bush/ybush2.png
+    - assets/images/bush/ybush3.png
+    - assets/images/bush/ybush4.png
+    - assets/images/bush/ybush5.png
+    - assets/images/bush/ybush6.png
+    - assets/images/bush/ybush7.png
+    - assets/images/rocks/rock1.png
+    - assets/images/rocks/rock2.png
+    - assets/images/rocks/rock3.png
+    - assets/images/rocks/rock4.png
+    - assets/images/extras/butterfly.png
+    - assets/images/extras/camping_chair.png
+    - assets/images/extras/cooking.png
+    - assets/images/extras/idkmb.png
+    - assets/images/extras/sign.png
+    - assets/images/extras/tent.png
+    - assets/images/trees/bigytree1.png
+    - assets/images/trees/bigytree2.png
+    - assets/images/trees/bigytree3.png
+    - assets/images/trees/bigytree4.png
+    - assets/images/trees/bigytree5.png
+    - assets/images/trees/bigytree6.png
+    - assets/images/trees/bigytree7.png
+    - assets/images/trees/bigytree8.png
+    - assets/images/trees/ntree1.png
+    - assets/images/trees/ntree2.png
+    - assets/images/trees/ntree3.png
+    - assets/images/trees/ntree4.png
+    - assets/images/trees/ntree5.png
+    - assets/images/trees/ntree6.png
+    - assets/images/trees/ntree7.png
+    - assets/images/trees/ntree8.png
+    - assets/images/trees/talltree.png
+    - assets/images/trees/tree1.png
+    - assets/images/trees/tree2.png
+    - assets/images/trees/tree3.png
+    - assets/images/trees/tree4.png
+    - assets/images/trees/tree5.png
+    - assets/images/trees/tree6.png
+    - assets/images/trees/tree7.png
+    - assets/images/trees/tree8.png
+    - assets/images/trees/tree9.png
+    - assets/images/trees/tree10.png
+    - assets/images/trees/tree11.png
+    - assets/images/trees/tree12.png
+    - assets/images/trees/ytree1.png
+    - assets/images/trees/ytree2.png
+    - assets/images/trees/ytree3.png
+    - assets/images/trees/ytree4.png
+    - assets/images/trees/ytree5.png
+    - assets/images/trees/ytree6.png
+    - assets/images/trees/ytree7.png
+    - assets/images/trees/ytree8.png
+    - assets/images/trees/ytree9.png
+    - assets/images/trees/ytree10.png
+    - assets/images/trees/ytree11.png
+    - assets/images/foods/cat_food_pack.png
+    - assets/images/foods/cup_bowl.png
+    - assets/images/foods/food_bag.png
+    - assets/images/foods/full_bowl.png
+    - assets/images/foods/pet_pack.png
+    - assets/images/foods/food_bowl.png
+    - assets/images/foods/pet_food.png
+
+
+
+
+
+
+
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

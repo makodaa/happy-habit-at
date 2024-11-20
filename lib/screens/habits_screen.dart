@@ -79,7 +79,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
   }
 
   Widget _displayedHabits() {
-    const List<(String title, (int start, int end))> partitions = <(String, (int, int))>[
+    const List<(String title, (int start, int end))> partitions =
+        <(String, (int, int))>[
       ("Morning", (0, 12)),
       ("Afternoon", (12, 18)),
       ("Evening", (18, 24)),
@@ -93,7 +94,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
           children: <Widget>[
             _horizontalCalendar(constraints),
             const SizedBox(height: 16.0),
-            if (habits.isEmpty) Center(child: Text("You have no habits for today!")),
+            if (habits.isEmpty)
+              Center(child: Text("You have no habits for today!")),
             if (habits.noTimeHabits(selectedDate) //
                 case Iterable<Habit> noTimeHabits //
                 when noTimeHabits.isNotEmpty) ...<Widget>[
@@ -133,13 +135,15 @@ class _HabitsScreenState extends State<HabitsScreen> {
       listenable: habit,
       builder: (BuildContext context, Widget? child) {
         if (habit.daysOfTheWeek.isNotEmpty &&
-            !habit.daysOfTheWeek.contains(DaysOfTheWeek.values[selectedDate.weekday % 7])) {
+            !habit.daysOfTheWeek
+                .contains(DaysOfTheWeek.values[selectedDate.weekday % 7])) {
           return const SizedBox.shrink();
         }
 
         return ListTile(
           leading: CircleAvatar(
-            backgroundColor: habit.colorIndex.nullableMap((int i) => habitColors[i].background),
+            backgroundColor: habit.colorIndex
+                .nullableMap((int i) => habitColors[i].background),
             child: Icon(habitIcons[habit.icon]),
           ),
           title: Text(habit.name),
@@ -223,7 +227,9 @@ class _HabitsScreenState extends State<HabitsScreen> {
                     children: <Widget>[
                       TextButton(
                         onPressed: () async {
-                          await context.read<AppState>().deleteHabit(habitId: habit.id);
+                          await context
+                              .read<AppState>()
+                              .deleteHabit(habitId: habit.id);
                           if (context.mounted) {
                             context.pop();
                           }
@@ -372,7 +378,8 @@ extension on ImmutableListenableList<Habit> {
     for (Habit habit in this) {
       if (habit.time != null &&
           (habit.daysOfTheWeek.isEmpty ||
-              habit.daysOfTheWeek.contains(DaysOfTheWeek.values[day.weekday % 7]))) {
+              habit.daysOfTheWeek
+                  .contains(DaysOfTheWeek.values[day.weekday % 7]))) {
         yield TimedHabit(habit);
       }
     }
@@ -382,7 +389,8 @@ extension on ImmutableListenableList<Habit> {
     for (Habit habit in this) {
       if (habit.time == null &&
           (habit.daysOfTheWeek.isEmpty ||
-              habit.daysOfTheWeek.contains(DaysOfTheWeek.values[day.weekday % 7]))) {
+              habit.daysOfTheWeek
+                  .contains(DaysOfTheWeek.values[day.weekday % 7]))) {
         yield habit;
       }
     }
