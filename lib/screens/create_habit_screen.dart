@@ -36,7 +36,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
 
   late TimeOfDay? selectedTime;
   late int? colorIndex;
-  late int? iconIndex;
+  late int iconIndex;
   late final List<bool> isDaySelected;
 
   @override
@@ -48,7 +48,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
     habitDescriptionController = TextEditingController();
     habitGoalController = TextEditingController();
 
-    iconIndex = null;
+    iconIndex = 0;
     selectedTime = null;
     colorIndex = null;
     isDaySelected = List<bool>.filled(DaysOfTheWeek.values.length, false);
@@ -174,7 +174,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
               padding: Platform.isAndroid ? null : EdgeInsets.only(top: 7.0),
               child: IconButton(
                 icon: Icon(
-                  iconIndex != null ? habitIcons[iconIndex!] : habitIcons[0],
+                  habitIcons[iconIndex],
                   color: colorIndex != null ? habitColors[colorIndex!].foreground : Colors.black54,
                 ),
                 onPressed: () async {
@@ -412,17 +412,18 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
 
   Future<void> _showIconDialog() async {
     await showDialog<void>(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Choose an Icon"),
-            content: SingleChildScrollView(
-              child: ListBody(
-                children: <Widget>[_iconList(context)],
-              ),
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Choose an Icon"),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[_iconList(context)],
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   static const SizedBox _fieldSeparator = SizedBox(height: 16.0);

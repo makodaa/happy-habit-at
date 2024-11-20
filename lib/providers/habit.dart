@@ -26,38 +26,30 @@ class Habit extends ChangeNotifier {
   }) : _daysOfTheWeek = daysOfTheWeek;
 
   // ignore: prefer_constructors_over_static_methods
-  static Habit fromMap(Map<String, dynamic> map) {
-    var {
-      "habit_id": int habitId,
-      "habit_name": String habitName,
-      "habit_description": String? habitDescription,
-      "habit_goal": String? habitGoal,
-      "habit_icon": int? habitIcon,
-      "habit_days_of_the_week": int daysOfTheWeek,
-      "habit_hour": int? hour,
-      "habit_minute": int? minute,
-      "habit_color_index": int? colorIndex,
-    } = map;
-
-    return Habit(
-      id: habitId,
-      name: habitName,
-      description: habitDescription,
-      goal: habitGoal,
-      icon: habitIcon,
-      daysOfTheWeek: DaysOfTheWeek.fromBitValues(daysOfTheWeek),
-      time: hour == null && minute == null ? null : TimeOfDay(hour: hour ?? 0, minute: minute ?? 0),
-      colorIndex: colorIndex,
-    );
-  }
+  Habit.fromMap(Map<String, dynamic> map)
+      : id = map["habit_id"] as int,
+        name = map["habit_name"] as String,
+        description = map["habit_description"] as String?,
+        goal = map["habit_goal"] as String?,
+        icon = map["habit_icon"] as int?,
+        _daysOfTheWeek = DaysOfTheWeek.fromBitValues(map["habit_days_of_the_week"] as int),
+        time = map["habit_hour"] == null && map["habit_minute"] == null
+            ? null
+            : TimeOfDay(
+                hour: map["habit_hour"] as int? ?? 0,
+                minute: map["habit_minute"] as int? ?? 0,
+              ),
+        colorIndex = map["habit_color_index"] as int?;
 
   final int id;
   String name;
   String? description;
   String? goal;
   int? icon;
+
   List<DaysOfTheWeek> _daysOfTheWeek;
   ImmutableList<DaysOfTheWeek> get daysOfTheWeek => ImmutableList<DaysOfTheWeek>(_daysOfTheWeek);
+
   TimeOfDay? time;
   int? colorIndex;
 

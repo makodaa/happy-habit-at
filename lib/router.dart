@@ -7,6 +7,7 @@ import "package:happy_habit_at/screens/habitat_screen.dart";
 import "package:happy_habit_at/screens/habits_screen.dart";
 import "package:happy_habit_at/screens/home_screen.dart";
 import "package:happy_habit_at/screens/modify_habit_screen.dart";
+import "package:happy_habit_at/screens/modify_habitat_screen.dart";
 import "package:happy_habit_at/screens/more_screen.dart";
 import "package:happy_habit_at/screens/shop_screen.dart";
 import "package:happy_habit_at/screens/shop_screen/expansion_screen.dart";
@@ -29,7 +30,7 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: "/",
-      redirect: (_, __) => "/habitat",
+      redirect: (_, __) => "/habitat/",
     ),
 
     /// This [ShellRoute] is necessary for the "root" of the navigator,
@@ -44,15 +45,32 @@ final router = GoRouter(
             navigationShell: shell,
             children: children.immutable,
           ),
-          builder: (_, __, navigationShell) => navigationShell,
+          builder: (_, __, navigationShell) => Material(child: navigationShell),
           branches: [
             StatefulShellBranch(
-              navigatorKey: navigatorKeys.habitat,
               routes: [
                 GoRoute(
                   name: "habitat",
                   path: "/habitat",
                   builder: (_, state) => const HabitatScreen(),
+                  routes: [
+                    GoRoute(
+                      parentNavigatorKey: navigatorKeys.root,
+                      path: "edit",
+                      pageBuilder: (BuildContext context, GoRouterState state) =>
+                          CustomTransitionPage(
+                        child: const ModifyHabitatScreen(),
+                        transitionsBuilder: (
+                          BuildContext context,
+                          Animation<double> animation,
+                          Animation<double> secondaryAnimation,
+                          Widget child,
+                        ) {
+                          return child;
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

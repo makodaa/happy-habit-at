@@ -4,6 +4,7 @@ import "dart:ui";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:google_fonts/google_fonts.dart";
+import "package:happy_habit_at/global/shared_preferences.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/router.dart";
 import "package:provider/provider.dart";
@@ -57,7 +58,10 @@ void main() async {
   }
 
   AppState state = AppState();
-  await state.init();
+  await Future.wait(<Future<void>>[
+    state.init(),
+    initSharedPrefences(),
+  ]);
 
   runApp(
     Provider<AppState>.value(

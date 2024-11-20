@@ -1,10 +1,12 @@
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
+import "package:happy_habit_at/global/shared_preferences.dart";
 import "package:happy_habit_at/providers/habit.dart";
-import "package:happy_habit_at/services/database_service.dart";
+import "package:happy_habit_at/providers/room.dart";
+import "package:happy_habit_at/providers/services/database_service.dart";
 import "package:happy_habit_at/utils/data_types/listenable_list.dart";
-import "package:happy_habit_at/utils/extension_types/listenable_immutable_list.dart";
+import "package:happy_habit_at/utils/extension_types/immutable_listenable_list.dart";
 
 /// Following some pattern online, this class is going to be
 ///   a holder of [ValueListenable] type objects.
@@ -17,7 +19,13 @@ class AppState {
   DatabaseService _database = DatabaseService();
 
   final ListenableList<Habit> _habits = ListenableList<Habit>();
-  ListenableImmutableList<Habit> get habits => ListenableImmutableList<Habit>(_habits);
+  ImmutableListenableList<Habit> get habits => _habits.immutable;
+
+  final ListenableList<Room> _rooms = ListenableList<Room>();
+  ImmutableListenableList<Room> get rooms => _rooms.immutable;
+
+  Room? _activeRoom;
+  Room get activeRoom => _activeRoom!;
 
   Future<void> init() async {
     if (_hasInitialized) {
@@ -31,6 +39,13 @@ class AppState {
       _habits.add(Habit.fromMap(habitMap));
     }
 
+    for (Map<String, Object?> roomMap in await _database.readRooms()) {
+      _rooms.add(Room.fromMap(roomMap));
+    }
+
+    // TODO(water-mizuu): Finish this
+    int? lastRoom = sharedPreferences.getInt("last_open_room");
+
     _hasInitialized = true;
   }
 
@@ -40,7 +55,7 @@ class AppState {
     required String name,
     required String? description,
     required String? goal,
-    required int? icon,
+    required int icon,
     required int daysOfTheWeek,
     required TimeOfDay? time,
     required int? colorIndex,
@@ -88,15 +103,15 @@ class AppState {
     required TimeOfDay? time,
     required int? colorIndex,
   }) async {
-    habitOfId(id).updateHabit(
-      name: name,
-      description: description,
-      goal: goal,
-      icon: icon,
-      daysOfTheWeek: DaysOfTheWeek.fromBitValues(daysOfTheWeek),
-      time: time,
-      colorIndex: colorIndex,
-    );
+    _habits.singleWhere((Habit habit) => habit.id == id).updateHabit(
+          name: name,
+          description: description,
+          goal: goal,
+          icon: icon,
+          daysOfTheWeek: DaysOfTheWeek.fromBitValues(daysOfTheWeek),
+          time: time,
+          colorIndex: colorIndex,
+        );
 
     await _database.updateHabit(
       id: id,

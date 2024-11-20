@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:collection";
 
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
@@ -8,7 +7,7 @@ import "package:happy_habit_at/constants/habit_icons.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habit.dart";
-import "package:happy_habit_at/utils/extension_types/listenable_immutable_list.dart";
+import "package:happy_habit_at/utils/extension_types/immutable_listenable_list.dart";
 import "package:happy_habit_at/utils/extension_types/timed_habit.dart";
 import "package:happy_habit_at/utils/extensions/monadic_nullable.dart";
 import "package:happy_habit_at/widgets/horizontal_calendar.dart";
@@ -26,7 +25,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
   late final AnimatedScrollController scrollController =
       AnimatedScrollController(animationFactory: ChromiumImpulse());
 
-  late final ListenableImmutableList<Habit> habits;
+  late final ImmutableListenableList<Habit> habits;
   late DateTime selectedDate = _currentDay();
   double _currentSliderValue = 0;
 
@@ -329,7 +328,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -349,7 +348,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                     }
                   },
                   child: Text("Submit"),
-                )
+                ),
               ],
             );
           },
@@ -368,7 +367,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
       );
 }
 
-extension on ListenableImmutableList<Habit> {
+extension on ImmutableListenableList<Habit> {
   Iterable<TimedHabit> timedHabits(DateTime day) sync* {
     for (Habit habit in this) {
       if (habit.time != null &&
