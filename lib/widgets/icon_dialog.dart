@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:happy_habit_at/constants/furniture_categories.dart";
 import "package:happy_habit_at/constants/habit_icons.dart";
 
 Future<void> showIconDialog({
@@ -30,7 +29,7 @@ Widget _iconList(
   return Wrap(
     alignment: WrapAlignment.spaceEvenly,
     children: <Widget>[
-      for (int i = 0; i < furnitureCategories.length; ++i) //
+      for (int i = 0; i < habitIcons.length; ++i) //
         _iconButton(i, context, onSelect, color),
     ],
   );

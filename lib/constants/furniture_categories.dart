@@ -1,10 +1,18 @@
-import "package:happy_habit_at/utils/extension_types/immutable_list.dart";
+import "package:flutter/material.dart";
 
-final ImmutableList<String> furnitureCategories = ImmutableList<String>(<String>[
-  "Beds",
-  "Chairs",
-  "Lights",
-  "Tables",
-  "Small Decoration",
-  "Large Decoration",
-]);
+enum DecorationCategory {
+  beds(label: "Beds", icon: Icons.bed),
+  chairs(label: "Chairs", icon: Icons.chair),
+  lights(label: "Lights", icon: Icons.light),
+  tables(label: "Tables", icon: Icons.table_restaurant),
+  smallDecoration(label: "Small Decoration", icon: Icons.toys),
+  largeDecoration(label: "Large Decoration", icon: Icons.nature);
+
+  const DecorationCategory({
+    required this.label,
+    required this.icon,
+  });
+
+  final String label;
+  final IconData icon;
+}

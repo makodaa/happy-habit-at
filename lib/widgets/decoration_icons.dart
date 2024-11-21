@@ -1,19 +1,11 @@
 import "package:flutter/material.dart";
+import "package:happy_habit_at/constants/furniture_categories.dart";
 import "package:scroll_animator/scroll_animator.dart";
 
-class FurnitureIcons extends StatelessWidget {
-  const FurnitureIcons({super.key});
+class DecorationIcons extends StatelessWidget {
+  const DecorationIcons({super.key});
 
   static const SizedBox separator = SizedBox(width: 8.0);
-  static const List<(IconData icon, String label)> icons = <(IconData, String)>[
-    (Icons.bed, "Beds"),
-    (Icons.chair, "Chairs"),
-    (Icons.light, "Lights"),
-    (Icons.table_restaurant, "Tables"),
-    (Icons.toys, "Small Decoration"),
-    (Icons.nature, "Large Decorations"),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -27,7 +19,8 @@ class FurnitureIcons extends StatelessWidget {
           Row(
             children: <Widget>[
               separator,
-              for (var (int i, (IconData icon, String label)) in icons.indexed) ...<Widget>[
+              for (var (int i, DecorationCategory(:IconData icon, :String label))
+                  in DecorationCategory.values.indexed) ...<Widget>[
                 if (i > 0) separator,
                 Chip(
                   avatar: CircleAvatar(

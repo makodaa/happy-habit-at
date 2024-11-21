@@ -1,69 +1,30 @@
-import "package:flutter/material.dart";
-import "package:happy_habit_at/providers/furniture.dart";
-import "package:happy_habit_at/widgets/furniture_chips.dart";
+import "package:flutter/material.dart" hide Decoration;
+import "package:happy_habit_at/constants/decoration_icons.dart";
+import "package:happy_habit_at/providers/app_state.dart";
+import "package:happy_habit_at/utils/extensions/map_pairs.dart";
+import "package:happy_habit_at/widgets/decoration_icons.dart";
+import "package:provider/provider.dart";
 import "package:scroll_animator/scroll_animator.dart";
 
-class FurnitureScreen extends StatefulWidget {
-  FurnitureScreen({super.key});
+class DecorationScreen extends StatefulWidget {
+  DecorationScreen({super.key});
 
   @override
-  State<FurnitureScreen> createState() => _FurnitureScreenState();
+  State<DecorationScreen> createState() => _DecorationScreenState();
 }
 
-class _FurnitureScreenState extends State<FurnitureScreen> {
+class _DecorationScreenState extends State<DecorationScreen> {
   late final AnimatedScrollController scrollController =
       AnimatedScrollController(animationFactory: ChromiumImpulse());
-  List<Furniture> furnitures = <Furniture>[
-    Furniture(
-      furnitureName: "Ball",
-      furnitureDescription: "Lorem Ipsum",
-      furnitureCategory: 1,
-      salePrice: 10,
-    ),
-    Furniture(
-      furnitureName: "Bed",
-      furnitureDescription: "Lorem Ipsum",
-      furnitureCategory: 1,
-      salePrice: 10,
-    ),
-    Furniture(
-      furnitureName: "Drawer",
-      furnitureDescription: "Lorem Ipsum",
-      furnitureCategory: 1,
-      salePrice: 10,
-    ),
-    Furniture(
-      furnitureName: "Rock",
-      furnitureDescription: "Lorem Ipsum",
-      furnitureCategory: 1,
-      salePrice: 10,
-    ),
-    Furniture(
-      furnitureName: "Tree",
-      furnitureDescription: "Lorem Ipsum",
-      furnitureCategory: 1,
-      salePrice: 10,
-    ),
-    Furniture(
-      furnitureName: "Test",
-      furnitureDescription: "Lorem Ipsum",
-      furnitureCategory: 1,
-      salePrice: 10,
-    ),
-    Furniture(
-      furnitureName: "Test",
-      furnitureDescription: "Lorem Ipsum",
-      furnitureCategory: 1,
-      salePrice: 10,
-    ),
-  ];
+
+  late final AppState appState = context.read<AppState>();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        FurnitureIcons(),
+        DecorationIcons(),
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(16.0),
@@ -71,8 +32,8 @@ class _FurnitureScreenState extends State<FurnitureScreen> {
               controller: scrollController,
               child: Column(
                 children: <Widget>[
-                  for (Furniture furniture in furnitures)
-                    _furnitureTile(furniture),
+                  for (var (String id, DecorationIcon decoration) in decorationIcons.pairs)
+                    _decorationTile(id, decoration),
                 ],
               ),
             ),
@@ -82,26 +43,21 @@ class _FurnitureScreenState extends State<FurnitureScreen> {
     );
   }
 
-  Widget _furnitureTile(Furniture furniture) {
-    return ListenableBuilder(
-      listenable: furniture,
-      builder: (BuildContext context, Widget? child) {
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: ColorScheme.light().primary,
-            child: Icon(Icons.chair),
-          ),
-          title: Text(furniture.furnitureName),
-          subtitle: Text(furniture.furnitureDescription),
-          onTap: () async {
-            await _showModal(furniture);
-          },
-        );
+  Widget _decorationTile(String decorationId, DecorationIcon decoration) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: ColorScheme.light().primary,
+        child: Icon(Icons.chair),
+      ),
+      title: Text(decoration.name),
+      subtitle: Text(decoration.description),
+      onTap: () async {
+        await _showModal(decorationId, decoration);
       },
     );
   }
 
-  Future<void> _showModal(Furniture furniture) async {
+  Future<void> _showModal(String decorationId, DecorationIcon decoration) async {
     await showModalBottomSheet<void>(
       isScrollControlled: true,
       context: context,
@@ -119,7 +75,18 @@ class _FurnitureScreenState extends State<FurnitureScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: <Widget>[
-                        Text("Broke ahh"),
+                        ValueListenableBuilder<int>(
+                          valueListenable: appState.currency,
+                          builder: (BuildContext context, int currency, Widget? child) {
+                            return Text(
+                              "Currency: $currency",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            );
+                          },
+                        ),
                         SizedBox(
                           width: 4.0,
                         ),
@@ -144,7 +111,7 @@ class _FurnitureScreenState extends State<FurnitureScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    furniture.furnitureName,
+                    decoration.name,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 28,
@@ -163,7 +130,7 @@ class _FurnitureScreenState extends State<FurnitureScreen> {
                 SizedBox(height: 4.0),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(furniture.furnitureDescription),
+                  child: Text(decoration.description),
                 ),
                 SizedBox(height: 16.0),
                 Padding(
@@ -176,7 +143,7 @@ class _FurnitureScreenState extends State<FurnitureScreen> {
                 SizedBox(height: 4.0),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(furniture.quantityOwned.toString()),
+                  child: Text(appState.quantityOf(decorationId).toString()),
                 ),
                 SizedBox(height: 16.0),
                 Padding(
@@ -185,8 +152,9 @@ class _FurnitureScreenState extends State<FurnitureScreen> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
                       FilledButton(
-                          onPressed: () {},
-                          child: Text("Buy for ${furniture.salePrice}"),),
+                        onPressed: () {},
+                        child: Text("Buy for ${decoration.salePrice}"),
+                      ),
                     ],
                   ),
                 ),

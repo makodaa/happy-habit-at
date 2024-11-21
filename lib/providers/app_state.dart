@@ -1,8 +1,10 @@
 import "package:flutter/foundation.dart";
-import "package:flutter/material.dart";
+import "package:flutter/material.dart" hide Decoration;
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/global/shared_preferences.dart";
+import "package:happy_habit_at/providers/decoration.dart";
 import "package:happy_habit_at/providers/habit.dart";
+import "package:happy_habit_at/providers/placement.dart";
 import "package:happy_habit_at/providers/room.dart";
 import "package:happy_habit_at/services/database_service.dart";
 import "package:happy_habit_at/structs/completion.dart";
@@ -28,7 +30,13 @@ class AppState {
   final ListenableList<Completion> _completions = ListenableList<Completion>();
   ImmutableListenableList<Completion> get completions => _completions.immutable;
 
-  late final ValueNotifier<int> currency = ValueNotifier<int>(0);
+  final ListenableList<Placement> _placements = ListenableList<Placement>();
+  ImmutableListenableList<Placement> get placements => _placements.immutable;
+
+  final ListenableList<Decoration> _decorations = ListenableList<Decoration>();
+  ImmutableListenableList<Decoration> get decorations => _decorations.immutable;
+
+  late final ValueNotifier<int> currency;
   late final ValueNotifier<Room> activeRoom;
 
   Future<void> init() async {
@@ -51,6 +59,14 @@ class AppState {
       _completions.add(Completion.fromMap(completionMap));
     }
 
+    for (Map<String, Object?> placementMap in await _database.readPlacements()) {
+      _placements.add(Placement.fromMap(placementMap));
+    }
+
+    for (Map<String, Object?> decorationMap in await _database.readDecorations()) {
+      _decorations.add(Decoration.fromMap(decorationMap));
+    }
+
     /// Initialize the last active room.
     int? lastRoomId = sharedPreferences.getInt("last_open_room");
     if (lastRoomId == null) {
@@ -66,11 +82,14 @@ class AppState {
     int? currency = sharedPreferences.getInt("currency");
     if (currency == null) {
       /// Initialize
-      this.currency.value = 0;
+      this.currency = ValueNotifier<int>(0);
       await sharedPreferences.setInt("currency", 0);
     } else {
-      this.currency.value = currency;
+      this.currency = ValueNotifier<int>(currency);
     }
+    this.currency.addListener(() async {
+      await sharedPreferences.setInt("currency", this.currency.value);
+    });
 
     _hasInitialized = true;
   }
@@ -140,14 +159,22 @@ class AppState {
 
   bool isCompleted(int habitId, DateTime date) {
     return _completions.any(
-      (Completion completion) => completion.habitId == habitId && completion.dateTime == date,
+      (Completion completion) =>
+          completion.habitId == habitId &&
+          completion.dateTime.year == date.year &&
+          completion.dateTime.month == date.month &&
+          completion.dateTime.day == date.day,
     );
   }
 
   Completion? completionOfId(int habitId, DateTime date) {
     if (isCompleted(habitId, date)) {
       return _completions.firstWhere(
-        (Completion completion) => completion.habitId == habitId && completion.dateTime == date,
+        (Completion completion) =>
+            completion.habitId == habitId &&
+            completion.dateTime.year == date.year &&
+            completion.dateTime.month == date.month &&
+            completion.dateTime.day == date.day,
       );
     }
     return null;
@@ -161,6 +188,13 @@ class AppState {
     }
 
     return completionsMap;
+  }
+
+  int? quantityOf(String decorationId) {
+    return _decorations
+        .where((Decoration decoration) => decoration.id == decorationId)
+        .firstOrNull
+        ?.quantityOwned;
   }
 
   // UPDATE

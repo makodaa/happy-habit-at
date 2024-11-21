@@ -4,9 +4,22 @@ import "dart:async";
 
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
+import "package:happy_habit_at/constants/decoration_icons.dart";
 import "package:happy_habit_at/constants/pet_icons.dart";
+import "package:happy_habit_at/utils/extensions/map_pairs.dart";
 import "package:path/path.dart";
 import "package:sqflite/sqflite.dart";
+
+// ignore: always_specify_types
+const tables = (
+  habit: "habit",
+  room: "room",
+  decoration: "decoration",
+  food: "food",
+  pet: "pet",
+  activity: "activity",
+  placement: "placement",
+);
 
 /// SQLite Database Service
 class DatabaseService {
@@ -29,27 +42,37 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 11,
-        onUpgrade: (Database db, int oldVersion, int newVersion) {
+        version: 13,
+        onUpgrade: (Database db, int oldVersion, int newVersion) async {
           /// Drop all tables.
           if (kDebugMode) {
             print("Upgraded database. Removing all tables.");
           }
-          db.execute("""
+          await db.execute("""
             DROP TABLE IF EXISTS habit;
-            DROP TABLE IF EXISTS furniture;
+            DROP TABLE IF EXISTS decoration;
             DROP TABLE IF EXISTS food;
             DROP TABLE IF EXISTS pet;
             DROP TABLE IF EXISTS activity;
             DROP TABLE IF EXISTS room;
             DROP TABLE IF EXISTS placement;
           """);
+
+          // SELECT name FROM sqlite_master WHERE type='table' "
+          //     "AND name NOT LIKE 'sqlite_%'"
         },
       );
 
       if (_database case Database database) {
-        /// [habit] represents the different habits the user adds to the system.
-        await database.execute("""
+        List<void> existingTables = await database.query(
+          "sqlite_master",
+          where: "type = ? AND name NOT LIKE ?",
+          whereArgs: <String>["table", "sqlite_%"],
+        );
+
+        if (existingTables case []) {
+          /// [habit] represents the different habits the user adds to the system.
+          await database.execute("""
           CREATE TABLE IF NOT EXISTS habit (
             habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
             habit_name TEXT NOT NULL,
@@ -62,9 +85,9 @@ class DatabaseService {
             habit_color_index INTEGER
           );""");
 
-        /// [room] represents the rooms that the user can create.
-        ///   [room_tile_id] references the program constant defined in constants/tile_icons
-        await database.execute("""
+          /// [room] represents the rooms that the user can create.
+          ///   [room_tile_id] references the program constant defined in constants/tile_icons
+          await database.execute("""
           CREATE TABLE IF NOT EXISTS room (
             room_id INTEGER PRIMARY KEY AUTOINCREMENT,
             room_name TEXT NOT NULL,
@@ -79,42 +102,52 @@ class DatabaseService {
             pet_is_flipped INTEGER NOT NULL
           );""");
 
-        /// [furniture] represents the statistics of the furnitures owned by the user.
-        await database.execute("""
-          CREATE TABLE IF NOT EXISTS furniture (
-            furniture_id TEXT PRIMARY KEY,
+          /// [decoration] represents the statistics of the decorations owned by the user.
+          await database.execute("""
+          CREATE TABLE IF NOT EXISTS decoration (
+            decoration_id TEXT PRIMARY KEY,
             quantity_owned INTEGER NOT NULL,
             happiness_buff REAL NOT NULL,
             energy_buff REAL NOT NULL
           );""");
 
-        /// [placement] represents each furniture placement
-        await database.execute("""
+          /// [placement] represents each decoration placement
+          await database.execute("""
           CREATE TABLE IF NOT EXISTS placement (
             placement_id INTEGER PRIMARY KEY AUTOINCREMENT,
             room_id INTEGER NOT NULL REFERENCES room(room_id),
-            furniture_id TEXT NOT NULL REFERENCES furniture(furniture_id),
+            decoration_id TEXT NOT NULL REFERENCES decoration(decoration_id),
             x_coordinate INTEGER NOT NULL,
             y_coordinate INTEGER NOT NULL,
             is_facing_left INTEGER NOT NULL
           );""");
 
-        /// [food] represents the statistics of the foods owned by the user.
-        await database.execute("""
+          /// [food] represents the statistics of the foods owned by the user.
+          await database.execute("""
           CREATE TABLE IF NOT EXISTS food (
             food_id TEXT PRIMARY KEY,
             quantity_owned INTEGER NOT NULL
           );""");
 
-        /// [pet] represents the stat of each pet.
-        await database.execute("""
+          /// [pet] represents the stat of each pet.
+          await database.execute("""
           CREATE TABLE IF NOT EXISTS pet (
             pet_id TEXT PRIMARY KEY,
             is_owned INTEGER NOT NULL,
             room_id INTEGER REFERENCES room(room_id)
           );""");
 
-        if (await database.query("pet") case []) {
+          /// Each row of [activity] represents a completed habit for a specific day.
+          await database.execute("""
+          CREATE TABLE IF NOT EXISTS activity (
+            activity_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date_time INTEGER NOT NULL,
+            habit_id INTEGER NOT NULL REFERENCES habit(habit_id)
+          );""");
+        }
+
+        /// If pets are not yet initialized, we initialize them.
+        if ((await database.query(tables.pet)).length != petIcons.length) {
           for (String id in petIcons.keys) {
             await database.insert(
               "pet",
@@ -128,20 +161,8 @@ class DatabaseService {
           }
         }
 
-        /// Each row of [activity] represents a completed habit for a specific day.
-        ///   [habits] are treated as an infinitely-large bitstring encoded/decoded in BASE16.
-        ///   Given [habit_id], it is marked as done by:
-        ///     habits |= (1 << habit_id).
-        ///
-        await database.execute("""
-          CREATE TABLE IF NOT EXISTS activity (
-            activity_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date_time INTEGER NOT NULL,
-            habit_id INTEGER NOT NULL REFERENCES habit(habit_id)
-          );""");
-
         /// If there are no rooms, we create a default one.
-        if (await database.query("room") case []) {
+        if (await database.query(tables.room) case []) {
           String initialPet;
 
           List<Map<String, Object?>> ownedPets = await database.rawQuery(
@@ -188,6 +209,22 @@ class DatabaseService {
             "pet_y": 0,
             "pet_is_flipped": 0,
           });
+        }
+
+        if ((await database.query(tables.decoration)).length != decorationIcons.length) {
+          await database.delete(tables.decoration);
+          for (var (String id, DecorationIcon decoration) in decorationIcons.pairs) {
+            await database.insert(
+              tables.decoration,
+              <String, Object?>{
+                "decoration_id": id,
+                "quantity_owned": 0,
+                "happiness_buff": decoration.happinessBuff,
+                "energy_buff": decoration.energyBuff,
+              },
+              conflictAlgorithm: ConflictAlgorithm.ignore,
+            );
+          }
         }
 
         if (kDebugMode) {
@@ -322,6 +359,22 @@ class DatabaseService {
   Future<List<Map<String, Object?>>> readActivities() async {
     if (_database case Database database) {
       return database.query("activity");
+    }
+
+    return <Map<String, Object?>>[];
+  }
+
+  Future<List<Map<String, Object?>>> readPlacements() async {
+    if (_database case Database database) {
+      return database.query("placement");
+    }
+
+    return <Map<String, Object?>>[];
+  }
+
+  Future<List<Map<String, Object?>>> readDecorations() async {
+    if (_database case Database database) {
+      return database.query("decoration");
     }
 
     return <Map<String, Object?>>[];

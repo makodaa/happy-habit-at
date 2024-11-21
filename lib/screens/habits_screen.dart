@@ -158,8 +158,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
 
         String? description = appState
             .completionOfId(habit.id, selectedDate) //
-            .nullableMap((Completion c) => c.dateTime.difference(today))
-            .nullableMap(_description)
+            .nullableMap((Completion c) => _rightNow().difference(c.dateTime))
+            .nullableMap((Duration d) => (print(d) as Null, _description(d)).$2)
             .nullableMap((String d) => "Completed $d ago");
 
         DateTime? dateTimeOfHabitTime = habit.time.nullableMap(
@@ -175,13 +175,13 @@ class _HabitsScreenState extends State<HabitsScreen> {
         /// This should result in 'Due ${description} ago' if the habit was due today.
         String? agoDescription = dateTimeOfHabitTime
             .nullableMap((DateTime p) => _rightNow().difference(p))
-            .nullableMap(_description)
+            .nullableMap((Duration d) => _description(d))
             .nullableMap((String p) => "Due $p ago");
 
         /// This should result in 'In ${description}' if the habit is due today.
         String? fromNowDescription = dateTimeOfHabitTime
             .nullableMap((DateTime p) => p.difference(_rightNow()))
-            .nullableMap(_description)
+            .nullableMap((Duration d) => _description(d))
             .nullableMap((String p) => "In $p");
 
         String trailing = isBeforeToday
@@ -421,7 +421,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                       await appState.completeHabit(
                         habitId: habit.id,
                         confidenceLevel: _currentSliderValue.toInt(),
-                        dateTime: selectedDate,
+                        dateTime: _rightNow(),
                       );
 
                       if (context.mounted) {

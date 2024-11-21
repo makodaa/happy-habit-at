@@ -7,7 +7,7 @@ typedef PetIcon = ({
   /// Pet model
   String model,
 
-  /// The width and height of the pet icon.
+  /// The width and height of the pet image icon.
   (double width, double height) dimensions,
 
   /// This is an added offset when it is not flipped.

@@ -10,9 +10,9 @@ import "package:happy_habit_at/screens/modify_habit_screen.dart";
 import "package:happy_habit_at/screens/modify_habitat_screen.dart";
 import "package:happy_habit_at/screens/more_screen.dart";
 import "package:happy_habit_at/screens/shop_screen.dart";
+import "package:happy_habit_at/screens/shop_screen/decoration_screen.dart";
 import "package:happy_habit_at/screens/shop_screen/expansion_screen.dart";
 import "package:happy_habit_at/screens/shop_screen/food_screen.dart";
-import "package:happy_habit_at/screens/shop_screen/furniture_screen.dart";
 import "package:happy_habit_at/screens/shop_screen/pet_screen.dart";
 import "package:happy_habit_at/utils/extension_types/immutable_list.dart";
 
@@ -118,8 +118,8 @@ final router = GoRouter(
                     StatefulShellBranch(
                       routes: [
                         GoRoute(
-                          path: "/shop/furniture",
-                          builder: (_, state) => FurnitureScreen(),
+                          path: "/shop/decoration",
+                          builder: (_, state) => DecorationScreen(),
                         ),
                       ],
                     ),

@@ -10,7 +10,7 @@
 // );
 
 
-typedef FurnitureIcon = ({
+typedef DecorationIcon = ({
   String name,
   String description,
   String imagePath,
@@ -20,7 +20,7 @@ typedef FurnitureIcon = ({
   int energyBuff,
 });
 
-const Map<String, FurnitureIcon> furnitureIcons = <String, FurnitureIcon>{
+const Map<String, DecorationIcon> decorationIcons = <String, DecorationIcon>{
   "blue_table": (
     name: "Blue Leather Table",
     description: "A Blue Leather Table.",
