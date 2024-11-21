@@ -150,10 +150,13 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
                 Positioned(
                   top: ny,
                   left: nx,
-                  child: Image.asset(
-                    width: 48,
-                    height: 48,
-                    decorationIcons[placement.decorationId]!.imagePath,
+                  child: Transform.flip(
+                    flipX: placement.isFlipped,
+                    child: Image.asset(
+                      width: 48,
+                      height: 48,
+                      decorationIcons[placement.decorationId]!.imagePath,
+                    ),
                   ),
                 ),
           if (_petWidget(constraints) case Widget widget) widget,
