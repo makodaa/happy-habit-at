@@ -5,6 +5,7 @@ import "package:happy_habit_at/global/shared_preferences.dart";
 import "package:happy_habit_at/providers/habit.dart";
 import "package:happy_habit_at/providers/room.dart";
 import "package:happy_habit_at/services/database_service.dart";
+import "package:happy_habit_at/structs/completion.dart";
 import "package:happy_habit_at/utils/data_types/listenable_list.dart";
 import "package:happy_habit_at/utils/extension_types/immutable_listenable_list.dart";
 
@@ -24,6 +25,9 @@ class AppState {
   final ListenableList<Room> _rooms = ListenableList<Room>();
   ImmutableListenableList<Room> get rooms => _rooms.immutable;
 
+  final ListenableList<Completion> _completions = ListenableList<Completion>();
+  ImmutableListenableList<Completion> get completions => _completions.immutable;
+
   late final ValueNotifier<int> currency = ValueNotifier<int>(0);
   late final ValueNotifier<Room> activeRoom;
 
@@ -41,6 +45,10 @@ class AppState {
 
     for (Map<String, Object?> roomMap in await _database.readRooms()) {
       _rooms.add(Room.fromMap(roomMap));
+    }
+
+    for (Map<String, Object?> completionMap in await _database.readActivities()) {
+      _completions.add(Completion.fromMap(completionMap));
     }
 
     /// Initialize the last active room.
@@ -104,9 +112,55 @@ class AppState {
     }
   }
 
+  Future<void> completeHabit({
+    required int habitId,
+    required int confidenceLevel,
+    required DateTime dateTime,
+  }) async {
+    int? id = await _database.createActivity(
+      dateTime: dateTime.millisecondsSinceEpoch,
+      habitId: habitId,
+    );
+
+    if (id case int id) {
+      _completions.add(
+        Completion(
+          id: id,
+          habitId: habitId,
+          dateTime: dateTime,
+        ),
+      );
+    }
+  }
+
   // READ
   Habit habitOfId(int habitId) {
     return _habits.singleWhere((Habit habit) => habit.id == habitId);
+  }
+
+  bool isCompleted(int habitId, DateTime date) {
+    return _completions.any(
+      (Completion completion) => completion.habitId == habitId && completion.dateTime == date,
+    );
+  }
+
+  Completion? completionOfId(int habitId, DateTime date) {
+    if (isCompleted(habitId, date)) {
+      return _completions.firstWhere(
+        (Completion completion) => completion.habitId == habitId && completion.dateTime == date,
+      );
+    }
+    return null;
+  }
+
+  Map<DateTime, int> aggregateCompletions() {
+    Map<DateTime, int> completionsMap = <DateTime, int>{};
+
+    for (Completion completion in _completions) {
+      completionsMap[completion.dateTime] = (completionsMap[completion.dateTime] ?? 0) + 1;
+    }
+
+    return completionsMap;
   }
 
   // UPDATE
@@ -165,4 +219,8 @@ class AppState {
       _habits.removeWhere((Habit habit) => habit.id == habitId);
     }
   }
+}
+
+extension<K, V> on Map<K, V> {
+  Iterable<(K, V)> get pairs => entries.map((MapEntry<K, V> entry) => (entry.key, entry.value));
 }

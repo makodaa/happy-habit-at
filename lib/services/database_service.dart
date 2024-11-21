@@ -29,7 +29,7 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 9,
+        version: 11,
         onUpgrade: (Database db, int oldVersion, int newVersion) {
           /// Drop all tables.
           if (kDebugMode) {
@@ -116,11 +116,15 @@ class DatabaseService {
 
         if (await database.query("pet") case []) {
           for (String id in petIcons.keys) {
-            await database.insert("pet", <String, Object?>{
-              "pet_id": id,
-              "is_owned": 0,
-              "room_id": null,
-            });
+            await database.insert(
+              "pet",
+              <String, Object?>{
+                "pet_id": id,
+                "is_owned": 0,
+                "room_id": null,
+              },
+              conflictAlgorithm: ConflictAlgorithm.ignore,
+            );
           }
         }
 
@@ -132,8 +136,8 @@ class DatabaseService {
         await database.execute("""
           CREATE TABLE IF NOT EXISTS activity (
             activity_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            day STRING NOT NULL,
-            habits TEXT NOT NULL
+            date_time INTEGER NOT NULL,
+            habit_id INTEGER NOT NULL REFERENCES habit(habit_id)
           );""");
 
         /// If there are no rooms, we create a default one.
@@ -193,6 +197,11 @@ class DatabaseService {
           unawaited(
             database.rawQuery(query).then(
               (List<Map<String, Object?>> value) {
+                for (var {"name": String table as String} in value) {
+                  database.query(table).then((List<Map<String, Object?>> value) {
+                    print((table, value));
+                  });
+                }
                 print("The database initialized with the following tables:");
                 print(value);
               },
@@ -273,6 +282,26 @@ class DatabaseService {
     return null;
   }
 
+  Future<int?> createActivity({
+    required int dateTime,
+    required int habitId,
+  }) async {
+    if (_database case Database database) {
+      int id = await database.insert("activity", <String, Object?>{
+        "date_time": dateTime,
+        "habit_id": habitId,
+      });
+
+      if (kDebugMode) {
+        print("Activity created: $id");
+      }
+
+      return id;
+    }
+
+    return null;
+  }
+
   // READ
   Future<List<Map<String, Object?>>> readHabits() async {
     if (_database case Database database) {
@@ -285,6 +314,14 @@ class DatabaseService {
   Future<List<Map<String, Object?>>> readRooms() async {
     if (_database case Database database) {
       return database.query("room");
+    }
+
+    return <Map<String, Object?>>[];
+  }
+
+  Future<List<Map<String, Object?>>> readActivities() async {
+    if (_database case Database database) {
+      return database.query("activity");
     }
 
     return <Map<String, Object?>>[];
@@ -395,6 +432,12 @@ class DatabaseService {
   // DELETE
   Future<bool> deleteHabit({required int habitId}) async {
     if (_database case Database database) {
+      await database.delete(
+        "activity",
+        where: "habit_id = ?",
+        whereArgs: <int>[habitId],
+      );
+
       await database.delete(
         "habit",
         where: "habit_id = ?",

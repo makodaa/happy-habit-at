@@ -26,11 +26,11 @@ final navigatorKeys = (
 );
 
 final router = GoRouter(
-  initialLocation: "/habitat/edit",
+  initialLocation: "/habitat",
   routes: [
     GoRoute(
       path: "/",
-      redirect: (_, __) => "/habitat/",
+      redirect: (_, __) => "/habitat",
     ),
 
     /// This [ShellRoute] is necessary for the "root" of the navigator,

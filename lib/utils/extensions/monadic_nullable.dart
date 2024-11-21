@@ -15,4 +15,12 @@ extension MonadicNullable<T extends Object> on T? {
 
     return null;
   }
+
+  R? nullableFlatMap<R>(R? Function(T) mappingFunction) {
+    if (this case T value) {
+      return mappingFunction(value);
+    }
+
+    return null;
+  }
 }

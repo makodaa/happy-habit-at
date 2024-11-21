@@ -74,6 +74,5 @@ class PetScreen extends StatelessWidget {
   }
 
   static const SizedBox _fieldSeparator = SizedBox(height: 16.0);
-  static const SizedBox _labelSeparator = SizedBox(height: 4.0);
   static const SizedBox _rowSeparator = SizedBox(width: 4.0);
 }

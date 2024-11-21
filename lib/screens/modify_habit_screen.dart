@@ -176,16 +176,12 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
 
   Widget _iconAndName() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Text(
-          "Icon and Name",
-          textAlign: TextAlign.left,
-        ),
+        const Text("Icon and Name"),
         _labelSeparator,
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Container(
               decoration: BoxDecoration(

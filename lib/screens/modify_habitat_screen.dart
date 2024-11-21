@@ -131,6 +131,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
                   heroTag: "enterCustomizationButton",
                   backgroundColor: Colors.blue.shade200,
                   onPressed: () {
+                    appState.activeRoom.value.name = roomNameController.text;
                     unawaited(appState.commitRoomChanges());
                     context.go("/habitat");
                   },

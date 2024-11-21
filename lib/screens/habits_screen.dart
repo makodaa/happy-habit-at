@@ -7,6 +7,8 @@ import "package:happy_habit_at/constants/habit_icons.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habit.dart";
+import "package:happy_habit_at/structs/completion.dart";
+import "package:happy_habit_at/utils/extension_types/immutable_list.dart";
 import "package:happy_habit_at/utils/extension_types/immutable_listenable_list.dart";
 import "package:happy_habit_at/utils/extension_types/timed_habit.dart";
 import "package:happy_habit_at/utils/extensions/monadic_nullable.dart";
@@ -25,21 +27,21 @@ class _HabitsScreenState extends State<HabitsScreen> {
   late final AnimatedScrollController scrollController =
       AnimatedScrollController(animationFactory: ChromiumImpulse());
 
+  late final AppState appState;
   late final ImmutableListenableList<Habit> habits;
   late DateTime selectedDate = _currentDay();
   double _currentSliderValue = 0;
 
-  // TODO: Create a function that shall evaluate an input string based on length and repetition of words / letters.
-  int _evaluateReflection() {
-    return 0;
+  int _evaluateReflection(String text) {
+    return text.hashCode & 0xfff;
   }
 
   @override
   void initState() {
     super.initState();
 
-    habits = context.read<AppState>().habits //
-      ..addListener(() => setState(() {}));
+    appState = context.read<AppState>();
+    habits = appState.habits..addListener(() => setState(() {}));
   }
 
   @override
@@ -79,8 +81,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
   }
 
   Widget _displayedHabits() {
-    const List<(String title, (int start, int end))> partitions =
-        <(String, (int, int))>[
+    const List<(String title, (int start, int end))> partitions = <(String, (int, int))>[
       ("Morning", (0, 12)),
       ("Afternoon", (12, 18)),
       ("Evening", (18, 24)),
@@ -94,8 +95,16 @@ class _HabitsScreenState extends State<HabitsScreen> {
           children: <Widget>[
             _horizontalCalendar(constraints),
             const SizedBox(height: 16.0),
-            if (habits.isEmpty)
-              Center(child: Text("You have no habits for today!")),
+            if (habits.forDate(selectedDate).isEmpty)
+              Center(
+                child: Text(
+                  "You have no habits for ${selectedDate.isAtSameMomentAs(_currentDay()) ? "today" : "this day"}.",
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             if (habits.noTimeHabits(selectedDate) //
                 case Iterable<Habit> noTimeHabits //
                 when noTimeHabits.isNotEmpty) ...<Widget>[
@@ -135,31 +144,68 @@ class _HabitsScreenState extends State<HabitsScreen> {
       listenable: habit,
       builder: (BuildContext context, Widget? child) {
         if (habit.daysOfTheWeek.isNotEmpty &&
-            !habit.daysOfTheWeek
-                .contains(DaysOfTheWeek.values[selectedDate.weekday % 7])) {
+            !habit.daysOfTheWeek.contains(DaysOfTheWeek.values[selectedDate.weekday % 7])) {
           return const SizedBox.shrink();
         }
 
+        DateTime today = _currentDay();
+        bool isCompleted = appState.isCompleted(habit.id, selectedDate);
+        bool isCompletedBefore = appState.isCompleted(habit.id, selectedDate);
+        bool isBeforeToday = selectedDate.isBefore(today);
+        bool isAfterToday = selectedDate.isAfter(today);
+
+        int dayDifference = today.difference(selectedDate).inDays.abs();
+
+        String? description = appState
+            .completionOfId(habit.id, selectedDate) //
+            .nullableMap((Completion c) => c.dateTime.difference(today))
+            .nullableMap(_description)
+            .nullableMap((String d) => "Completed $d ago");
+
+        DateTime? dateTimeOfHabitTime = habit.time.nullableMap(
+          (TimeOfDay t) => DateTime(
+            selectedDate.year,
+            selectedDate.month,
+            selectedDate.day,
+            t.hour,
+            t.minute,
+          ),
+        );
+
+        /// This should result in 'Due ${description} ago' if the habit was due today.
+        String? agoDescription = dateTimeOfHabitTime
+            .nullableMap((DateTime p) => _rightNow().difference(p))
+            .nullableMap(_description)
+            .nullableMap((String p) => "Due $p ago");
+
+        /// This should result in 'In ${description}' if the habit is due today.
+        String? fromNowDescription = dateTimeOfHabitTime
+            .nullableMap((DateTime p) => p.difference(_rightNow()))
+            .nullableMap(_description)
+            .nullableMap((String p) => "In $p");
+
+        String trailing = isBeforeToday
+            ? "${isCompletedBefore ? "Completed " : ""}"
+                "$dayDifference day${dayDifference > 1 ? "s" : ""} ago"
+            : isAfterToday
+                ? "In $dayDifference day${dayDifference > 1 ? "s" : ""}"
+                : isCompleted
+                    ? description ?? "Completed"
+                    : fromNowDescription.nullableFlatMap(
+                          (String p) => p == "In " ? agoDescription : null,
+                        ) ??
+                        "Within today";
+
         return ListTile(
           leading: CircleAvatar(
-            backgroundColor: habit.colorIndex
-                .nullableMap((int i) => habitColors[i].background),
+            backgroundColor: habit.colorIndex.nullableMap((int i) => habitColors[i].background),
             child: Icon(habitIcons[habit.icon]),
           ),
           title: Text(habit.name),
           subtitle: habit.goal.nullableMap((String g) => Text(g)),
-          trailing: Text(
-            habit.time != null
-                ? TimeOfDay.now().hour * 60 + TimeOfDay.now().minute <
-                        habit.time!.hour * 60 + habit.time!.minute
-                    ? TimeOfDay.now().hour - habit.time!.hour == 0
-                        ? "in ${habit.time!.minute - TimeOfDay.now().minute} min."
-                        : "in ${habit.time!.hour - TimeOfDay.now().hour} hr. ${habit.time!.minute - TimeOfDay.now().minute} min."
-                    : "No"
-                : "in ${24 - TimeOfDay.now().hour}hr.",
-          ),
+          trailing: Text(trailing),
           onTap: () async {
-            await _showModal(habit);
+            await _showHabitInformationModal(habit);
           },
         );
       },
@@ -180,7 +226,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
     );
   }
 
-  Future<void> _showModal(Habit habit) async {
+  Future<void> _showHabitInformationModal(Habit habit) async {
     await showModalBottomSheet<void>(
       context: context,
       constraints: const BoxConstraints.expand(),
@@ -227,9 +273,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                     children: <Widget>[
                       TextButton(
                         onPressed: () async {
-                          await context
-                              .read<AppState>()
-                              .deleteHabit(habitId: habit.id);
+                          await context.read<AppState>().deleteHabit(habitId: habit.id);
                           if (context.mounted) {
                             context.pop();
                           }
@@ -250,17 +294,37 @@ class _HabitsScreenState extends State<HabitsScreen> {
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
-                      TextButton(
-                        onPressed: () async {
-                          if (context.mounted) {
-                            context.pop();
-                          }
-                          await _showCompletionDialog(habit);
+                      Builder(
+                        builder: (BuildContext context) {
+                          bool isCompleted = appState.isCompleted(habit.id, selectedDate);
+                          bool isCompletedBefore = appState.isCompleted(habit.id, selectedDate);
+                          bool isBeforeToday = selectedDate.isBefore(_currentDay());
+                          bool isAfterToday = selectedDate.isAfter(_currentDay());
+                          bool isNotToday = isBeforeToday || isAfterToday;
+
+                          return TextButton(
+                            onPressed: isNotToday || isCompleted
+                                ? null
+                                : () async {
+                                    if (context.mounted) {
+                                      context.pop();
+                                    }
+                                    await _showCompletionDialog(habit);
+                                  },
+                            child: Text(
+                              isBeforeToday && isCompletedBefore //
+                                  ? "Already Completed Before"
+                                  : isBeforeToday
+                                      ? "Past Habit"
+                                      : isAfterToday
+                                          ? "Not Yet"
+                                          : isCompleted
+                                              ? "Already Completed"
+                                              : "Complete Habit",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          );
                         },
-                        child: Text(
-                          "Complete Habit",
-                          style: TextStyle(fontSize: 16),
-                        ),
                       ),
                     ],
                   ),
@@ -274,6 +338,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
   }
 
   Future<void> _showCompletionDialog(Habit habit) async {
+    TextEditingController textEditingController = TextEditingController();
+
     await showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -331,6 +397,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                       height: 4.0,
                     ),
                     TextField(
+                      controller: textEditingController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                       ),
@@ -348,9 +415,18 @@ class _HabitsScreenState extends State<HabitsScreen> {
                   child: Text("Cancel"),
                 ),
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (context.mounted) {
-                      context.pop();
+                      appState.currency.value += _evaluateReflection(textEditingController.text);
+                      await appState.completeHabit(
+                        habitId: habit.id,
+                        confidenceLevel: _currentSliderValue.toInt(),
+                        dateTime: selectedDate,
+                      );
+
+                      if (context.mounted) {
+                        context.pop();
+                      }
                     }
                   },
                   child: Text("Submit"),
@@ -361,6 +437,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
         );
       },
     );
+
+    textEditingController.dispose();
   }
 
   static DateTime _currentDay() => DateTime.now().copyWith(
@@ -371,6 +449,38 @@ class _HabitsScreenState extends State<HabitsScreen> {
         microsecond: 0,
         isUtc: false,
       );
+
+  static DateTime _rightNow() => DateTime.now();
+
+  static String _description(Duration duration) {
+    Duration mutable = duration;
+    StringBuffer buffer = StringBuffer();
+
+    if (mutable.inDays > 0) {
+      buffer.write(" ${mutable.inDays} day${mutable.inDays > 1 ? "s" : ""}");
+
+      mutable -= Duration(days: mutable.inDays);
+    }
+
+    if (mutable.inHours > 0) {
+      buffer.write(" ${mutable.inHours} hr");
+
+      mutable -= Duration(hours: mutable.inHours);
+    }
+
+    if (mutable.inMinutes > 0) {
+      int inMinutes = mutable.inMinutes;
+      mutable -= Duration(minutes: inMinutes);
+
+      if (mutable.inSeconds > 0) {
+        inMinutes += 1;
+      }
+
+      buffer.write(" $inMinutes min");
+    }
+
+    return buffer.toString().trim();
+  }
 }
 
 extension on ImmutableListenableList<Habit> {
@@ -378,8 +488,7 @@ extension on ImmutableListenableList<Habit> {
     for (Habit habit in this) {
       if (habit.time != null &&
           (habit.daysOfTheWeek.isEmpty ||
-              habit.daysOfTheWeek
-                  .contains(DaysOfTheWeek.values[day.weekday % 7]))) {
+              habit.daysOfTheWeek.contains(DaysOfTheWeek.values[day.weekday % 7]))) {
         yield TimedHabit(habit);
       }
     }
@@ -389,8 +498,7 @@ extension on ImmutableListenableList<Habit> {
     for (Habit habit in this) {
       if (habit.time == null &&
           (habit.daysOfTheWeek.isEmpty ||
-              habit.daysOfTheWeek
-                  .contains(DaysOfTheWeek.values[day.weekday % 7]))) {
+              habit.daysOfTheWeek.contains(DaysOfTheWeek.values[day.weekday % 7]))) {
         yield habit;
       }
     }
@@ -399,4 +507,15 @@ extension on ImmutableListenableList<Habit> {
 
 extension on int {
   bool isWithin(int start, int end) => start <= this && this < end;
+}
+
+extension on ImmutableListenableList<Habit> {
+  ImmutableList<Habit> forDate(DateTime date) => ImmutableList<Habit>(
+        <Habit>[
+          for (Habit t in this)
+            if (t.daysOfTheWeek.isEmpty ||
+                t.daysOfTheWeek.contains(DaysOfTheWeek.values[date.weekday % 7]))
+              t,
+        ],
+      );
 }
