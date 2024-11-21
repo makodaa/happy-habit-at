@@ -1,8 +1,6 @@
 import "package:flutter/material.dart";
-import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/furniture.dart";
 import "package:happy_habit_at/widgets/furniture_chips.dart";
-import "package:provider/provider.dart";
 import "package:scroll_animator/scroll_animator.dart";
 
 class FurnitureScreen extends StatefulWidget {
@@ -13,35 +11,8 @@ class FurnitureScreen extends StatefulWidget {
 }
 
 class _FurnitureScreenState extends State<FurnitureScreen> {
-  late final AnimatedScrollController scrollController;
-  late final AppState appState;
-  bool hasInitialized = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    scrollController = AnimatedScrollController(animationFactory: ChromiumImpulse());
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (!hasInitialized) {
-      appState = context.read<AppState>();
-
-      hasInitialized = true;
-    }
-  }
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-
-    super.dispose();
-  }
-
+  late final AnimatedScrollController scrollController =
+      AnimatedScrollController(animationFactory: ChromiumImpulse());
   List<Furniture> furnitures = <Furniture>[
     Furniture(
       furnitureName: "Ball",
@@ -100,7 +71,8 @@ class _FurnitureScreenState extends State<FurnitureScreen> {
               controller: scrollController,
               child: Column(
                 children: <Widget>[
-                  for (Furniture furniture in furnitures) _furnitureTile(furniture),
+                  for (Furniture furniture in furnitures)
+                    _furnitureTile(furniture),
                 ],
               ),
             ),
@@ -212,7 +184,9 @@ class _FurnitureScreenState extends State<FurnitureScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
-                      FilledButton(onPressed: () {}, child: Text("Buy for ${furniture.salePrice}")),
+                      FilledButton(
+                          onPressed: () {},
+                          child: Text("Buy for ${furniture.salePrice}"),),
                     ],
                   ),
                 ),

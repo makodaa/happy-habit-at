@@ -9,7 +9,6 @@
 //   energy_buff REAL NOT NULL
 // );
 
-import "package:happy_habit_at/providers/furniture.dart";
 
 typedef FurnitureIcon = ({
   String name,
