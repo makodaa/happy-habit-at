@@ -1,33 +1,32 @@
+import "package:flutter/foundation.dart";
+
 // CREATE TABLE IF NOT EXISTS placement (
 //   placement_id INTEGER PRIMARY KEY AUTOINCREMENT,
 //   room_id INTEGER NOT NULL REFERENCES room(room_id),
 //   decoration_id TEXT NOT NULL REFERENCES decoration(decoration_id),
 //   x_coordinate INTEGER NOT NULL,
 //   y_coordinate INTEGER NOT NULL,
-//   is_facing_left INTEGER NOT NULL
+//   is_flipped INTEGER NOT NULL
 // );
-
-import "package:flutter/foundation.dart";
-
 class Placement extends ChangeNotifier {
   Placement({
     required int placementId,
     required int roomId,
     required String decorationId,
     required (int, int) tileCoordinate,
-    required bool isFacingLeft,
+    required bool isFlipped,
   })  : _placementId = placementId,
         _roomId = roomId,
         _decorationId = decorationId,
         _tileCoordinate = tileCoordinate,
-        _isFacingLeft = isFacingLeft;
+        _isFlipped = isFlipped;
 
   factory Placement.fromMap(Map<String, dynamic> json) => Placement(
         placementId: json["placement_id"] as int,
         roomId: json["room_id"] as int,
         decorationId: json["decoration_id"] as String,
         tileCoordinate: (json["x_coordinate"] as int, json["y_coordinate"] as int),
-        isFacingLeft: json["is_facing_left"] == 1,
+        isFlipped: json["is_flipped"] == 1,
       );
 
   final int _placementId;
@@ -54,11 +53,11 @@ class Placement extends ChangeNotifier {
     }
   }
 
-  bool _isFacingLeft;
-  bool get isFacingLeft => _isFacingLeft;
-  set isFacingLeft(bool value) {
-    if (value != _isFacingLeft) {
-      _isFacingLeft = value;
+  bool _isFlipped;
+  bool get isFlipped => _isFlipped;
+  set isFlipped(bool value) {
+    if (value != _isFlipped) {
+      _isFlipped = value;
       notifyListeners();
     }
   }
@@ -69,6 +68,6 @@ class Placement extends ChangeNotifier {
         "decoration_id": _decorationId,
         "x_coordinate": _tileCoordinate.$1,
         "y_coordinate": _tileCoordinate.$2,
-        "is_facing_left": _isFacingLeft ? 1 : 0,
+        "is_flipped": _isFlipped ? 1 : 0,
       };
 }

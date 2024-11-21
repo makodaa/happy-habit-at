@@ -4,9 +4,9 @@ import "package:flutter/foundation.dart";
 // quantity_owned INTEGER NOT NULL,
 // happiness_buff REAL NOT NULL,
 // energy_buff REAL NOT NULL
-/// This class [Decoration] only contains the volatile state of decoration.
-class Decoration extends ChangeNotifier {
-  Decoration({
+/// This class [HabitatDecoration] only contains the volatile state of decoration.
+class HabitatDecoration extends ChangeNotifier {
+  HabitatDecoration({
     required this.id,
     required int quantityOwned,
     required double happinessBuff,
@@ -15,7 +15,7 @@ class Decoration extends ChangeNotifier {
         _happinessBuff = happinessBuff,
         _energyBuff = energyBuff;
 
-  factory Decoration.fromMap(Map<String, dynamic> json) => Decoration(
+  factory HabitatDecoration.fromMap(Map<String, dynamic> json) => HabitatDecoration(
         id: json["decoration_id"] as String,
         quantityOwned: json["quantity_owned"] as int,
         happinessBuff: json["happiness_buff"] as double,

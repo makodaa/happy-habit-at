@@ -5,10 +5,8 @@ import "package:happy_habit_at/constants/pet_icons.dart";
 import "package:happy_habit_at/constants/tile_icons.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/room.dart";
+import "package:happy_habit_at/utils/type_aliases.dart";
 import "package:provider/provider.dart";
-
-typedef Vector = (double, double);
-typedef IntVector = (int, int);
 
 class GameDisplay extends StatefulWidget {
   const GameDisplay({super.key});

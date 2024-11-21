@@ -2,14 +2,15 @@ import "package:flutter/foundation.dart";
 import "package:flutter/material.dart" hide Decoration;
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/global/shared_preferences.dart";
-import "package:happy_habit_at/providers/decoration.dart";
 import "package:happy_habit_at/providers/habit.dart";
+import "package:happy_habit_at/providers/habitat_decoration.dart";
 import "package:happy_habit_at/providers/placement.dart";
 import "package:happy_habit_at/providers/room.dart";
 import "package:happy_habit_at/services/database_service.dart";
 import "package:happy_habit_at/structs/completion.dart";
 import "package:happy_habit_at/utils/data_types/listenable_list.dart";
 import "package:happy_habit_at/utils/extension_types/immutable_listenable_list.dart";
+import "package:happy_habit_at/utils/type_aliases.dart";
 
 /// Following some pattern online, this class is going to be
 ///   a holder of [ValueListenable] type objects.
@@ -33,8 +34,8 @@ class AppState {
   final ListenableList<Placement> _placements = ListenableList<Placement>();
   ImmutableListenableList<Placement> get placements => _placements.immutable;
 
-  final ListenableList<Decoration> _decorations = ListenableList<Decoration>();
-  ImmutableListenableList<Decoration> get decorations => _decorations.immutable;
+  final ListenableList<HabitatDecoration> _decorations = ListenableList<HabitatDecoration>();
+  ImmutableListenableList<HabitatDecoration> get decorations => _decorations.immutable;
 
   late final ValueNotifier<int> currency;
   late final ValueNotifier<Room> activeRoom;
@@ -64,7 +65,7 @@ class AppState {
     }
 
     for (Map<String, Object?> decorationMap in await _database.readDecorations()) {
-      _decorations.add(Decoration.fromMap(decorationMap));
+      _decorations.add(HabitatDecoration.fromMap(decorationMap));
     }
 
     /// Initialize the last active room.
@@ -152,6 +153,32 @@ class AppState {
     }
   }
 
+  Future<void> createPlacement({
+    required int roomId,
+    required String decorationId,
+    required IntVector tileCoordinate,
+    required bool isFlipped,
+  }) async {
+    int? placementId = await _database.createPlacement(
+      roomId: roomId,
+      decorationId: decorationId,
+      tileCoordinate: tileCoordinate,
+      isFlipped: isFlipped,
+    );
+
+    if (placementId case int placementId) {
+      _placements.add(
+        Placement(
+          placementId: placementId,
+          roomId: roomId,
+          decorationId: decorationId,
+          tileCoordinate: tileCoordinate,
+          isFlipped: isFlipped,
+        ),
+      );
+    }
+  }
+
   // READ
   Habit habitOfId(int habitId) {
     return _habits.singleWhere((Habit habit) => habit.id == habitId);
@@ -192,9 +219,18 @@ class AppState {
 
   int? quantityOf(String decorationId) {
     return _decorations
-        .where((Decoration decoration) => decoration.id == decorationId)
+        .where((HabitatDecoration decoration) => decoration.id == decorationId)
         .firstOrNull
         ?.quantityOwned;
+  }
+
+  Iterable<HabitatDecoration> ownedDecorations() {
+    return _decorations.where((HabitatDecoration decoration) => decoration.quantityOwned > 0);
+  }
+
+  
+  Iterable<Placement> readPlacements(int roomId) {
+    return _placements.where((Placement placement) => placement.roomId == roomId);
   }
 
   // UPDATE
@@ -247,14 +283,38 @@ class AppState {
     );
   }
 
+  Future<void> updatePlacement({
+    required int placementId,
+    required int roomId,
+    required String decorationId,
+    required IntVector tileCoordinate,
+    required bool isFlipped,
+  }) async {
+    _placements.singleWhere((Placement placement) => placement.placementId == placementId)
+      ..decorationId = decorationId
+      ..isFlipped = isFlipped
+      ..tileCoordinate = tileCoordinate;
+
+    await _database.updatePlacement(
+      placementId: placementId,
+      roomId: roomId,
+      decorationId: decorationId,
+      tileCoordinate: tileCoordinate,
+      isFlipped: isFlipped,
+    );
+  }
+  
+
   // DELETE
   Future<void> deleteHabit({required int habitId}) async {
     if (await _database.deleteHabit(habitId: habitId)) {
       _habits.removeWhere((Habit habit) => habit.id == habitId);
     }
   }
-}
 
-extension<K, V> on Map<K, V> {
-  Iterable<(K, V)> get pairs => entries.map((MapEntry<K, V> entry) => (entry.key, entry.value));
+  Future<void> removePlacement({required int placementId}) async {
+    if (await _database.deletePlacement(placementId: placementId)) {
+      _placements.removeWhere((Placement placement) => placement.placementId == placementId);
+    }
+  }
 }

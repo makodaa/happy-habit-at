@@ -77,7 +77,7 @@ flutter:
     - assets/images/tiles/stone.png
     - assets/images/tiles/stone_bricks.png
     - assets/images/furniture/blue_table.png
-    # - assets/images/furniture/burgundy_table.png
+    - assets/images/furniture/burgundy_drawer.png
     - assets/images/furniture/round_glass_table.png
     - assets/images/furniture/black_steel_chair.png
     - assets/images/furniture/mocha_couch.png

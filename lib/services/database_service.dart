@@ -7,6 +7,7 @@ import "package:flutter/material.dart";
 import "package:happy_habit_at/constants/decoration_icons.dart";
 import "package:happy_habit_at/constants/pet_icons.dart";
 import "package:happy_habit_at/utils/extensions/map_pairs.dart";
+import "package:happy_habit_at/utils/type_aliases.dart";
 import "package:path/path.dart";
 import "package:sqflite/sqflite.dart";
 
@@ -42,7 +43,7 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 13,
+        version: 16,
         onUpgrade: (Database db, int oldVersion, int newVersion) async {
           /// Drop all tables.
           if (kDebugMode) {
@@ -57,11 +58,10 @@ class DatabaseService {
             DROP TABLE IF EXISTS room;
             DROP TABLE IF EXISTS placement;
           """);
-
-          // SELECT name FROM sqlite_master WHERE type='table' "
-          //     "AND name NOT LIKE 'sqlite_%'"
         },
       );
+
+      print((database: _database));
 
       if (_database case Database database) {
         List<void> existingTables = await database.query(
@@ -119,7 +119,7 @@ class DatabaseService {
             decoration_id TEXT NOT NULL REFERENCES decoration(decoration_id),
             x_coordinate INTEGER NOT NULL,
             y_coordinate INTEGER NOT NULL,
-            is_facing_left INTEGER NOT NULL
+            is_flipped INTEGER NOT NULL
           );""");
 
           /// [food] represents the statistics of the foods owned by the user.
@@ -218,7 +218,7 @@ class DatabaseService {
               tables.decoration,
               <String, Object?>{
                 "decoration_id": id,
-                "quantity_owned": 0,
+                "quantity_owned": 5,
                 "happiness_buff": decoration.happinessBuff,
                 "energy_buff": decoration.energyBuff,
               },
@@ -339,6 +339,34 @@ class DatabaseService {
     return null;
   }
 
+  Future<int?> createPlacement({
+    required int roomId,
+    required String decorationId,
+    required IntVector tileCoordinate,
+    required bool isFlipped,
+  }) async {
+    // placement_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    // room_id INTEGER NOT NULL REFERENCES room(room_id),
+    // decoration_id TEXT NOT NULL REFERENCES decoration(decoration_id),
+    // x_coordinate INTEGER NOT NULL,
+    // y_coordinate INTEGER NOT NULL,
+    // is_flipped INTEGER NOT NULL
+    if (_database case Database database) {
+      return database.insert(
+        "placement",
+        <String, Object?>{
+          "room_id": roomId,
+          "decoration_id": decorationId,
+          "x_coordinate": tileCoordinate.$1,
+          "y_coordinate": tileCoordinate.$2,
+          "is_flipped": isFlipped ? 1 : 0,
+        },
+      );
+    }
+
+    return null;
+  }
+
   // READ
   Future<List<Map<String, Object?>>> readHabits() async {
     if (_database case Database database) {
@@ -422,9 +450,6 @@ class DatabaseService {
     return null;
   }
 
-  // Transformations:
-  //    pet_x pet_y := petPosition
-  //    pet_is_flipped = (int)petIsFlipped
   Future<int?> updateRoom({
     required int id,
     required String name,
@@ -482,6 +507,29 @@ class DatabaseService {
     return null;
   }
 
+  Future<void> updatePlacement({
+    required int placementId,
+    required int roomId,
+    required String decorationId,
+    required IntVector tileCoordinate,
+    required bool isFlipped,
+  }) async {
+    if (_database case Database database) {
+      await database.update(
+        "placement",
+        <String, Object?>{
+          "room_id": roomId,
+          "decoration_id": decorationId,
+          "x_coordinate": tileCoordinate.$1,
+          "y_coordinate": tileCoordinate.$2,
+          "is_flipped": isFlipped ? 1 : 0,
+        },
+        where: "placement_id = ?",
+        whereArgs: <int>[placementId],
+      );
+    }
+  }
+
   // DELETE
   Future<bool> deleteHabit({required int habitId}) async {
     if (_database case Database database) {
@@ -497,11 +545,19 @@ class DatabaseService {
         whereArgs: <int>[habitId],
       );
 
-      if (kDebugMode) {
-        print("Habit deleted: $habitId");
-        print("The current habits are: ");
-        print(await habitDebugDisplay());
-      }
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> deletePlacement({required int placementId}) async {
+    if (_database case Database database) {
+      await database.delete(
+        "placement",
+        where: "placement_id = ?",
+        whereArgs: <int>[placementId],
+      );
 
       return true;
     }

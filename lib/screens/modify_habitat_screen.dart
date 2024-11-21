@@ -1,11 +1,13 @@
 import "dart:async";
 
-import "package:flutter/material.dart";
+import "package:flutter/material.dart" hide Decoration;
 import "package:go_router/go_router.dart";
+import "package:happy_habit_at/constants/decoration_icons.dart";
 import "package:happy_habit_at/providers/app_state.dart";
+import "package:happy_habit_at/providers/habitat_decoration.dart";
 import "package:happy_habit_at/providers/modify_habitat_state.dart";
 import "package:happy_habit_at/providers/room.dart";
-import "package:happy_habit_at/widgets/movable_game_panel.dart";
+import "package:happy_habit_at/widgets/movable_game_display.dart";
 import "package:intl/intl.dart";
 import "package:provider/provider.dart";
 import "package:scroll_animator/scroll_animator.dart";
@@ -49,7 +51,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Provider<ModifyHabitatState>.value(
+    return ChangeNotifierProvider<ModifyHabitatState>.value(
       value: modifyHabitatState,
       child: Column(
         children: <Widget>[
@@ -62,7 +64,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       _appBar(),
-                      Expanded(child: MovableGamePanel()),
+                      Expanded(child: MovableGameDisplay()),
                     ],
                   ),
                 ),
@@ -80,7 +82,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
     );
   }
 
-  LayoutBuilder _appBar() {
+  Widget _appBar() {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return AppBar(
@@ -114,7 +116,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
     );
   }
 
-  Positioned _floatingActionButtons(BuildContext context) {
+  Widget _floatingActionButtons(BuildContext context) {
     return Positioned(
       bottom: 12.0,
       right: 12.0,
@@ -134,7 +136,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
     );
   }
 
-  Positioned _userCurrency() {
+  Widget _userCurrency() {
     return Positioned(
       top: 48.0,
       right: 8.0,
@@ -180,6 +182,8 @@ class InventoryPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppState appState = context.read<AppState>();
+
     return Container(
       padding: EdgeInsets.all(12.0),
       color: Colors.white,
@@ -194,14 +198,21 @@ class InventoryPanel extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: <Widget>[
-                  for (int i = 0; i < 12; ++i) ...<Widget>[
-                    Container(
-                      width: 64.0,
-                      height: 64.0,
-                      margin: EdgeInsets.all(4.0),
-                      color: Colors.blue.shade200,
+                  for (HabitatDecoration ownedDecoration in appState.ownedDecorations())
+                    GestureDetector(
+                      onTap: () {
+                        context.read<ModifyHabitatState>()
+                          ..decorationIsNew = true
+                          ..movingDecoration = ownedDecoration;
+                      },
+                      child: Container(
+                        width: 92.0,
+                        height: 92.0,
+                        margin: EdgeInsets.all(4.0),
+                        color: Colors.blue.shade200,
+                        child: Image.asset(decorationIcons[ownedDecoration.id]!.imagePath),
+                      ),
                     ),
-                  ],
                 ],
               ),
             ),
