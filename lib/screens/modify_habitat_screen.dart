@@ -3,6 +3,7 @@ import "dart:async";
 import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/providers/app_state.dart";
+import "package:happy_habit_at/providers/modify_habitat_state.dart";
 import "package:happy_habit_at/providers/room.dart";
 import "package:happy_habit_at/widgets/movable_game_panel.dart";
 import "package:intl/intl.dart";
@@ -18,25 +19,24 @@ class ModifyHabitatScreen extends StatefulWidget {
 
 class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
   late final TextEditingController roomNameController;
+
   late final AppState appState;
+  late final ModifyHabitatState modifyHabitatState;
+
   late Room activeRoom;
-  bool hasInitialized = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    if (!hasInitialized) {
-      appState = context.read<AppState>();
-      activeRoom = appState.activeRoom.value;
+    appState = context.read<AppState>();
+    modifyHabitatState = ModifyHabitatState();
+    activeRoom = appState.activeRoom.value;
 
-      roomNameController = TextEditingController(text: activeRoom.name);
+    roomNameController = TextEditingController(text: activeRoom.name);
 
-      appState.activeRoom.addListener(_changeRoom);
-      appState.activeRoom.value.addListener(_listener);
-
-      hasInitialized = true;
-    }
+    appState.activeRoom.addListener(_changeRoom);
+    appState.activeRoom.value.addListener(_listener);
   }
 
   @override
@@ -49,103 +49,115 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Expanded(
-          child: Stack(
-            children: <Widget>[
-              ColoredBox(
-                color: Color(0xFF41B06E),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    LayoutBuilder(
-                      builder: (BuildContext context, BoxConstraints constraints) {
-                        return AppBar(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Colors.transparent,
-                          title: Center(
-                            child: SizedBox(
-                              width: constraints.maxWidth * 0.75,
-                              child: TextField(
-                                /// Textfield with a white underline and white colored text.
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 21.0,
-                                ),
-                                decoration: InputDecoration(
-                                  enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.white),
-                                  ),
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.white),
-                                  ),
-                                ),
-                                textAlign: TextAlign.center,
-                                controller: roomNameController,
-                              ),
-                            ),
-                          ),
-                          automaticallyImplyLeading: false,
-                        );
-                      },
-                    ),
-                    Expanded(
-                      child: MovableGamePanel(),
-                    ),
-                  ],
-                ),
-              ),
-
-              /// User currency
-              Positioned(
-                top: 48.0,
-                right: 8.0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    ValueListenableBuilder<int>(
-                      valueListenable: appState.currency,
-                      builder: (BuildContext context, int value, Widget? child) {
-                        NumberFormat formatter = NumberFormat("#,##0", "en_US");
-
-                        return Text(
-                          formatter.format(value),
-                          style: TextStyle(color: Colors.white),
-                        );
-                      },
-                    ),
-                    Icon(
-                      Icons.circle,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-
-              /// Floating Action Buttons
-              Positioned(
-                bottom: 12.0,
-                right: 12.0,
-                child: FloatingActionButton(
-                  heroTag: "enterCustomizationButton",
-                  backgroundColor: Colors.blue.shade200,
-                  onPressed: () {
-                    appState.activeRoom.value.name = roomNameController.text;
-                    unawaited(appState.commitRoomChanges());
-                    context.go("/habitat");
-                  },
-                  child: Icon(
-                    Icons.build,
-                    color: Colors.white,
+    return Provider<ModifyHabitatState>.value(
+      value: modifyHabitatState,
+      child: Column(
+        children: <Widget>[
+          Expanded(
+            child: Stack(
+              children: <Widget>[
+                ColoredBox(
+                  color: Color(0xFF41B06E),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      _appBar(),
+                      Expanded(child: MovableGamePanel()),
+                    ],
                   ),
                 ),
-              ),
-            ],
+
+                _userCurrency(),
+
+                /// Floating Action Buttons
+                _floatingActionButtons(context),
+              ],
+            ),
           ),
+          InventoryPanel(),
+        ],
+      ),
+    );
+  }
+
+  LayoutBuilder _appBar() {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return AppBar(
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
+          title: Center(
+            child: SizedBox(
+              width: constraints.maxWidth * 0.75,
+              child: TextField(
+                /// Textfield with a white underline and white colored text.
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 21.0,
+                ),
+                decoration: InputDecoration(
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                ),
+                textAlign: TextAlign.center,
+                controller: roomNameController,
+              ),
+            ),
+          ),
+          automaticallyImplyLeading: false,
+        );
+      },
+    );
+  }
+
+  Positioned _floatingActionButtons(BuildContext context) {
+    return Positioned(
+      bottom: 12.0,
+      right: 12.0,
+      child: FloatingActionButton(
+        heroTag: "enterCustomizationButton",
+        backgroundColor: Colors.blue.shade200,
+        onPressed: () {
+          appState.activeRoom.value.name = roomNameController.text;
+          unawaited(appState.commitRoomChanges());
+          context.go("/habitat");
+        },
+        child: Icon(
+          Icons.build,
+          color: Colors.white,
         ),
-        InventoryPanel(),
-      ],
+      ),
+    );
+  }
+
+  Positioned _userCurrency() {
+    return Positioned(
+      top: 48.0,
+      right: 8.0,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          ValueListenableBuilder<int>(
+            valueListenable: appState.currency,
+            builder: (BuildContext context, int value, Widget? child) {
+              NumberFormat formatter = NumberFormat("#,##0", "en_US");
+
+              return Text(
+                formatter.format(value),
+                style: TextStyle(color: Colors.white),
+              );
+            },
+          ),
+          Icon(
+            Icons.circle,
+            color: Colors.white,
+          ),
+        ],
+      ),
     );
   }
 

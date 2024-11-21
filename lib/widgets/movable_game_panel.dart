@@ -27,11 +27,10 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
   late final AppState appState;
   late Room activeRoom;
 
-  bool hasInitialized = false;
-
   /// This is the screen offset of the pet.
   Offset temporaryPetOffset = Offset.zero;
   IntVector temporaryPetTileOffset = (0, 0);
+  bool petIsLocked = true;
 
   /// This is the position of the pet in the tile grid.
   IntVector get petPosition => activeRoom.petPosition;
@@ -47,6 +46,11 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
   @override
   void initState() {
     super.initState();
+
+    appState = context.read<AppState>();
+    activeRoom = appState.activeRoom.value;
+    appState.activeRoom.addListener(_changeRoom);
+    appState.activeRoom.value.addListener(_listener);
   }
 
   @override
@@ -55,20 +59,6 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
     appState.activeRoom.removeListener(_changeRoom);
 
     super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (!hasInitialized) {
-      appState = context.read<AppState>();
-      activeRoom = appState.activeRoom.value;
-      appState.activeRoom.addListener(_changeRoom);
-      appState.activeRoom.value.addListener(_listener);
-
-      hasInitialized = true;
-    }
   }
 
   @override
@@ -131,12 +121,25 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
       top: y,
       left: x,
       child: GestureDetector(
+        onTap: () {
+          setState(() {
+            petIsLocked ^= true;
+          });
+        },
         onDoubleTap: () {
+          if (petIsLocked) {
+            return;
+          }
+
           setState(() {
             petIsFlipped ^= true;
           });
         },
         onPanEnd: (DragEndDetails details) {
+          if (petIsLocked) {
+            return;
+          }
+
           setState(() {
             /// Commit the temporary offset.
             petPosition += temporaryPetTileOffset;
@@ -147,6 +150,10 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
           });
         },
         onPanUpdate: (DragUpdateDetails details) {
+          if (petIsLocked) {
+            return;
+          }
+
           temporaryPetOffset += details.delta;
 
           /// We get the current screen offset of the pet
@@ -165,9 +172,13 @@ class _MovableGamePanelState extends State<MovableGamePanel> {
           child: Transform.flip(
             flipX: isFlipped,
             child: Image(
-              image: AssetImage(path),
+              image: AssetImage(
+                path,
+              ),
               width: width,
               height: height,
+              color: petIsLocked ? null : Colors.blue,
+              colorBlendMode: petIsLocked ? null : BlendMode.srcIn,
             ),
           ),
         ),
