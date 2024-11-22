@@ -21,11 +21,6 @@ class ModifyHabitScreen extends StatefulWidget {
   State<ModifyHabitScreen> createState() => _ModifyHabitScreenState();
 }
 
-/// TODO(@anyone): Implement the icon picker.
-///   Requirements:
-///     1. Define a set of usable icons.
-///     2. Implement a way to select an icon. (modal?)
-
 class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
   // Private constants
   static const TextDirection textDirection = TextDirection.ltr;

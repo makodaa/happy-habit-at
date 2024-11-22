@@ -37,6 +37,9 @@ class AppState {
   final ListenableList<HabitatDecoration> _decorations = ListenableList<HabitatDecoration>();
   ImmutableListenableList<HabitatDecoration> get decorations => _decorations.immutable;
 
+  final ListenableList<HabitatDecoration> _ownedDecorations = ListenableList<HabitatDecoration>();
+  ImmutableListenableList<HabitatDecoration> get ownedDecorations => _ownedDecorations.immutable;
+
   late final ValueNotifier<int> currency;
   late final ValueNotifier<Room> activeRoom;
 
@@ -66,6 +69,12 @@ class AppState {
 
     for (Map<String, Object?> decorationMap in await _database.readDecorations()) {
       _decorations.add(HabitatDecoration.fromMap(decorationMap));
+    }
+
+    for (HabitatDecoration decoration in _decorations) {
+      if (decoration.quantityOwned > 0) {
+        _ownedDecorations.add(decoration);
+      }
     }
 
     /// Initialize the last active room.
@@ -167,6 +176,22 @@ class AppState {
     );
 
     if (placementId case int placementId) {
+      /// We reduce the quantity of the owned decoration.
+      HabitatDecoration decoration = _decorations.singleWhere(
+        (HabitatDecoration d) => d.id == decorationId,
+      );
+      decoration.quantityOwned--;
+      if (decoration.quantityOwned <= 0) {
+        _ownedDecorations.remove(decoration);
+      }
+
+      await _database.updateDecoration(
+        decorationId: decorationId,
+        quantityOwned: decoration.quantityOwned,
+        happinessBuff: decoration.happinessBuff,
+        energyBuff: decoration.energyBuff,
+      );
+
       _placements.add(
         Placement(
           placementId: placementId,
@@ -224,11 +249,6 @@ class AppState {
         ?.quantityOwned;
   }
 
-  Iterable<HabitatDecoration> ownedDecorations() {
-    return _decorations.where((HabitatDecoration decoration) => decoration.quantityOwned > 0);
-  }
-
-  
   Iterable<Placement> readPlacements(int roomId) {
     return _placements.where((Placement placement) => placement.roomId == roomId);
   }
@@ -303,7 +323,6 @@ class AppState {
       isFlipped: isFlipped,
     );
   }
-  
 
   // DELETE
   Future<void> deleteHabit({required int habitId}) async {
@@ -314,7 +333,25 @@ class AppState {
 
   Future<void> deletePlacement({required int placementId}) async {
     if (await _database.deletePlacement(placementId: placementId)) {
-      _placements.removeWhere((Placement placement) => placement.placementId == placementId);
+      Placement placementToRemove = _placements.firstWhere(
+        (Placement placement) => placement.placementId == placementId,
+      );
+      _placements.remove(placementToRemove);
+
+      HabitatDecoration decoration = _decorations.singleWhere(
+        (HabitatDecoration d) => d.id == placementToRemove.decorationId,
+      );
+      decoration.quantityOwned++;
+      if (decoration.quantityOwned > 0) {
+        _ownedDecorations.add(decoration);
+      }
+
+      await _database.updateDecoration(
+        decorationId: placementToRemove.decorationId,
+        quantityOwned: decoration.quantityOwned,
+        happinessBuff: decoration.happinessBuff,
+        energyBuff: decoration.energyBuff,
+      );
     }
   }
 }

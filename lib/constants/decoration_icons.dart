@@ -590,7 +590,7 @@ const Map<String, DecorationIcon> decorationIcons = <String, DecorationIcon>{
     category: DecorationCategory.smallDecoration,
     displayOffset: DisplayOffset(
       defaultOffset: (-8, -12),
-      flippedOffset: (0, 0),
+      flippedOffset: (-8, -12),
       baseOffset: (-2, -2),
     ),
   ),

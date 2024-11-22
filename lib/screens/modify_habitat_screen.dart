@@ -196,24 +196,63 @@ class InventoryPanel extends StatelessWidget {
             child: SingleChildScrollView(
               controller: AnimatedScrollController(animationFactory: ChromiumImpulse()),
               scrollDirection: Axis.horizontal,
-              child: Row(
-                children: <Widget>[
-                  for (HabitatDecoration ownedDecoration in appState.ownedDecorations())
-                    GestureDetector(
-                      onTap: () {
-                        context.read<ModifyHabitatState>()
-                          ..decorationIsNew = true
-                          ..movingDecoration = ownedDecoration;
-                      },
-                      child: Container(
-                        width: 92.0,
-                        height: 92.0,
-                        margin: EdgeInsets.all(4.0),
-                        color: Colors.blue.shade200,
-                        child: Image.asset(decorationIcons[ownedDecoration.id]!.imagePath),
-                      ),
-                    ),
-                ],
+              child: ListenableBuilder(
+                listenable: appState.ownedDecorations,
+                builder: (BuildContext context, _) {
+                  return Row(
+                    children: <Widget>[
+                      for (HabitatDecoration ownedDecoration in appState.ownedDecorations)
+                        ListenableBuilder(
+                          listenable: ownedDecoration,
+                          builder: (BuildContext context, Widget? child) {
+                            return GestureDetector(
+                              onTap: () {
+                                if (ownedDecoration.quantityOwned > 0) {
+                                  context.read<ModifyHabitatState>()
+                                    ..decorationIsNew = true
+                                    ..movingDecoration = ownedDecoration;
+                                }
+                              },
+                              child: Stack(
+                                children: <Widget>[
+                                  Container(
+                                    width: 92.0,
+                                    height: 92.0,
+                                    margin: EdgeInsets.all(4.0),
+                                    color: Colors.blue.shade200,
+                                    child: Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Image.asset(
+                                        decorationIcons[ownedDecoration.id]!.imagePath,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 0.0,
+                                    right: 0.0,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12.0),
+                                      child: Container(
+                                        width: 24.0,
+                                        height: 24.0,
+                                        color: Colors.red[300],
+                                        child: Center(
+                                          child: Text(
+                                            "${ownedDecoration.quantityOwned}",
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                    ],
+                  );
+                },
               ),
             ),
           ),

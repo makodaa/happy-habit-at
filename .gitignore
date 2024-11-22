@@ -44,3 +44,5 @@ app.*.map.json
 /android/app/release
 android/local.properties
 pubspec.lock
+
+session_note.txt

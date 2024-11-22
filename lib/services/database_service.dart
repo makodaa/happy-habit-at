@@ -43,7 +43,7 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 18,
+        version: 19,
         onUpgrade: (Database db, int oldVersion, int newVersion) async {
           /// Drop all tables.
           if (kDebugMode) {
@@ -220,7 +220,7 @@ class DatabaseService {
               tables.decoration,
               <String, Object?>{
                 "decoration_id": id,
-                "quantity_owned": 5,
+                "quantity_owned": 1,
                 "happiness_buff": decoration.happinessBuff,
                 "energy_buff": decoration.energyBuff,
               },
@@ -528,6 +528,30 @@ class DatabaseService {
         },
         where: "placement_id = ?",
         whereArgs: <int>[placementId],
+      );
+    }
+  }
+
+  // decoration_id TEXT PRIMARY KEY,
+  // quantity_owned INTEGER NOT NULL,
+  // happiness_buff REAL NOT NULL,
+  // energy_buff REAL NOT NULL
+  Future<void> updateDecoration({
+    required String decorationId,
+    required int quantityOwned,
+    required double happinessBuff,
+    required double energyBuff,
+  }) async {
+    if (_database case Database database) {
+      await database.update(
+        "decoration",
+        <String, Object?>{
+          "quantity_owned": quantityOwned,
+          "happiness_buff": happinessBuff,
+          "energy_buff": energyBuff,
+        },
+        where: "decoration_id = ?",
+        whereArgs: <Object?>[decorationId],
       );
     }
   }
