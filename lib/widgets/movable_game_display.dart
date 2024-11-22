@@ -44,6 +44,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
   int? placementId;
   // end of moving decoration fields
 
+  // These are the fields related to the moving pet.
   /// This is true if the decoration is new (i.e. a placement does not exist yet.)
   bool decorationIsNew = false;
 
@@ -356,8 +357,22 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
           /// We get the current screen offset of the pet
           ///   (Where it is currently on the screen).
           IntVector tileAdjustment = _floorTilePositionFromRelativeOffset(temporaryPetOffset.pair);
-          if ((tileAdjustment + petPosition).exceeds((0, 0), (activeRoom.size, activeRoom.size))) {
-            return;
+          var (IntVector newPoint) = tileAdjustment + //
+              temporaryPetTileVector +
+              petPosition;
+          var (int dx, int dy) = (activeRoom.size, activeRoom.size) - newPoint;
+
+          /// We have crossed the boundary at bottom right.
+          if (dx <= 0) {
+            tileAdjustment = (tileAdjustment.$1 - (dx.abs() + 1), tileAdjustment.$2);
+          } else if (dx > activeRoom.size) {
+            tileAdjustment = (tileAdjustment.$1 + (activeRoom.size - dx).abs(), tileAdjustment.$2);
+          }
+
+          if (dy <= 0) {
+            tileAdjustment = (tileAdjustment.$1, tileAdjustment.$2 - (dy.abs() + 1));
+          } else if (dy > activeRoom.size) {
+            tileAdjustment = (tileAdjustment.$1, tileAdjustment.$2 + (activeRoom.size - dy).abs());
           }
 
           setState(() {
@@ -410,11 +425,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
       top: y,
       left: x,
       child: GestureDetector(
-        onTap: () {
-          // setState(() {
-          //   petIsLocked ^= true;
-          // });
-        },
+        behavior: HitTestBehavior.opaque,
         onPanEnd: (DragEndDetails details) {
           setState(() {
             /// Commit the temporary offset.
@@ -434,9 +445,22 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
             temporaryDecorationOffset.pair,
           );
 
-          if ((tileAdjustment + decorationPosition)
-              .exceeds((0, 0), (activeRoom.size, activeRoom.size))) {
-            return;
+          var (IntVector newPoint) = tileAdjustment + //
+              temporaryDecorationTileVector +
+              decorationPosition;
+          var (int dx, int dy) = (activeRoom.size, activeRoom.size) - newPoint;
+
+          /// We have crossed the boundary at bottom right.
+          if (dx <= 0) {
+            tileAdjustment = (tileAdjustment.$1 - (dx.abs() + 1), tileAdjustment.$2);
+          } else if (dx > activeRoom.size) {
+            tileAdjustment = (tileAdjustment.$1 + (activeRoom.size - dx).abs(), tileAdjustment.$2);
+          }
+
+          if (dy <= 0) {
+            tileAdjustment = (tileAdjustment.$1, tileAdjustment.$2 - (dy.abs() + 1));
+          } else if (dy > activeRoom.size) {
+            tileAdjustment = (tileAdjustment.$1, tileAdjustment.$2 + (activeRoom.size - dy).abs());
           }
 
           setState(() {
@@ -510,9 +534,17 @@ extension on Offset {
 }
 
 extension on IntVector {
+  IntVector clamp(IntVector min, IntVector max) {
+    return (
+      math.max(min.$1, math.min(max.$1, this.$1)),
+      math.max(min.$2, math.min(max.$2, this.$2)),
+    );
+  }
+
   bool exceeds(IntVector min, IntVector max) {
     return this.$1 < min.$1 || this.$1 >= max.$1 || this.$2 < min.$2 || this.$2 >= max.$2;
   }
 
   IntVector operator +(IntVector other) => (this.$1 + other.$1, this.$2 + other.$2);
+  IntVector operator -(IntVector other) => (this.$1 - other.$1, this.$2 - other.$2);
 }

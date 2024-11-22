@@ -43,7 +43,7 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 16,
+        version: 17,
         onUpgrade: (Database db, int oldVersion, int newVersion) async {
           /// Drop all tables.
           if (kDebugMode) {
@@ -66,9 +66,11 @@ class DatabaseService {
       if (_database case Database database) {
         List<void> existingTables = await database.query(
           "sqlite_master",
-          where: "type = ? AND name NOT LIKE ?",
-          whereArgs: <String>["table", "sqlite_%"],
+          where: "type = ? AND name NOT LIKE ? AND name NOT LIKE ?",
+          whereArgs: <String>["table", "sqlite_%", "android_%"],
         );
+
+        print(existingTables);
 
         if (existingTables case []) {
           /// [habit] represents the different habits the user adds to the system.
