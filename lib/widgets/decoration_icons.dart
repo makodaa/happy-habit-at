@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:happy_habit_at/constants/furniture_categories.dart";
+import "package:happy_habit_at/constants/decoration_category.dart";
 import "package:scroll_animator/scroll_animator.dart";
 
 class DecorationIcons extends StatelessWidget {

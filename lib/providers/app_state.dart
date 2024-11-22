@@ -20,7 +20,7 @@ import "package:happy_habit_at/utils/type_aliases.dart";
 class AppState {
   bool _hasInitialized = false;
 
-  DatabaseService _database = DatabaseService();
+  final DatabaseService _database = DatabaseService();
 
   final ListenableList<Habit> _habits = ListenableList<Habit>();
   ImmutableListenableList<Habit> get habits => _habits.immutable;
@@ -312,7 +312,7 @@ class AppState {
     }
   }
 
-  Future<void> removePlacement({required int placementId}) async {
+  Future<void> deletePlacement({required int placementId}) async {
     if (await _database.deletePlacement(placementId: placementId)) {
       _placements.removeWhere((Placement placement) => placement.placementId == placementId);
     }

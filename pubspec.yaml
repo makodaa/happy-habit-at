@@ -169,7 +169,8 @@ flutter:
     - assets/images/trees/tree10.png
     - assets/images/trees/tree11.png
     - assets/images/trees/tree12.png
-    - assets/images/trees/ytree1.png
+    - assets/images/trees/ytree.png
+    - assets/images/trees/ytree2.png
     - assets/images/trees/ytree2.png
     - assets/images/trees/ytree3.png
     - assets/images/trees/ytree4.png
@@ -178,6 +179,7 @@ flutter:
     - assets/images/trees/ytree7.png
     - assets/images/trees/ytree8.png
     - assets/images/trees/ytree9.png
+    - assets/images/trees/ytree11.png
     - assets/images/foods/cat_food_pack.png
     - assets/images/foods/cup_bowl.png
     - assets/images/foods/food_bag.png

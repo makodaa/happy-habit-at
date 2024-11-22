@@ -1,10 +1,13 @@
 import "dart:math" as math;
 
 import "package:flutter/material.dart";
+import "package:happy_habit_at/constants/decoration_icons.dart";
 import "package:happy_habit_at/constants/pet_icons.dart";
 import "package:happy_habit_at/constants/tile_icons.dart";
 import "package:happy_habit_at/providers/app_state.dart";
+import "package:happy_habit_at/providers/placement.dart";
 import "package:happy_habit_at/providers/room.dart";
+import "package:happy_habit_at/structs/display_offset.dart";
 import "package:happy_habit_at/utils/type_aliases.dart";
 import "package:provider/provider.dart";
 
@@ -68,7 +71,11 @@ class _GameDisplayState extends State<GameDisplay> {
         builder: (BuildContext context, BoxConstraints constraints) => Stack(
           children: <Widget>[
             ..._floorTileWidgets(constraints),
-            if (_petWidget(constraints) case Widget widget) widget,
+            ...(<(Index, Widget)>[
+              ..._placedDecorationWidgets(constraints),
+              if (_petWidget(constraints) case Indexed<Widget> widget) widget,
+            ]..sort(_compareManhattanDistance))
+                .map((Indexed<Widget> p) => p.$2),
           ],
         ),
       ),
@@ -96,7 +103,7 @@ class _GameDisplayState extends State<GameDisplay> {
     ];
   }
 
-  Widget? _petWidget(BoxConstraints constraints) {
+  (Index, Widget)? _petWidget(BoxConstraints constraints) {
     PetIcon? petIcon = petIcons[appState.activeRoom.value.petId];
     if (petIcon == null) {
       return null;
@@ -105,29 +112,73 @@ class _GameDisplayState extends State<GameDisplay> {
     var PetIcon(
       :String path,
       dimensions: (double width, double height),
-      defaultOffset: (double dx, double dy),
-      flippedOffset: (double dxF, double dyF),
-      baseOffset: IntVector offset,
+      displayOffset: DisplayOffset(
+        defaultOffset: (double dx, double dy),
+        flippedOffset: (double dxF, double dyF),
+        baseOffset: IntVector offset,
+      ),
       :bool imageIsFacingLeft,
     ) = petIcon;
     var (double x, double y) = _screenPositionFromFloorTile(petPosition + offset, constraints);
     bool isFlipped = imageIsFacingLeft ^ petIsFlipped;
 
-    return Positioned(
-      top: y,
-      left: x,
-      child: Transform.translate(
-        offset: isFlipped ? Offset(dxF, dyF) : Offset(dx, dy),
-        child: Transform.flip(
-          flipX: isFlipped,
-          child: Image(
-            image: AssetImage(path),
-            width: width,
-            height: height,
+    return (
+      petPosition,
+      Positioned(
+        top: y,
+        left: x,
+        child: Transform.translate(
+          offset: isFlipped ? Offset(dxF, dyF) : Offset(dx, dy),
+          child: Transform.flip(
+            flipX: isFlipped,
+            child: Image(
+              image: AssetImage(path),
+              width: width,
+              height: height,
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Iterable<(Index, Widget)> _placedDecorationWidgets(BoxConstraints constraints) sync* {
+    for (Placement placement in appState.readPlacements(appState.activeRoom.value.id)) {
+      var Placement(
+        :int placementId,
+        :String decorationId,
+        :IntVector tileCoordinate,
+      ) = placement;
+      var DecorationIcon(
+        :String imagePath,
+        :bool isFacingLeft,
+        imageDimensions: (double width, double height),
+        displayOffset: DisplayOffset(
+          baseOffset: IntVector baseOffset,
+          defaultOffset: (double dx, double dy),
+          flippedOffset: (double fdx, double fdy),
+        ),
+      ) = decorationIcons[decorationId]!;
+      var (double nx, double ny) =
+          _screenPositionFromFloorTile(tileCoordinate + baseOffset, constraints);
+      bool isFlipped = placement.isFlipped;
+
+      yield (
+        tileCoordinate,
+        Positioned(
+          top: ny + (isFlipped ? fdy : dy),
+          left: nx + (isFlipped ? fdx : dx),
+          child: Transform.flip(
+            flipX: placement.isFlipped,
+            child: Image.asset(
+              width: width,
+              height: height,
+              imagePath,
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   Vector _screenPositionFromFloorTile(IntVector position, BoxConstraints constraints) {
@@ -141,6 +192,10 @@ class _GameDisplayState extends State<GameDisplay> {
     );
 
     return (nx, ny);
+  }
+
+  int _compareManhattanDistance((Index, Widget) a, (Index, Widget) b) {
+    return (a.$1.$1 + a.$1.$2) - (b.$1.$1 + b.$1.$2);
   }
 
   void _changeRoom() {

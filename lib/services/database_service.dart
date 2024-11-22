@@ -43,7 +43,7 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 17,
+        version: 18,
         onUpgrade: (Database db, int oldVersion, int newVersion) async {
           /// Drop all tables.
           if (kDebugMode) {

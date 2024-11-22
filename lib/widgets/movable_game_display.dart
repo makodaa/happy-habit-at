@@ -9,6 +9,7 @@ import "package:happy_habit_at/providers/habitat_decoration.dart";
 import "package:happy_habit_at/providers/modify_habitat_state.dart";
 import "package:happy_habit_at/providers/placement.dart";
 import "package:happy_habit_at/providers/room.dart";
+import "package:happy_habit_at/structs/display_offset.dart";
 import "package:happy_habit_at/utils/type_aliases.dart";
 import "package:provider/provider.dart";
 
@@ -41,7 +42,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
   IntVector temporaryDecorationTileVector = (0, 0);
   IntVector temporaryDecorationDraggingTileVector = (0, 0);
   bool decorationIsFlipped = false;
-  int? placementId;
+  int? movingPlacementId;
   // end of moving decoration fields
 
   // These are the fields related to the moving pet.
@@ -80,7 +81,6 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
     appState = context.read<AppState>();
     modifyHabitatState = context.read<ModifyHabitatState>() //
       ..addListener(() {
-        print((modifyHabitatState.movingDecoration, movingDecoration));
         if (modifyHabitatState.movingDecoration == null) {
           movingDecoration = null;
           temporaryDecorationOffset = Offset.zero;
@@ -144,23 +144,21 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
               ),
             ),
           ..._floorTileWidgets(constraints),
-          for (Placement placement in appState.readPlacements(appState.activeRoom.value.id))
-            if (placement case Placement(:(int, int) tileCoordinate))
-              if (_screenPositionFromFloorTile(tileCoordinate, constraints)
-                  case (double nx, double ny))
-                Positioned(
-                  top: ny,
-                  left: nx,
-                  child: Transform.flip(
-                    flipX: placement.isFlipped,
-                    child: Image.asset(
-                      width: 48,
-                      height: 48,
-                      decorationIcons[placement.decorationId]!.imagePath,
-                    ),
-                  ),
-                ),
-          if (_petWidget(constraints) case Widget widget) widget,
+          ...(<(Index, Widget)>[
+            ..._placedDecorationWidgets(constraints)
+              ..forEach(((Index, Widget) decor) {
+                print((decor: decor));
+              }),
+            if (_petWidget(constraints) case Indexed<Widget> widget when petIsLocked)
+              () {
+                print((pet: widget));
+                return widget;
+              }(),
+          ]..sort(_compareManhattanDistance))
+              .map((Indexed<Widget> p) => p.$2),
+
+          /// If we are moving them, we should prioritize them at the stack.
+          if (_petWidget(constraints) case (_, Widget widget) when !petIsLocked) widget,
           if (_movingFurnitureWidget(constraints) case Widget widget) widget,
         ],
       ),
@@ -181,15 +179,13 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
               if (!petIsLocked) {
                 petPosition += temporaryPetTileVector;
 
-                temporaryPetOffset = Offset.zero;
-                temporaryPetTileVector = (0, 0);
-                temporaryPetDraggingTileVector = (0, 0);
+                setState(() {
+                  temporaryPetOffset = Offset.zero;
+                  temporaryPetTileVector = (0, 0);
+                  temporaryPetDraggingTileVector = (0, 0);
 
-                petIsLocked = true;
-
-                if (context case StatefulElement element) {
-                  element.markNeedsBuild();
-                }
+                  petIsLocked = true;
+                });
               } else if (movingDecoration case HabitatDecoration movingDecoration) {
                 decorationPosition += temporaryDecorationTileVector;
 
@@ -209,18 +205,20 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
                 } else {
                   await appState.updatePlacement(
                     roomId: appState.activeRoom.value.id,
-                    placementId: placementId!,
+                    placementId: movingPlacementId!,
                     decorationId: movingDecoration.id,
                     tileCoordinate: decorationPosition,
                     isFlipped: decorationIsFlipped,
                   );
                 }
 
-                this.movingDecoration = null;
+                setState(() {
+                  modifyHabitatState
+                    ..movingDecoration = null
+                    ..decorationIsNew = null;
 
-                if (context case StatefulElement element) {
-                  element.markNeedsBuild();
-                }
+                  movingPlacementId = null;
+                });
               } else {
                 throw Exception("Invalid state.");
               }
@@ -228,10 +226,11 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
             icon: Icon(Icons.check),
           ),
           const SizedBox(width: 24.0),
+
+          /// Flip the icon.
           IconButton.filled(
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.grey[400],
-            ),
+            icon: Icon(Icons.flip),
+            style: IconButton.styleFrom(backgroundColor: Colors.grey[400]),
             onPressed: () {
               /// We flip the decoration / pet.
 
@@ -247,62 +246,144 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
                 throw Exception("Invalid state.");
               }
             },
-            icon: Icon(Icons.flip),
           ),
-          const SizedBox(width: 24.0),
-          IconButton.filled(
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.red[300],
-            ),
-            onPressed: () {
-              /// We cancel the movement.
 
-              if (!petIsLocked) {
+          if (!petIsLocked || movingPlacementId != null) ...<Widget>[
+            const SizedBox(width: 24.0),
+
+            /// We cancel the movement.
+            IconButton.filled(
+              icon: Icon(Icons.keyboard_return_rounded),
+              style: IconButton.styleFrom(backgroundColor: Colors.orange[300]),
+              onPressed: () {
+                if (!petIsLocked) {
+                  setState(() {
+                    temporaryPetOffset = Offset.zero;
+                    temporaryPetTileVector = (0, 0);
+                    temporaryPetDraggingTileVector = (0, 0);
+                    petIsLocked = true;
+                  });
+                } else if (movingDecoration != null) {
+                  setState(() {
+                    modifyHabitatState
+                      ..movingDecoration = null
+                      ..decorationIsNew = null;
+
+                    movingPlacementId = null;
+                  });
+                } else {
+                  throw Exception("Invalid state.");
+                }
+              },
+            ),
+          ],
+
+          if (movingDecoration != null) ...<Widget>[
+            const SizedBox(width: 24.0),
+
+            /// We delete the decoration.
+            IconButton.filled(
+              icon: Icon(Icons.close),
+              style: IconButton.styleFrom(backgroundColor: Colors.red[300]),
+              onPressed: () async {
+                if (movingPlacementId case int placementId) {
+                  await appState.deletePlacement(placementId: placementId);
+                }
+
                 setState(() {
-                  temporaryPetOffset = Offset.zero;
-                  temporaryPetTileVector = (0, 0);
-                  temporaryPetDraggingTileVector = (0, 0);
-                  petIsLocked = true;
+                  modifyHabitatState
+                    ..movingDecoration = null
+                    ..decorationIsNew = null;
+
+                  movingPlacementId = null;
                 });
-              } else if (movingDecoration != null) {
-                setState(() {
-                  temporaryDecorationOffset = Offset.zero;
-                  temporaryDecorationTileVector = (0, 0);
-                  temporaryDecorationDraggingTileVector = (0, 0);
-                  movingDecoration = null;
-                });
-              } else {
-                throw Exception("Invalid state.");
-              }
-            },
-            icon: Icon(Icons.close),
-          ),
+              },
+            ),
+          ],
         ],
       ),
     );
   }
 
-  List<Widget> _floorTileWidgets(BoxConstraints constraints) {
+  Iterable<Widget> _floorTileWidgets(BoxConstraints constraints) sync* {
     Room room = appState.activeRoom.value;
 
-    return <Widget>[
-      for (var (int y, int x) in room.size.times(room.size))
-        if (_screenPositionFromFloorTile((x, y), constraints) case (double nx, double ny))
-          Positioned(
-            top: ny,
-            left: nx,
-            child: Transform.scale(
-              scale: 1.62,
+    for (var (int y, int x) in room.size.times(room.size)) {
+      if (_screenPositionFromFloorTile((x, y), constraints) case (double nx, double ny)) {
+        yield Positioned(
+          top: ny,
+          left: nx,
+          child: Transform.scale(
+            scale: 1.62,
+            child: Image.asset(
+              tileIcons[room.tileId]!.path,
+              width: rotatedTileWidth,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Iterable<(Index, Widget)> _placedDecorationWidgets(BoxConstraints constraints) sync* {
+    for (Placement placement in appState.readPlacements(appState.activeRoom.value.id)) {
+      if (placement.placementId == movingPlacementId) {
+        continue;
+      }
+
+      var Placement(
+        :int placementId,
+        :String decorationId,
+        :IntVector tileCoordinate,
+      ) = placement;
+      var DecorationIcon(
+        :String imagePath,
+        :bool isFacingLeft,
+        imageDimensions: (double width, double height),
+        displayOffset: DisplayOffset(
+          baseOffset: IntVector baseOffset,
+          defaultOffset: (double dx, double dy),
+          flippedOffset: (double fdx, double fdy),
+        ),
+      ) = decorationIcons[decorationId]!;
+      var (double nx, double ny) =
+          _screenPositionFromFloorTile(tileCoordinate + baseOffset, constraints);
+      bool isFlipped = placement.isFlipped;
+
+      yield (
+        tileCoordinate,
+        Positioned(
+          top: ny + (isFlipped ? fdy : dy),
+          left: nx + (isFlipped ? fdx : dx),
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              setState(() {
+                modifyHabitatState
+                  ..decorationIsNew = false
+                  ..movingDecoration = appState.decorations //
+                      .firstWhere((HabitatDecoration d) => d.id == decorationId);
+
+                movingPlacementId = placementId;
+                decorationPosition = tileCoordinate;
+                decorationIsFlipped = isFlipped;
+              });
+            },
+            child: Transform.flip(
+              flipX: placement.isFlipped,
               child: Image.asset(
-                tileIcons[room.tileId]!.path,
-                width: rotatedTileWidth,
+                width: width,
+                height: height,
+                imagePath,
               ),
             ),
           ),
-    ];
+        ),
+      );
+    }
   }
 
-  Widget? _petWidget(BoxConstraints constraints) {
+  (Index, Widget)? _petWidget(BoxConstraints constraints) {
     PetIcon? petIcon = petIcons[appState.activeRoom.value.petId];
     if (petIcon == null) {
       return null;
@@ -311,9 +392,11 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
     var PetIcon(
       :String path,
       dimensions: (double width, double height),
-      defaultOffset: (double dx, double dy),
-      flippedOffset: (double dxF, double dyF),
-      baseOffset: IntVector offset,
+      displayOffset: DisplayOffset(
+        defaultOffset: (double dx, double dy),
+        flippedOffset: (double fdx, double fdy),
+        baseOffset: IntVector offset,
+      ),
       :bool imageIsFacingLeft,
     ) = petIcon;
 
@@ -323,64 +406,67 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
     );
     bool isFlipped = imageIsFacingLeft ^ petIsFlipped;
 
-    return Positioned(
-      top: y,
-      left: x,
-      child: GestureDetector(
-        behavior: petIsLocked ? HitTestBehavior.translucent : HitTestBehavior.deferToChild,
-        onTap: () {
-          setState(() {
-            petIsLocked ^= true;
-          });
-        },
-        onPanEnd: (DragEndDetails details) {
-          if (petIsLocked) {
-            return;
-          }
+    return (
+      petPosition,
+      Positioned(
+        top: y + (isFlipped ? fdy : dy),
+        left: x + (isFlipped ? fdx : dx),
+        child: GestureDetector(
+          behavior: petIsLocked ? HitTestBehavior.translucent : HitTestBehavior.deferToChild,
+          onTap: () {
+            setState(() {
+              petIsLocked ^= true;
+            });
+          },
+          onPanEnd: (DragEndDetails details) {
+            if (petIsLocked) {
+              return;
+            }
 
-          setState(() {
-            /// Commit the temporary offset.
-            temporaryPetTileVector += temporaryPetDraggingTileVector;
+            setState(() {
+              /// Commit the temporary offset.
+              temporaryPetTileVector += temporaryPetDraggingTileVector;
 
-            /// Reset the temporary offsets.
-            temporaryPetOffset = Offset.zero;
-            temporaryPetDraggingTileVector = (0, 0);
-          });
-        },
-        onPanUpdate: (DragUpdateDetails details) {
-          if (petIsLocked) {
-            return;
-          }
+              /// Reset the temporary offsets.
+              temporaryPetOffset = Offset.zero;
+              temporaryPetDraggingTileVector = (0, 0);
+            });
+          },
+          onPanUpdate: (DragUpdateDetails details) {
+            if (petIsLocked) {
+              return;
+            }
 
-          temporaryPetOffset += details.delta;
+            temporaryPetOffset += details.delta;
 
-          /// We get the current screen offset of the pet
-          ///   (Where it is currently on the screen).
-          IntVector tileAdjustment = _floorTilePositionFromRelativeOffset(temporaryPetOffset.pair);
-          var (IntVector newPoint) = tileAdjustment + //
-              temporaryPetTileVector +
-              petPosition;
-          var (int dx, int dy) = (activeRoom.size, activeRoom.size) - newPoint;
+            /// We get the current screen offset of the pet
+            ///   (Where it is currently on the screen).
+            IntVector tileAdjustment =
+                _floorTilePositionFromRelativeOffset(temporaryPetOffset.pair);
+            var (IntVector newPoint) = tileAdjustment + //
+                temporaryPetTileVector +
+                petPosition;
+            var (int dx, int dy) = (activeRoom.size, activeRoom.size) - newPoint;
 
-          /// We have crossed the boundary at bottom right.
-          if (dx <= 0) {
-            tileAdjustment = (tileAdjustment.$1 - (dx.abs() + 1), tileAdjustment.$2);
-          } else if (dx > activeRoom.size) {
-            tileAdjustment = (tileAdjustment.$1 + (activeRoom.size - dx).abs(), tileAdjustment.$2);
-          }
+            /// We have crossed the boundary at bottom right.
+            if (dx <= 0) {
+              tileAdjustment = (tileAdjustment.$1 - (dx.abs() + 1), tileAdjustment.$2);
+            } else if (dx > activeRoom.size) {
+              tileAdjustment =
+                  (tileAdjustment.$1 + (activeRoom.size - dx).abs(), tileAdjustment.$2);
+            }
 
-          if (dy <= 0) {
-            tileAdjustment = (tileAdjustment.$1, tileAdjustment.$2 - (dy.abs() + 1));
-          } else if (dy > activeRoom.size) {
-            tileAdjustment = (tileAdjustment.$1, tileAdjustment.$2 + (activeRoom.size - dy).abs());
-          }
+            if (dy <= 0) {
+              tileAdjustment = (tileAdjustment.$1, tileAdjustment.$2 - (dy.abs() + 1));
+            } else if (dy > activeRoom.size) {
+              tileAdjustment =
+                  (tileAdjustment.$1, tileAdjustment.$2 + (activeRoom.size - dy).abs());
+            }
 
-          setState(() {
-            temporaryPetDraggingTileVector = tileAdjustment;
-          });
-        },
-        child: Transform.translate(
-          offset: isFlipped ? Offset(dxF, dyF) : Offset(dx, dy),
+            setState(() {
+              temporaryPetDraggingTileVector = tileAdjustment;
+            });
+          },
           child: Transform.flip(
             flipX: isFlipped,
             child: Image(
@@ -394,7 +480,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
             ),
           ),
         ),
-      ),
+      )
     );
   }
 
@@ -405,25 +491,30 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
     }
 
     var DecorationIcon(
-      :String name,
-      :String description,
       :String imagePath,
-      :int salePrice,
-      :int resalePrice,
       :int happinessBuff,
       :int energyBuff,
       :bool isFacingLeft,
+      imageDimensions: (double width, double height),
+      displayOffset: DisplayOffset(
+        baseOffset: IntVector baseOffset,
+        defaultOffset: (double dx, double dy),
+        flippedOffset: (double fdx, double fdy),
+      ),
     ) = decorationIcons[decorationId]!;
 
     var (double x, double y) = _screenPositionFromFloorTile(
-      decorationPosition + temporaryDecorationTileVector + temporaryDecorationDraggingTileVector,
+      baseOffset +
+          decorationPosition +
+          temporaryDecorationTileVector +
+          temporaryDecorationDraggingTileVector,
       constraints,
     );
     bool isFlipped = isFacingLeft ^ decorationIsFlipped;
 
     return Positioned(
-      top: y,
-      left: x,
+      top: y + (isFlipped ? fdy : dy),
+      left: x + (isFlipped ? fdx : dx),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onPanEnd: (DragEndDetails details) {
@@ -471,8 +562,8 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
           flipX: isFlipped,
           child: Image.asset(
             imagePath,
-            width: 48,
-            height: 48,
+            width: width,
+            height: height,
             color: Colors.blue,
             colorBlendMode: BlendMode.srcIn,
           ),
@@ -503,6 +594,10 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
     );
 
     return (nx, ny);
+  }
+
+  int _compareManhattanDistance((Index, Widget) a, (Index, Widget) b) {
+    return (a.$1.$1 + a.$1.$2) - (b.$1.$1 + b.$1.$2);
   }
 
   /// This should be attached to the active room of type [Room].
