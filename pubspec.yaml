@@ -72,7 +72,31 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/images/pets/bear.png
+    - assets/images/pets/buffalo.png
+    - assets/images/pets/bunny.png
+    - assets/images/pets/cat.png
+    - assets/images/pets/chicken.png
+    - assets/images/pets/cow.png
+    - assets/images/pets/deer.png
     - assets/images/pets/dog.png
+    - assets/images/pets/duck.png
+    - assets/images/pets/sheep.png
+    - assets/images/pets/duckling.png
+    - assets/images/pets/giraffe.png
+    - assets/images/pets/goat.png
+    - assets/images/pets/hamster.png
+    - assets/images/pets/horse.png
+    - assets/images/pets/llama.png
+    - assets/images/pets/penguin.png
+    - assets/images/pets/pig.png
+    - assets/images/pets/possum.png
+    - assets/images/pets/squirrel.png
+    - assets/images/pets/elephant.png
+    - assets/images/pets/cottontailrabbit.png
+    - assets/images/pets/reindeer.png
+    - assets/images/pets/whitebear.png
+    - assets/images/pets/zebra.png
     - assets/images/tiles/grass_dirt.png
     - assets/images/tiles/stone.png
     - assets/images/tiles/stone_bricks.png
@@ -90,9 +114,9 @@ flutter:
     - assets/images/land/land1.png
     - assets/images/land/land2.png
     - assets/images/land/land3.png
-    # - assets/images/land/land4.png
+    - assets/images/land/land4.png
     - assets/images/land/pond.png
-    # - assets/images/bush/bush1.png
+    - assets/images/bush/bush1.png
     - assets/images/bush/bush2.png
     - assets/images/bush/bush3.png
     - assets/images/bush/bush4.png
@@ -111,7 +135,7 @@ flutter:
     - assets/images/rocks/rock3.png
     - assets/images/rocks/rock4.png
     - assets/images/extras/butterfly.png
-    # - assets/images/extras/camping_chair.png
+    - assets/images/extras/chair.png
     - assets/images/extras/cooking.png
     - assets/images/extras/idkmb.png
     - assets/images/extras/sign.png
@@ -132,7 +156,7 @@ flutter:
     - assets/images/trees/ntree6.png
     - assets/images/trees/ntree7.png
     - assets/images/trees/ntree8.png
-    # - assets/images/trees/talltree.png
+    - assets/images/trees/talltree.png
     - assets/images/trees/tree1.png
     - assets/images/trees/tree2.png
     - assets/images/trees/tree3.png
@@ -154,15 +178,13 @@ flutter:
     - assets/images/trees/ytree7.png
     - assets/images/trees/ytree8.png
     - assets/images/trees/ytree9.png
-    - assets/images/trees/ytree10.png
-    - assets/images/trees/ytree11.png
     - assets/images/foods/cat_food_pack.png
     - assets/images/foods/cup_bowl.png
     - assets/images/foods/food_bag.png
     - assets/images/foods/full_bowl.png
     - assets/images/foods/pet_pack.png
     - assets/images/foods/food_bowl.png
-    - assets/images/foods/pet_food.png
+    - assets/images/foods/pet_food.pngs
 
   #   - images/a_dot_ham.jpeg
 
