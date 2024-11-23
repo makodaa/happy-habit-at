@@ -5,6 +5,7 @@ import "dart:async";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:happy_habit_at/constants/decoration_icons.dart";
+import "package:happy_habit_at/constants/food_icons.dart";
 import "package:happy_habit_at/constants/pet_icons.dart";
 import "package:happy_habit_at/utils/extensions/map_pairs.dart";
 import "package:happy_habit_at/utils/type_aliases.dart";
@@ -229,6 +230,21 @@ class DatabaseService {
           }
         }
 
+        if ((await database.query(tables.food)).length != foodIcons.length) {
+          await database.delete(tables.food);
+
+          for (var (String id, FoodIcon _) in foodIcons.pairs) {
+            await database.insert(
+              tables.food,
+              <String, Object?>{
+                "food_id": id,
+                "quantity_owned": 1,
+              },
+              conflictAlgorithm: ConflictAlgorithm.ignore,
+            );
+          }
+        }
+
         if (kDebugMode) {
           String query = "SELECT name FROM sqlite_master WHERE type='table' "
               "AND name NOT LIKE 'sqlite_%'";
@@ -405,6 +421,14 @@ class DatabaseService {
   Future<List<Map<String, Object?>>> readDecorations() async {
     if (_database case Database database) {
       return database.query("decoration");
+    }
+
+    return <Map<String, Object?>>[];
+  }
+
+  Future<List<Map<String, Object?>>> readFoods() async {
+    if (_database case Database database) {
+      return database.query("food");
     }
 
     return <Map<String, Object?>>[];

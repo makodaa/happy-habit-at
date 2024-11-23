@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
+import "package:happy_habit_at/constants/food_icons.dart";
 import "package:happy_habit_at/providers/app_state.dart";
-import "package:happy_habit_at/providers/food.dart";
+import "package:happy_habit_at/utils/extensions/map_pairs.dart";
 import "package:provider/provider.dart";
 import "package:scroll_animator/scroll_animator.dart";
 
@@ -14,24 +15,13 @@ class FoodScreen extends StatefulWidget {
 class _FoodScreenState extends State<FoodScreen> {
   late final AnimatedScrollController scrollController;
   late final AppState appState;
-  bool hasInitialized = false;
 
   @override
   void initState() {
     super.initState();
 
-    scrollController = AnimatedScrollController(animationFactory: ChromiumImpulse());
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (!hasInitialized) {
-      appState = context.read<AppState>();
-
-      hasInitialized = true;
-    }
+    scrollController = AnimatedScrollController(animationFactory: const ChromiumImpulse());
+    appState = context.read<AppState>();
   }
 
   @override
@@ -41,36 +31,6 @@ class _FoodScreenState extends State<FoodScreen> {
     super.dispose();
   }
 
-  List<Food> foods = <Food>[
-    Food(
-      foodName: "Kibble Pack",
-      foodDescription: "Restores some food points",
-      salePrice: 1,
-      hungerPoints: 3,
-      happinessPoints: 1,
-    ),
-    Food(
-      foodName: "Kibble Bowl",
-      foodDescription: "Restores more food points",
-      salePrice: 5,
-      hungerPoints: 5,
-      happinessPoints: 5,
-    ),
-    Food(
-      foodName: "Kibble Bag",
-      foodDescription: "Restores a lot of food points",
-      salePrice: 10,
-      hungerPoints: 10,
-      happinessPoints: 5,
-    ),
-    Food(
-      foodName: "Treat",
-      foodDescription: "Increases happiness and some food points",
-      salePrice: 3,
-      hungerPoints: 1,
-      happinessPoints: 10,
-    ),
-  ];
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -78,12 +38,13 @@ class _FoodScreenState extends State<FoodScreen> {
       children: <Widget>[
         Expanded(
           child: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
               controller: scrollController,
               child: Column(
                 children: <Widget>[
-                  for (Food food in foods) _foodTile(food),
+                  for (var (String key, FoodIcon food) in foodIcons.pairs) //
+                    _foodTile(key, food),
                 ],
               ),
             ),
@@ -93,58 +54,53 @@ class _FoodScreenState extends State<FoodScreen> {
     );
   }
 
-  Widget _foodTile(Food food) {
-    return ListenableBuilder(
-      listenable: food,
-      builder: (BuildContext context, Widget? child) {
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: ColorScheme.light().primary,
-            child: Icon(Icons.chair),
-          ),
-          title: Text(food.foodName),
-          subtitle: Text(food.foodDescription),
-          onTap: () async {
-            await _showModal(food);
-          },
-        );
+  Widget _foodTile(String id, FoodIcon food) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: const ColorScheme.light().primary,
+        child: const Icon(Icons.chair),
+      ),
+      title: Text(food.name),
+      subtitle: Text(food.description),
+      onTap: () async {
+        await _showModal(id, food);
       },
     );
   }
 
-  Future<void> _showModal(Food food) async {
+  Future<void> _showModal(String id, FoodIcon food) async {
     await showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
         return SizedBox(
           height: 250,
           child: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 Text(
-                  food.foodName,
-                  style: TextStyle(
+                  food.name,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 28,
                   ),
                 ),
-                SizedBox(height: 16.0),
-                Text(
+                const SizedBox(height: 16.0),
+                const Text(
                   "Description",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 4.0),
-                Text(food.foodDescription),
-                SizedBox(height: 16.0),
-                Text(
+                const SizedBox(height: 4.0),
+                Text(food.description),
+                const SizedBox(height: 16.0),
+                const Text(
                   "In Inventory:",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 4.0),
-                Text("${food.quantityOwned ?? 0}"),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 4.0),
+                Text("${appState.quantityOfFood(id)!}"),
+                const SizedBox(height: 16.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[

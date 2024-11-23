@@ -80,9 +80,7 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
         Center(
           child: Text("${_months[widget.selectedDate!.month]} ${widget.selectedDate!.year}"),
         ),
-        SizedBox(
-          height: 4,
-        ),
+        const SizedBox(height: 4),
         PrototypeHeight(
           prototype: _buildTile(0),
           scrollView: ScrollablePositionedList.builder(
@@ -114,11 +112,11 @@ class _HorizontalCalendarState extends State<HorizontalCalendar> {
         }
       },
       child: Padding(
-        padding: EdgeInsets.all(4.0),
+        padding: const EdgeInsets.all(4.0),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(4.0),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(
               children: <Widget>[
                 Text(_days[date.weekday]),

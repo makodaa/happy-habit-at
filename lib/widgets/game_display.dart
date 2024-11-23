@@ -27,11 +27,10 @@ class _GameDisplayState extends State<GameDisplay> {
 
   late final AppState appState;
 
-  bool hasInitialized = false;
   late Room activeRoom;
 
   /// This is the screen offset of the pet.
-  Offset petOffset = Offset(0, 0);
+  Offset petOffset = Offset.zero;
 
   IntVector get petPosition => activeRoom.petPosition;
   bool get petIsFlipped => activeRoom.petIsFlipped;
@@ -39,20 +38,11 @@ class _GameDisplayState extends State<GameDisplay> {
   @override
   void initState() {
     super.initState();
-  }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (!hasInitialized) {
-      appState = context.read<AppState>();
-      activeRoom = appState.activeRoom.value;
-      appState.activeRoom.addListener(_changeRoom);
-      appState.activeRoom.value.addListener(_listener);
-
-      hasInitialized = true;
-    }
+    appState = context.read<AppState>();
+    activeRoom = appState.activeRoom.value;
+    appState.activeRoom.addListener(_changeRoom);
+    appState.activeRoom.value.addListener(_listener);
   }
 
   @override
@@ -67,16 +57,19 @@ class _GameDisplayState extends State<GameDisplay> {
   Widget build(BuildContext context) {
     return ColoredBox(
       color: Colors.transparent,
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) => Stack(
-          children: <Widget>[
-            ..._floorTileWidgets(constraints),
-            ...(<(Index, Widget)>[
-              ..._placedDecorationWidgets(constraints),
-              if (_petWidget(constraints) case Indexed<Widget> widget) widget,
-            ]..sort(_compareManhattanDistance))
-                .map((Indexed<Widget> p) => p.$2),
-          ],
+      child: ListenableBuilder(
+        listenable: appState.placements,
+        builder: (BuildContext context, _) => LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) => Stack(
+            children: <Widget>[
+              ..._floorTileWidgets(constraints),
+              ...(<(Index, Widget)>[
+                ..._placedDecorationWidgets(constraints),
+                if (_petWidget(constraints) case Indexed<Widget> widget) widget,
+              ]..sort(_compareManhattanDistance))
+                  .map((Indexed<Widget> p) => p.$2),
+            ],
+          ),
         ),
       ),
     );

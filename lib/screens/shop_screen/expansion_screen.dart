@@ -20,7 +20,7 @@ class _ExpansionScreenState extends State<ExpansionScreen> {
   void initState() {
     super.initState();
 
-    scrollController = AnimatedScrollController(animationFactory: ChromiumImpulse());
+    scrollController = AnimatedScrollController(animationFactory: const ChromiumImpulse());
   }
 
   @override
@@ -46,7 +46,7 @@ class _ExpansionScreenState extends State<ExpansionScreen> {
     return SingleChildScrollView(
       controller: scrollController,
       child: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -62,11 +62,11 @@ class _ExpansionScreenState extends State<ExpansionScreen> {
                   },
                 ),
                 _rowSeparator,
-                Icon(Icons.circle),
+                const Icon(Icons.circle),
               ],
             ),
             _fieldSeparator,
-            Text("Expand Habitat"),
+            const Text("Expand Habitat"),
             _fieldSeparator,
             Center(
               child: Card(
@@ -75,17 +75,17 @@ class _ExpansionScreenState extends State<ExpansionScreen> {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: <Widget>[
-                      Icon(Icons.zoom_out_map),
-                      Text(
+                      const Icon(Icons.zoom_out_map),
+                      const Text(
                         "Expand Habitat",
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       _fieldSeparator,
-                      Text("Increase habitat size from mxm to nxn"),
+                      const Text("Increase habitat size from mxm to nxn"),
                       _fieldSeparator,
                       FilledButton(
                         onPressed: () {},
-                        child: Padding(
+                        child: const Padding(
                           padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 2.0),
                           child: Text("Insert price"),
                         ),

@@ -119,7 +119,7 @@ final router = GoRouter(
                       routes: [
                         GoRoute(
                           path: "/shop/decoration",
-                          builder: (_, state) => DecorationScreen(),
+                          builder: (_, state) => const DecorationScreen(),
                         ),
                       ],
                     ),
@@ -127,7 +127,7 @@ final router = GoRouter(
                       routes: [
                         GoRoute(
                           path: "/shop/food",
-                          builder: (_, state) => FoodScreen(),
+                          builder: (_, state) => const FoodScreen(),
                         ),
                       ],
                     ),
@@ -135,7 +135,7 @@ final router = GoRouter(
                       routes: [
                         GoRoute(
                           path: "/shop/expansion",
-                          builder: (_, state) => ExpansionScreen(),
+                          builder: (_, state) => const ExpansionScreen(),
                         ),
                       ],
                     ),
@@ -143,7 +143,7 @@ final router = GoRouter(
                       routes: [
                         GoRoute(
                           path: "/shop/pet",
-                          builder: (_, state) => PetScreen(),
+                          builder: (_, state) => const PetScreen(),
                         ),
                       ],
                     ),

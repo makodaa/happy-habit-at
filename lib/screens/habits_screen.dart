@@ -25,7 +25,7 @@ class HabitsScreen extends StatefulWidget {
 
 class _HabitsScreenState extends State<HabitsScreen> {
   late final AnimatedScrollController scrollController =
-      AnimatedScrollController(animationFactory: ChromiumImpulse());
+      AnimatedScrollController(animationFactory: const ChromiumImpulse());
 
   late final AppState appState;
   late final ImmutableListenableList<Habit> habits;
@@ -184,6 +184,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
             .nullableMap((Duration d) => _description(d))
             .nullableMap((String p) => "In $p");
 
+        print((agoDescription, fromNowDescription));
+
         String trailing = isBeforeToday
             ? "${isCompletedBefore ? "Completed " : ""}"
                 "$dayDifference day${dayDifference > 1 ? "s" : ""} ago"
@@ -191,9 +193,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
                 ? "In $dayDifference day${dayDifference > 1 ? "s" : ""}"
                 : isCompleted
                     ? description ?? "Completed"
-                    : fromNowDescription.nullableFlatMap(
-                          (String p) => p == "In " ? agoDescription : null,
-                        ) ??
+                    : fromNowDescription
+                            .nullableFlatMap((String p) => p == "In " ? agoDescription : p) ??
                         "Within today";
 
         return ListTile(
@@ -238,33 +239,33 @@ class _HabitsScreenState extends State<HabitsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 Text(
                   habit.name,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 28,
                   ),
                   textAlign: TextAlign.left,
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 if (habit.description case String description) ...<Widget>[
-                  Text(
+                  const Text(
                     "Description",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 4.0),
+                  const SizedBox(height: 4.0),
                   Text(description),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                 ],
                 if (habit.goal case String goal) ...<Widget>[
-                  Text(
+                  const Text(
                     "Goal",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 4.0),
+                  const SizedBox(height: 4.0),
                   Text(goal),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                 ],
                 FittedBox(
                   fit: BoxFit.scaleDown,
@@ -278,7 +279,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                             context.pop();
                           }
                         },
-                        child: Text(
+                        child: const Text(
                           "Delete Habit",
                           style: TextStyle(fontSize: 16),
                         ),
@@ -289,7 +290,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                           context.pop();
                           context.go("/habits/edit-habit/${habit.id}");
                         },
-                        child: Text(
+                        child: const Text(
                           "View Habit",
                           style: TextStyle(fontSize: 16),
                         ),
@@ -321,7 +322,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                                           : isCompleted
                                               ? "Already Completed"
                                               : "Complete Habit",
-                              style: TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 16),
                             ),
                           );
                         },
@@ -351,35 +352,35 @@ class _HabitsScreenState extends State<HabitsScreen> {
                   children: <Widget>[
                     Text(
                       habit.name,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 28,
                       ),
                     ),
-                    SizedBox(height: 16.0),
+                    const SizedBox(height: 16.0),
                     if (habit.description case String description) ...<Widget>[
-                      Text(
+                      const Text(
                         "Description",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 4.0),
+                      const SizedBox(height: 4.0),
                       Text(description),
-                      SizedBox(height: 16.0),
+                      const SizedBox(height: 16.0),
                     ],
                     if (habit.goal case String goal) ...<Widget>[
-                      Text(
+                      const Text(
                         "Goal",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 4.0),
+                      const SizedBox(height: 4.0),
                       Text(goal),
-                      SizedBox(height: 16.0),
+                      const SizedBox(height: 16.0),
                     ],
-                    Text(
+                    const Text(
                       "Confidence of Completion",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 4.0),
+                    const SizedBox(height: 4.0),
                     Slider(
                       label: _currentSliderValue.round().toString(),
                       value: _currentSliderValue,
@@ -391,14 +392,14 @@ class _HabitsScreenState extends State<HabitsScreen> {
                         });
                       },
                     ),
-                    SizedBox(height: 16.0),
-                    Text("Any valueable insights or comments?"),
-                    SizedBox(
+                    const SizedBox(height: 16.0),
+                    const Text("Any valueable insights or comments?"),
+                    const SizedBox(
                       height: 4.0,
                     ),
                     TextField(
                       controller: textEditingController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -412,7 +413,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                       context.pop();
                     }
                   },
-                  child: Text("Cancel"),
+                  child: const Text("Cancel"),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -429,7 +430,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
                       }
                     }
                   },
-                  child: Text("Submit"),
+                  child: const Text("Submit"),
                 ),
               ],
             );

@@ -18,11 +18,6 @@ class CreateHabitScreen extends StatefulWidget {
   State<CreateHabitScreen> createState() => _CreateHabitScreenState();
 }
 
-/// TODO(@anyone): Implement the icon picker.
-///   Requirements:
-///     1. Define a set of usable icons.
-///     2. Implement a way to select an icon. (modal?)
-
 class _CreateHabitScreenState extends State<CreateHabitScreen> {
   // Private constants
   static const TextDirection textDirection = TextDirection.ltr;
@@ -45,7 +40,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
   void initState() {
     super.initState();
 
-    scrollController = AnimatedScrollController(animationFactory: ChromiumImpulse());
+    scrollController = AnimatedScrollController(animationFactory: const ChromiumImpulse());
     habitNameController = TextEditingController();
     habitDescriptionController = TextEditingController();
     habitGoalController = TextEditingController();
@@ -110,7 +105,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
               child: SingleChildScrollView(
                 controller: scrollController,
                 child: Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,
@@ -168,12 +163,12 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
         Row(
           children: <Widget>[
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 border: Border(bottom: BorderSide()),
               ),
 
               /// Arbitarily chosen. Can be changed.
-              padding: Platform.isAndroid ? null : EdgeInsets.only(top: 7.0),
+              padding: Platform.isAndroid ? null : const EdgeInsets.only(top: 7.0),
               child: IconButton(
                 icon: Icon(
                   habitIcons[iconIndex],
@@ -302,7 +297,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         const Text("Time"),
-        SizedBox(
+        const SizedBox(
           height: 4,
         ),
         TextFormField(
@@ -379,7 +374,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0),
           child: Icon(
             Icons.check,
             color: i == colorIndex ? foreground : Colors.transparent,

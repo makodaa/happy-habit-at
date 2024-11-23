@@ -54,7 +54,7 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
               TabBar(
                 controller: tabController,
                 tabs: const <Widget>[
-                  Tab(text: "Furniture"),
+                  Tab(text: "Decoration"),
                   Tab(text: "Food"),
                   Tab(text: "Expansion"),
                   Tab(text: "Pet"),

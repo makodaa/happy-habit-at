@@ -48,7 +48,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
 
     habit = context.read<AppState>().habitOfId(widget.habitId);
 
-    scrollController = AnimatedScrollController(animationFactory: ChromiumImpulse());
+    scrollController = AnimatedScrollController(animationFactory: const ChromiumImpulse());
     habitNameController = TextEditingController()..text = habit.name;
     habitDescriptionController = TextEditingController()..text = habit.description ?? "";
     habitGoalController = TextEditingController()..text = habit.goal ?? "";
@@ -110,7 +110,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
               child: SingleChildScrollView(
                 controller: scrollController,
                 child: Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,
@@ -179,12 +179,12 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
         Row(
           children: <Widget>[
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 border: Border(bottom: BorderSide()),
               ),
 
               /// Arbitarily chosen. Can be changed.
-              padding: Platform.isAndroid ? null : EdgeInsets.only(top: 7.0),
+              padding: Platform.isAndroid ? null : const EdgeInsets.only(top: 7.0),
               child: IconButton(
                 icon: Icon(
                   habitIcons[iconIndex],
@@ -325,7 +325,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
           "Time",
           textAlign: TextAlign.left,
         ),
-        SizedBox(
+        const SizedBox(
           height: 4,
         ),
         TextFormField(
@@ -405,7 +405,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0),
           child: Icon(
             Icons.check,
             color: i == colorIndex ? foreground : Colors.transparent,

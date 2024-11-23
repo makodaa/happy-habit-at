@@ -16,7 +16,7 @@ typedef FoodIcon = ({
   double energybuff,
 });
 
-const Map<String, FoodIcon> foods = <String, FoodIcon>{
+const Map<String, FoodIcon> foodIcons = <String, FoodIcon>{
    "bundle": (
     name: "Food Bundle",
     description: "A Heavy amount of food in a bundle.",

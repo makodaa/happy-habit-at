@@ -81,7 +81,7 @@ class HappyHabitAtApp extends StatelessWidget {
       theme: AppTheme.getAppTheme(),
       debugShowCheckedModeBanner: false,
       routerConfig: router,
-      scrollBehavior: MaterialScrollBehavior().copyWith(
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
         dragDevices: <PointerDeviceKind>{
           PointerDeviceKind.touch,
           PointerDeviceKind.mouse,

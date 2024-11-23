@@ -30,7 +30,7 @@ class _MoreScreenState extends State<MoreScreen> {
             children: <Widget>[
               /// Place body widgets here.
 
-              Padding(
+              const Padding(
                 padding: EdgeInsets.all(12.0),
                 child: Text(
                   "Activity",
@@ -40,7 +40,7 @@ class _MoreScreenState extends State<MoreScreen> {
               ),
 
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: ListenableBuilder(
                   listenable: appState.completions,
                   builder: (BuildContext context, _) {
@@ -60,7 +60,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   },
                 ),
               ),
-              Center(
+              const Center(
                 child: Text("Hi"),
               ),
             ],

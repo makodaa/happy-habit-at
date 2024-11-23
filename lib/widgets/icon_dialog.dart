@@ -44,9 +44,9 @@ Widget _iconButton(
   return InkWell(
     onTap: () => onSelect(context, i),
     child: Ink(
-      decoration: BoxDecoration(),
+      decoration: const BoxDecoration(),
       child: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Icon(
           habitIcons[i],
           color: color,

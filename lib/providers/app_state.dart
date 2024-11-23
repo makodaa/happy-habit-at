@@ -1,7 +1,9 @@
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart" hide Decoration;
+import "package:happy_habit_at/constants/decoration_icons.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/global/shared_preferences.dart";
+import "package:happy_habit_at/providers/food.dart";
 import "package:happy_habit_at/providers/habit.dart";
 import "package:happy_habit_at/providers/habitat_decoration.dart";
 import "package:happy_habit_at/providers/placement.dart";
@@ -40,6 +42,9 @@ class AppState {
   final ListenableList<HabitatDecoration> _ownedDecorations = ListenableList<HabitatDecoration>();
   ImmutableListenableList<HabitatDecoration> get ownedDecorations => _ownedDecorations.immutable;
 
+  final ListenableList<Food> _foods = ListenableList<Food>();
+  ImmutableListenableList<Food> get foods => _foods.immutable;
+
   late final ValueNotifier<int> currency;
   late final ValueNotifier<Room> activeRoom;
 
@@ -75,6 +80,10 @@ class AppState {
       if (decoration.quantityOwned > 0) {
         _ownedDecorations.add(decoration);
       }
+    }
+
+    for (Map<String, Object?> foodMap in await _database.readFoods()) {
+      _foods.add(Food.fromMap(foodMap));
     }
 
     /// Initialize the last active room.
@@ -242,15 +251,33 @@ class AppState {
     return completionsMap;
   }
 
-  int? quantityOf(String decorationId) {
+  int? quantityOfDecoration(String decorationId) {
     return _decorations
         .where((HabitatDecoration decoration) => decoration.id == decorationId)
         .firstOrNull
         ?.quantityOwned;
   }
 
+  int? quantityOfFood(String foodId) {
+    return _foods //
+        .where((Food food) => food.id == foodId)
+        .firstOrNull
+        ?.quantityOwned;
+  }
+
   Iterable<Placement> readPlacements(int roomId) {
     return _placements.where((Placement placement) => placement.roomId == roomId);
+  }
+
+  HabitatDecoration decorationOf(String decorationId) {
+    return _decorations
+        .singleWhere((HabitatDecoration decoration) => decoration.id == decorationId);
+  }
+
+  int placementsOfDecoration(String decorationId) {
+    return _placements
+        .where((Placement placement) => placement.decorationId == decorationId)
+        .length;
   }
 
   // UPDATE
@@ -322,6 +349,58 @@ class AppState {
       tileCoordinate: tileCoordinate,
       isFlipped: isFlipped,
     );
+  }
+
+  Future<void> buyDecoration(String decorationId) async {
+    DecorationIcon decoration = decorationIcons[decorationId]!;
+    HabitatDecoration decorationInfo = _decorations.singleWhere(
+      (HabitatDecoration d) => d.id == decorationId,
+    );
+
+    if (currency.value < decoration.salePrice) {
+      return;
+    }
+    decorationInfo.quantityOwned++;
+    if (!_ownedDecorations.any((HabitatDecoration d) => d.id == decorationId) &&
+        decorationInfo.quantityOwned > 0) {
+      _ownedDecorations.add(decorationInfo);
+    }
+
+    await _database.updateDecoration(
+      decorationId: decorationId,
+      quantityOwned: decorationInfo.quantityOwned,
+      happinessBuff: decorationInfo.happinessBuff,
+      energyBuff: decorationInfo.energyBuff,
+    );
+
+    currency.value -= decoration.salePrice;
+  }
+
+  Future<void> sellDecoration(String decorationId) async {
+    assert(ownedDecorations.any((HabitatDecoration h) => h.id == decorationId));
+    DecorationIcon decoration = decorationIcons[decorationId]!;
+    HabitatDecoration decorationInfo = _decorations.singleWhere(
+      (HabitatDecoration d) => d.id == decorationId,
+    );
+
+    if (decorationInfo.quantityOwned <= 0) {
+      return;
+    }
+
+    decorationInfo.quantityOwned--;
+    if (_ownedDecorations.any((HabitatDecoration d) => d.id == decorationId) &&
+        decorationInfo.quantityOwned <= 0) {
+      _ownedDecorations.remove(decorationInfo);
+    }
+
+    await _database.updateDecoration(
+      decorationId: decorationId,
+      quantityOwned: decorationInfo.quantityOwned,
+      happinessBuff: decorationInfo.happinessBuff,
+      energyBuff: decorationInfo.energyBuff,
+    );
+
+    currency.value += decoration.resalePrice;
   }
 
   // DELETE

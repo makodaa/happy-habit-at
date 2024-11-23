@@ -159,7 +159,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
 
           /// If we are moving them, we should prioritize them at the stack.
           if (_petWidget(constraints) case (_, Widget widget) when !petIsLocked) widget,
-          if (_movingFurnitureWidget(constraints) case Widget widget) widget,
+          if (_movingDecorationWidget(constraints) case Widget widget) widget,
         ],
       ),
     );
@@ -167,7 +167,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
 
   Widget _movableTileControls() {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
+      padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -223,13 +223,13 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
                 throw Exception("Invalid state.");
               }
             },
-            icon: Icon(Icons.check),
+            icon: const Icon(Icons.check),
           ),
           const SizedBox(width: 24.0),
 
           /// Flip the icon.
           IconButton.filled(
-            icon: Icon(Icons.flip),
+            icon: const Icon(Icons.flip),
             style: IconButton.styleFrom(backgroundColor: Colors.grey[400]),
             onPressed: () {
               /// We flip the decoration / pet.
@@ -253,7 +253,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
 
             /// We cancel the movement.
             IconButton.filled(
-              icon: Icon(Icons.keyboard_return_rounded),
+              icon: const Icon(Icons.keyboard_return_rounded),
               style: IconButton.styleFrom(backgroundColor: Colors.orange[300]),
               onPressed: () {
                 if (!petIsLocked) {
@@ -283,7 +283,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
 
             /// We delete the decoration.
             IconButton.filled(
-              icon: Icon(Icons.close),
+              icon: const Icon(Icons.close),
               style: IconButton.styleFrom(backgroundColor: Colors.red[300]),
               onPressed: () async {
                 if (movingPlacementId case int placementId) {
@@ -484,7 +484,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
     );
   }
 
-  Widget? _movingFurnitureWidget(BoxConstraints constraints) {
+  Widget? _movingDecorationWidget(BoxConstraints constraints) {
     String? decorationId = movingDecoration?.id;
     if (decorationId == null) {
       return null;
@@ -629,17 +629,6 @@ extension on Offset {
 }
 
 extension on IntVector {
-  IntVector clamp(IntVector min, IntVector max) {
-    return (
-      math.max(min.$1, math.min(max.$1, this.$1)),
-      math.max(min.$2, math.min(max.$2, this.$2)),
-    );
-  }
-
-  bool exceeds(IntVector min, IntVector max) {
-    return this.$1 < min.$1 || this.$1 >= max.$1 || this.$2 < min.$2 || this.$2 >= max.$2;
-  }
-
   IntVector operator +(IntVector other) => (this.$1 + other.$1, this.$2 + other.$2);
   IntVector operator -(IntVector other) => (this.$1 - other.$1, this.$2 - other.$2);
 }

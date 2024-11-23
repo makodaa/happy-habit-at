@@ -2,8 +2,8 @@ import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/room.dart";
+import "package:happy_habit_at/widgets/currency_display.dart";
 import "package:happy_habit_at/widgets/game_display.dart";
-import "package:intl/intl.dart";
 import "package:provider/provider.dart";
 
 class HabitatScreen extends StatefulWidget {
@@ -16,21 +16,17 @@ class HabitatScreen extends StatefulWidget {
 class _HabitatScreenState extends State<HabitatScreen> {
   late final AppState appState;
   late Room activeRoom;
-  bool hasInitialized = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
+    
 
-    if (!hasInitialized) {
-      appState = context.read<AppState>();
-      activeRoom = appState.activeRoom.value;
+    appState = context.read<AppState>();
+    activeRoom = appState.activeRoom.value;
 
-      appState.activeRoom.addListener(_changeRoom);
-      appState.activeRoom.value.addListener(_listener);
-
-      hasInitialized = true;
-    }
+    appState.activeRoom.addListener(_changeRoom);
+    appState.activeRoom.value.addListener(_listener);
   }
 
   @override
@@ -46,7 +42,7 @@ class _HabitatScreenState extends State<HabitatScreen> {
     return Stack(
       children: <Widget>[
         ColoredBox(
-          color: Color(0xFF41B06E),
+          color: const Color(0xFF41B06E),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
@@ -57,35 +53,16 @@ class _HabitatScreenState extends State<HabitatScreen> {
                   child: Text(activeRoom.name),
                 ),
               ),
-              Expanded(
+              const Expanded(
                 child: GameDisplay(),
               ),
             ],
           ),
         ),
-        Positioned(
-          top: 48.0,
+        const Positioned(
+          top: 56.0,
           right: 8.0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              ValueListenableBuilder<int>(
-                valueListenable: appState.currency,
-                builder: (BuildContext context, int value, Widget? child) {
-                  NumberFormat formatter = NumberFormat("#,##0", "en_US");
-
-                  return Text(
-                    formatter.format(value),
-                    style: TextStyle(color: Colors.white),
-                  );
-                },
-              ),
-              Icon(
-                Icons.circle,
-                color: Colors.white,
-              ),
-            ],
-          ),
+          child: CurrencyDisplay(color: Colors.white),
         ),
         Positioned(
           bottom: 12.0,
@@ -105,7 +82,7 @@ class _HabitatScreenState extends State<HabitatScreen> {
                   color: Colors.green,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 16,
               ),
               FloatingActionButton(

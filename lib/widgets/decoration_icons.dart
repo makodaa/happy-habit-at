@@ -9,11 +9,11 @@ class DecorationIcons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      controller: AnimatedScrollController(animationFactory: ChromiumImpulse()),
+      controller: AnimatedScrollController(animationFactory: const ChromiumImpulse()),
       scrollDirection: Axis.horizontal,
       child: Column(
         children: <Widget>[
-          SizedBox(
+          const SizedBox(
             height: 16.0,
           ),
           Row(

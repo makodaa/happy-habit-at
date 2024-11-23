@@ -24,7 +24,7 @@ class PrototypeHeight extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(width: double.infinity),
+        const SizedBox(width: double.infinity),
         Positioned.fill(child: scrollView),
       ],
     );
@@ -54,7 +54,7 @@ class PrototypeWidth extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: double.infinity),
+        const SizedBox(height: double.infinity),
         Positioned.fill(child: scrollView),
       ],
     );

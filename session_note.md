@@ -1,4 +1,4 @@
-11/22/2024, 27:00.
+## 11/22/2024, 27:00.
 
 I just finished adding some furniture icons that are adjusted.
 What you need to do:
@@ -18,3 +18,8 @@ What you need to do:
       - Then huzzah.
 
 After all of these, then we can say this AppDev project is now an MVP.
+
+## 11/23/2024 11:00AM
+
+TODO:
+- [ ] Integrate the shop with the cash system.

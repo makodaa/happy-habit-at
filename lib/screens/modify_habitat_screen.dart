@@ -7,8 +7,8 @@ import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habitat_decoration.dart";
 import "package:happy_habit_at/providers/modify_habitat_state.dart";
 import "package:happy_habit_at/providers/room.dart";
+import "package:happy_habit_at/widgets/currency_display.dart";
 import "package:happy_habit_at/widgets/movable_game_display.dart";
-import "package:intl/intl.dart";
 import "package:provider/provider.dart";
 import "package:scroll_animator/scroll_animator.dart";
 
@@ -59,24 +59,24 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
             child: Stack(
               children: <Widget>[
                 ColoredBox(
-                  color: Color(0xFF41B06E),
+                  color: const Color(0xFF41B06E),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       _appBar(),
-                      Expanded(child: MovableGameDisplay()),
+                      const Expanded(child: MovableGameDisplay()),
                     ],
                   ),
                 ),
 
-                _userCurrency(),
+                _currencyDisplay(),
 
                 /// Floating Action Buttons
                 _floatingActionButtons(context),
               ],
             ),
           ),
-          InventoryPanel(),
+          const InventoryPanel(),
         ],
       ),
     );
@@ -93,11 +93,11 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
               width: constraints.maxWidth * 0.75,
               child: TextField(
                 /// Textfield with a white underline and white colored text.
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 21.0,
                 ),
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   enabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.white),
                   ),
@@ -128,7 +128,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
           unawaited(appState.commitRoomChanges());
           context.go("/habitat");
         },
-        child: Icon(
+        child: const Icon(
           Icons.build,
           color: Colors.white,
         ),
@@ -136,30 +136,11 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
     );
   }
 
-  Widget _userCurrency() {
-    return Positioned(
-      top: 48.0,
+  Widget _currencyDisplay() {
+    return const Positioned(
+      top: 56.0,
       right: 8.0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: <Widget>[
-          ValueListenableBuilder<int>(
-            valueListenable: appState.currency,
-            builder: (BuildContext context, int value, Widget? child) {
-              NumberFormat formatter = NumberFormat("#,##0", "en_US");
-
-              return Text(
-                formatter.format(value),
-                style: TextStyle(color: Colors.white),
-              );
-            },
-          ),
-          Icon(
-            Icons.circle,
-            color: Colors.white,
-          ),
-        ],
-      ),
+      child: CurrencyDisplay(color: Colors.white),
     );
   }
 
@@ -185,16 +166,16 @@ class InventoryPanel extends StatelessWidget {
     AppState appState = context.read<AppState>();
 
     return Container(
-      padding: EdgeInsets.all(12.0),
+      padding: const EdgeInsets.all(12.0),
       color: Colors.white,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Text("Your Inventory"),
+          const Text("Your Inventory"),
           Padding(
-            padding: EdgeInsets.all(4.0),
+            padding: const EdgeInsets.all(4.0),
             child: SingleChildScrollView(
-              controller: AnimatedScrollController(animationFactory: ChromiumImpulse()),
+              controller: AnimatedScrollController(animationFactory: const ChromiumImpulse()),
               scrollDirection: Axis.horizontal,
               child: ListenableBuilder(
                 listenable: appState.ownedDecorations,
@@ -218,10 +199,10 @@ class InventoryPanel extends StatelessWidget {
                                   Container(
                                     width: 92.0,
                                     height: 92.0,
-                                    margin: EdgeInsets.all(4.0),
+                                    margin: const EdgeInsets.all(4.0),
                                     color: Colors.blue.shade200,
                                     child: Padding(
-                                      padding: EdgeInsets.all(8.0),
+                                      padding: const EdgeInsets.all(8.0),
                                       child: Image.asset(
                                         decorationIcons[ownedDecoration.id]!.imagePath,
                                       ),
@@ -239,7 +220,7 @@ class InventoryPanel extends StatelessWidget {
                                         child: Center(
                                           child: Text(
                                             "${ownedDecoration.quantityOwned}",
-                                            style: TextStyle(color: Colors.white),
+                                            style: const TextStyle(color: Colors.white),
                                           ),
                                         ),
                                       ),
