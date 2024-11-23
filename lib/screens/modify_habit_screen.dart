@@ -139,6 +139,7 @@ class _ModifyHabitScreenState extends State<ModifyHabitScreen> {
 
   AppBar _appBar(BuildContext context) {
     return AppBar(
+      scrolledUnderElevation: 0.0,
       centerTitle: true,
       title: const Text("Edit Habit"),
       leading: IconButton(

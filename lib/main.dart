@@ -85,6 +85,7 @@ class HappyHabitAtApp extends StatelessWidget {
         dragDevices: <PointerDeviceKind>{
           PointerDeviceKind.touch,
           PointerDeviceKind.mouse,
+          PointerDeviceKind.trackpad,
         },
       ),
       actions: <Type, Action<Intent>>{

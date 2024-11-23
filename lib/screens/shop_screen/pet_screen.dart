@@ -12,7 +12,7 @@ class PetScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            const CurrencyDisplay(),
+            const UserCurrencyDisplay(),
             _fieldSeparator,
             const Text("Expand Habitat"),
             _fieldSeparator,

@@ -8,6 +8,7 @@ import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/placement.dart";
 import "package:happy_habit_at/providers/room.dart";
 import "package:happy_habit_at/structs/display_offset.dart";
+import "package:happy_habit_at/utils/extension_types/ids.dart";
 import "package:happy_habit_at/utils/type_aliases.dart";
 import "package:provider/provider.dart";
 
@@ -60,16 +61,20 @@ class _GameDisplayState extends State<GameDisplay> {
       child: ListenableBuilder(
         listenable: appState.placements,
         builder: (BuildContext context, _) => LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) => Stack(
-            children: <Widget>[
-              ..._floorTileWidgets(constraints),
-              ...(<(Index, Widget)>[
-                ..._placedDecorationWidgets(constraints),
-                if (_petWidget(constraints) case Indexed<Widget> widget) widget,
-              ]..sort(_compareManhattanDistance))
-                  .map((Indexed<Widget> p) => p.$2),
-            ],
-          ),
+          builder: (BuildContext context, BoxConstraints constraints) {
+            List<Widget> children = <Widget>[];
+            children.addAll(_floorTileWidgets(constraints));
+
+            List<(IntVector, Widget)> sortables = <(IntVector, Widget)>[];
+            sortables.addAll(_placedDecorationWidgets(constraints));
+            if (_petWidget(constraints) case (Index, Widget) pair?) {
+              sortables.add(pair);
+            }
+            sortables.sort(_compareManhattanDistance);
+            children.addAll(sortables.map(((IntVector, Widget) p) => p.$2));
+
+            return Stack(children: children);
+          },
         ),
       ),
     );
@@ -139,9 +144,10 @@ class _GameDisplayState extends State<GameDisplay> {
     for (Placement placement in appState.readPlacements(appState.activeRoom.value.id)) {
       var Placement(
         :int placementId,
-        :String decorationId,
+        :DecorationId decorationId,
         :IntVector tileCoordinate,
       ) = placement;
+
       var DecorationIcon(
         :String imagePath,
         :bool isFacingLeft,
@@ -152,8 +158,12 @@ class _GameDisplayState extends State<GameDisplay> {
           flippedOffset: (double fdx, double fdy),
         ),
       ) = decorationIcons[decorationId]!;
-      var (double nx, double ny) =
-          _screenPositionFromFloorTile(tileCoordinate + baseOffset, constraints);
+
+      var (double nx, double ny) = _screenPositionFromFloorTile(
+        tileCoordinate + baseOffset,
+        constraints,
+      );
+
       bool isFlipped = placement.isFlipped;
 
       yield (

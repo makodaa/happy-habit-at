@@ -1,4 +1,5 @@
 import "package:flutter/foundation.dart";
+import "package:happy_habit_at/utils/extension_types/ids.dart";
 
 // decoration_id TEXT PRIMARY KEY,
 // quantity_owned INTEGER NOT NULL,
@@ -16,13 +17,13 @@ class HabitatDecoration extends ChangeNotifier {
         _energyBuff = energyBuff;
 
   factory HabitatDecoration.fromMap(Map<String, dynamic> json) => HabitatDecoration(
-        id: json["decoration_id"] as String,
+        id: DecorationId(json["decoration_id"] as String),
         quantityOwned: json["quantity_owned"] as int,
         happinessBuff: json["happiness_buff"] as double,
         energyBuff: json["energy_buff"] as double,
       );
 
-  final String id;
+  final DecorationId id;
 
   int _quantityOwned;
   int get quantityOwned => _quantityOwned;

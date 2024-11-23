@@ -26,7 +26,7 @@ final navigatorKeys = (
 );
 
 final router = GoRouter(
-  initialLocation: "/habitat/edit",
+  initialLocation: "/habitat",
   routes: [
     GoRoute(
       path: "/",
@@ -57,8 +57,7 @@ final router = GoRouter(
                     GoRoute(
                       parentNavigatorKey: navigatorKeys.root,
                       path: "edit",
-                      pageBuilder: (BuildContext context, GoRouterState state) =>
-                          CustomTransitionPage(
+                      pageBuilder: (_, GoRouterState state) => CustomTransitionPage(
                         child: const ModifyHabitatScreen(),
                         transitionsBuilder: (
                           BuildContext context,

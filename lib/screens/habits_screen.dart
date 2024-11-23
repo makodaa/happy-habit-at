@@ -53,6 +53,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
           children: <Widget>[
             /// APPBAR
             AppBar(
+              scrolledUnderElevation: 0.0,
               title: const Center(child: Text("Habits")),
             ),
 

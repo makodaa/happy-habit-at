@@ -39,14 +39,18 @@ class _FoodScreenState extends State<FoodScreen> {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
-              controller: scrollController,
-              child: Column(
-                children: <Widget>[
-                  for (var (String key, FoodIcon food) in foodIcons.pairs) //
-                    _foodTile(key, food),
-                ],
+            child: GridView(
+            controller: scrollController,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.8,
+                mainAxisSpacing: 8.0,
+                crossAxisSpacing: 8.0,
               ),
+              children: <Widget>[
+                for (var (String key, FoodIcon food) in foodIcons.pairs) //
+                  _foodTile(key, food),
+              ],
             ),
           ),
         ),
@@ -55,21 +59,50 @@ class _FoodScreenState extends State<FoodScreen> {
   }
 
   Widget _foodTile(String id, FoodIcon food) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: const ColorScheme.light().primary,
-        child: const Icon(Icons.chair),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () async {
+          await _showModal(id, food);
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+            boxShadow: const <BoxShadow>[
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4.0,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(
+                    food.imagePath,
+                    width: 48.0,
+                    height: 48.0,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(food.name),
+              ),
+            ],
+          ),
+        ),
       ),
-      title: Text(food.name),
-      subtitle: Text(food.description),
-      onTap: () async {
-        await _showModal(id, food);
-      },
     );
   }
 
   Future<void> _showModal(String id, FoodIcon food) async {
     await showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       builder: (BuildContext context) {
         return SizedBox(

@@ -17,41 +17,49 @@ typedef FoodIcon = ({
 });
 
 const Map<String, FoodIcon> foodIcons = <String, FoodIcon>{
-   "bundle": (
+  "food_bundle": (
     name: "Food Bundle",
     description: "A Heavy amount of food in a bundle.",
-    imagePath: "assets/food/cat_food_pack.png",
+    imagePath: "assets/images/foods/food_bundle.png",
     salePrice: 15,
     happinessBuff: 15,
     hungerBuff: 15,
     energybuff: 15,
   ),
-  "bag": (
+  "food_bag": (
     name: "Food Bag",
     description: "A large bag of food.",
-    imagePath: "assets/food/food_bag.png",
+    imagePath: "assets/images/foods/food_bag.png",
     salePrice: 10,
     happinessBuff: 10,
     hungerBuff: 10,
     energybuff: 10,
   ),
-  "smallbowl": (
-    name: "A Small Bowl",
+  "small_bowl": (
+    name: "Small Bowl",
     description: "A small amount of food in the bowl.",
-    imagePath: "assets/food/cup_bowl.png",
+    imagePath: "assets/images/foods/small_bowl.png",
     salePrice: 3,
     happinessBuff: 3,
     hungerBuff: 3,
     energybuff: 3,
   ),
-  "fullbowl": (
+  "full_bowl": (
     name: "Food Bundle",
     description: "A full amount of food in the bowl.",
-    imagePath: "assets/food/full_bowl.png",
+    imagePath: "assets/images/foods/full_bowl.png",
     salePrice: 5,
     happinessBuff: 5,
     hungerBuff: 5,
     energybuff: 5,
-  ), 
-  // TODO(everyone): Fill in the food information.
+  ),
+  "pet_pack": (
+    name: "Pet Pack",
+    description: "A pack of food for your pet.",
+    imagePath: "assets/images/foods/pet_pack.png",
+    salePrice: 7,
+    happinessBuff: 7,
+    hungerBuff: 7,
+    energybuff: 7,
+  ),
 };

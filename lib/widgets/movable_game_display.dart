@@ -10,6 +10,8 @@ import "package:happy_habit_at/providers/modify_habitat_state.dart";
 import "package:happy_habit_at/providers/placement.dart";
 import "package:happy_habit_at/providers/room.dart";
 import "package:happy_habit_at/structs/display_offset.dart";
+import "package:happy_habit_at/utils/extension_types/ids.dart";
+import "package:happy_habit_at/utils/extensions/sorted_by.dart";
 import "package:happy_habit_at/utils/type_aliases.dart";
 import "package:provider/provider.dart";
 
@@ -144,19 +146,13 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
               ),
             ),
           ..._floorTileWidgets(constraints),
-          ...(<(Index, Widget)>[
-            ..._placedDecorationWidgets(constraints)
-              ..forEach(((Index, Widget) decor) {
-                print((decor: decor));
-              }),
-            if (_petWidget(constraints) case Indexed<Widget> widget when petIsLocked)
-              () {
-                print((pet: widget));
-                return widget;
-              }(),
-          ]..sort(_compareManhattanDistance))
+          ...<(Index, Widget)>[
+            ..._placedDecorationWidgets(constraints),
+            if (_petWidget(constraints) case Indexed<Widget> widget when petIsLocked) widget,
+          ] //
+              .sortedBy(_compareManhattanDistance)
               .map((Indexed<Widget> p) => p.$2),
-
+      
           /// If we are moving them, we should prioritize them at the stack.
           if (_petWidget(constraints) case (_, Widget widget) when !petIsLocked) widget,
           if (_movingDecorationWidget(constraints) case Widget widget) widget,
@@ -333,7 +329,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
 
       var Placement(
         :int placementId,
-        :String decorationId,
+        :DecorationId decorationId,
         :IntVector tileCoordinate,
       ) = placement;
       var DecorationIcon(
@@ -485,7 +481,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
   }
 
   Widget? _movingDecorationWidget(BoxConstraints constraints) {
-    String? decorationId = movingDecoration?.id;
+    DecorationId? decorationId = movingDecoration?.id;
     if (decorationId == null) {
       return null;
     }

@@ -7,6 +7,7 @@ import "package:flutter/material.dart";
 import "package:happy_habit_at/constants/decoration_icons.dart";
 import "package:happy_habit_at/constants/food_icons.dart";
 import "package:happy_habit_at/constants/pet_icons.dart";
+import "package:happy_habit_at/utils/extension_types/ids.dart";
 import "package:happy_habit_at/utils/extensions/map_pairs.dart";
 import "package:happy_habit_at/utils/type_aliases.dart";
 import "package:path/path.dart";
@@ -44,7 +45,7 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 19,
+        version: 22,
         onUpgrade: (Database db, int oldVersion, int newVersion) async {
           /// Drop all tables.
           if (kDebugMode) {
@@ -61,8 +62,6 @@ class DatabaseService {
           """);
         },
       );
-
-      print((database: _database));
 
       if (_database case Database database) {
         List<void> existingTables = await database.query(
@@ -216,7 +215,7 @@ class DatabaseService {
 
         if ((await database.query(tables.decoration)).length != decorationIcons.length) {
           await database.delete(tables.decoration);
-          for (var (String id, DecorationIcon decoration) in decorationIcons.pairs) {
+          for (var (DecorationId id, DecorationIcon decoration) in decorationIcons.pairs) {
             await database.insert(
               tables.decoration,
               <String, Object?>{
@@ -359,7 +358,7 @@ class DatabaseService {
 
   Future<int?> createPlacement({
     required int roomId,
-    required String decorationId,
+    required DecorationId decorationId,
     required IntVector tileCoordinate,
     required bool isFlipped,
   }) async {
@@ -493,21 +492,9 @@ class DatabaseService {
         await database.update(
           "room",
           <String, Object?>{
-            // room_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            // room_name TEXT NOT NULL,
-            // room_size INTEGER NOT NULL,
-            // room_tile_id TEXT NOT NULL,
             "room_name": name,
             "room_size": size,
             "room_tile_id": tileId,
-
-            // pet_id INTEGER NOT NULL,
-            // pet_hunger INTEGER NOT NULL,
-            // pet_happiness INTEGER NOT NULL,
-            // pet_energy INTEGER NOT NULL,
-            // pet_x INTEGER NOT NULL,
-            // pet_y INTEGER NOT NULL,
-            // pet_is_flipped INTEGER NOT NULL
             "pet_id": petId,
             "pet_hunger": petHunger,
             "pet_happiness": petHappiness,
@@ -536,7 +523,7 @@ class DatabaseService {
   Future<void> updatePlacement({
     required int placementId,
     required int roomId,
-    required String decorationId,
+    required DecorationId decorationId,
     required IntVector tileCoordinate,
     required bool isFlipped,
   }) async {
@@ -561,7 +548,7 @@ class DatabaseService {
   // happiness_buff REAL NOT NULL,
   // energy_buff REAL NOT NULL
   Future<void> updateDecoration({
-    required String decorationId,
+    required DecorationId decorationId,
     required int quantityOwned,
     required double happinessBuff,
     required double energyBuff,

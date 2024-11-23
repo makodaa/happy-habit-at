@@ -1,4 +1,5 @@
 import "package:flutter/foundation.dart";
+import "package:happy_habit_at/utils/extension_types/ids.dart";
 
 // CREATE TABLE IF NOT EXISTS placement (
 //   placement_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -12,7 +13,7 @@ class Placement extends ChangeNotifier {
   Placement({
     required int placementId,
     required int roomId,
-    required String decorationId,
+    required DecorationId decorationId,
     required (int, int) tileCoordinate,
     required bool isFlipped,
   })  : _placementId = placementId,
@@ -24,7 +25,7 @@ class Placement extends ChangeNotifier {
   factory Placement.fromMap(Map<String, dynamic> json) => Placement(
         placementId: json["placement_id"] as int,
         roomId: json["room_id"] as int,
-        decorationId: json["decoration_id"] as String,
+        decorationId: DecorationId(json["decoration_id"] as String),
         tileCoordinate: (json["x_coordinate"] as int, json["y_coordinate"] as int),
         isFlipped: json["is_flipped"] == 1,
       );
@@ -35,9 +36,9 @@ class Placement extends ChangeNotifier {
   final int _roomId;
   int get roomId => _roomId;
 
-  String _decorationId;
-  String get decorationId => _decorationId;
-  set decorationId(String value) {
+  DecorationId _decorationId;
+  DecorationId get decorationId => _decorationId;
+  set decorationId(DecorationId value) {
     if (value != _decorationId) {
       _decorationId = value;
       notifyListeners();

@@ -1,6 +1,7 @@
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart" hide Decoration;
 import "package:happy_habit_at/constants/decoration_icons.dart";
+import "package:happy_habit_at/constants/expansion_rules.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/global/shared_preferences.dart";
 import "package:happy_habit_at/providers/food.dart";
@@ -11,7 +12,10 @@ import "package:happy_habit_at/providers/room.dart";
 import "package:happy_habit_at/services/database_service.dart";
 import "package:happy_habit_at/structs/completion.dart";
 import "package:happy_habit_at/utils/data_types/listenable_list.dart";
+import "package:happy_habit_at/utils/data_types/listenable_set.dart";
+import "package:happy_habit_at/utils/extension_types/ids.dart";
 import "package:happy_habit_at/utils/extension_types/immutable_listenable_list.dart";
+import "package:happy_habit_at/utils/extension_types/immutable_listenable_set.dart";
 import "package:happy_habit_at/utils/type_aliases.dart";
 
 /// Following some pattern online, this class is going to be
@@ -39,8 +43,8 @@ class AppState {
   final ListenableList<HabitatDecoration> _decorations = ListenableList<HabitatDecoration>();
   ImmutableListenableList<HabitatDecoration> get decorations => _decorations.immutable;
 
-  final ListenableList<HabitatDecoration> _ownedDecorations = ListenableList<HabitatDecoration>();
-  ImmutableListenableList<HabitatDecoration> get ownedDecorations => _ownedDecorations.immutable;
+  final ListenableSet<DecorationId> _ownedDecorations = ListenableSet<DecorationId>();
+  ImmutableListenableSet<DecorationId> get ownedDecorations => _ownedDecorations.immutable;
 
   final ListenableList<Food> _foods = ListenableList<Food>();
   ImmutableListenableList<Food> get foods => _foods.immutable;
@@ -69,6 +73,14 @@ class AppState {
     }
 
     for (Map<String, Object?> placementMap in await _database.readPlacements()) {
+      if (!decorationIcons.keys.any((DecorationId id) => id == placementMap["decoration_id"])) {
+        if (kDebugMode) {
+          print("Placement ${placementMap["placement_id"]} has an invalid decoration id.");
+          print("Therefore, it will be removed.");
+        }
+
+        await _database.deletePlacement(placementId: placementMap["placement_id"]! as int);
+      }
       _placements.add(Placement.fromMap(placementMap));
     }
 
@@ -78,7 +90,7 @@ class AppState {
 
     for (HabitatDecoration decoration in _decorations) {
       if (decoration.quantityOwned > 0) {
-        _ownedDecorations.add(decoration);
+        _ownedDecorations.add(decoration.id);
       }
     }
 
@@ -106,6 +118,8 @@ class AppState {
     } else {
       this.currency = ValueNotifier<int>(currency);
     }
+    this.currency.value += 100000;
+
     this.currency.addListener(() async {
       await sharedPreferences.setInt("currency", this.currency.value);
     });
@@ -173,7 +187,7 @@ class AppState {
 
   Future<void> createPlacement({
     required int roomId,
-    required String decorationId,
+    required DecorationId decorationId,
     required IntVector tileCoordinate,
     required bool isFlipped,
   }) async {
@@ -191,7 +205,7 @@ class AppState {
       );
       decoration.quantityOwned--;
       if (decoration.quantityOwned <= 0) {
-        _ownedDecorations.remove(decoration);
+        _ownedDecorations.remove(decoration.id);
       }
 
       await _database.updateDecoration(
@@ -251,7 +265,7 @@ class AppState {
     return completionsMap;
   }
 
-  int? quantityOfDecoration(String decorationId) {
+  int? quantityOfDecoration(DecorationId decorationId) {
     return _decorations
         .where((HabitatDecoration decoration) => decoration.id == decorationId)
         .firstOrNull
@@ -269,12 +283,12 @@ class AppState {
     return _placements.where((Placement placement) => placement.roomId == roomId);
   }
 
-  HabitatDecoration decorationOf(String decorationId) {
+  HabitatDecoration decorationOf(DecorationId decorationId) {
     return _decorations
         .singleWhere((HabitatDecoration decoration) => decoration.id == decorationId);
   }
 
-  int placementsOfDecoration(String decorationId) {
+  int placementsOfDecoration(DecorationId decorationId) {
     return _placements
         .where((Placement placement) => placement.decorationId == decorationId)
         .length;
@@ -333,7 +347,7 @@ class AppState {
   Future<void> updatePlacement({
     required int placementId,
     required int roomId,
-    required String decorationId,
+    required DecorationId decorationId,
     required IntVector tileCoordinate,
     required bool isFlipped,
   }) async {
@@ -341,6 +355,9 @@ class AppState {
       ..decorationId = decorationId
       ..isFlipped = isFlipped
       ..tileCoordinate = tileCoordinate;
+
+    // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+    _placements.notifyListeners();
 
     await _database.updatePlacement(
       placementId: placementId,
@@ -351,7 +368,7 @@ class AppState {
     );
   }
 
-  Future<void> buyDecoration(String decorationId) async {
+  Future<void> buyDecoration(DecorationId decorationId) async {
     DecorationIcon decoration = decorationIcons[decorationId]!;
     HabitatDecoration decorationInfo = _decorations.singleWhere(
       (HabitatDecoration d) => d.id == decorationId,
@@ -361,9 +378,9 @@ class AppState {
       return;
     }
     decorationInfo.quantityOwned++;
-    if (!_ownedDecorations.any((HabitatDecoration d) => d.id == decorationId) &&
+    if (!_ownedDecorations.any((DecorationId id) => id == decorationId) &&
         decorationInfo.quantityOwned > 0) {
-      _ownedDecorations.add(decorationInfo);
+      _ownedDecorations.add(decorationInfo.id);
     }
 
     await _database.updateDecoration(
@@ -376,8 +393,8 @@ class AppState {
     currency.value -= decoration.salePrice;
   }
 
-  Future<void> sellDecoration(String decorationId) async {
-    assert(ownedDecorations.any((HabitatDecoration h) => h.id == decorationId));
+  Future<void> sellDecoration(DecorationId decorationId) async {
+    assert(ownedDecorations.any((DecorationId id) => id == decorationId));
     DecorationIcon decoration = decorationIcons[decorationId]!;
     HabitatDecoration decorationInfo = _decorations.singleWhere(
       (HabitatDecoration d) => d.id == decorationId,
@@ -388,9 +405,9 @@ class AppState {
     }
 
     decorationInfo.quantityOwned--;
-    if (_ownedDecorations.any((HabitatDecoration d) => d.id == decorationId) &&
+    if (_ownedDecorations.any((DecorationId id) => id == decorationId) &&
         decorationInfo.quantityOwned <= 0) {
-      _ownedDecorations.remove(decorationInfo);
+      _ownedDecorations.remove(decorationInfo.id);
     }
 
     await _database.updateDecoration(
@@ -401,6 +418,53 @@ class AppState {
     );
 
     currency.value += decoration.resalePrice;
+  }
+
+  Future<void> buyExpansion(int roomId) async {
+    Room room = _rooms.singleWhere((Room room) => room.id == roomId);
+    if (expansionRules[room.size] case (:int cost, size: _)) {
+      if (currency.value < cost) {
+        return;
+      }
+
+      currency.value -= cost;
+
+      await expandRoom(roomId);
+    }
+  }
+
+  Future<void> expandRoom(int roomId) async {
+    Room room = _rooms.singleWhere((Room room) => room.id == roomId);
+    ({int cost, int size})? expansionRule = expansionRules[room.size];
+    if (expansionRule == null) {
+      return;
+    }
+    room.size = expansionRule.size;
+
+    room.updateRoom(
+      name: room.name,
+      size: room.size,
+      tileId: room.tileId,
+      petId: room.petId,
+      petHunger: room.petHunger,
+      petHappiness: room.petHappiness,
+      petEnergy: room.petEnergy,
+      petPosition: room.petPosition,
+      petIsFlipped: room.petIsFlipped,
+    );
+
+    await _database.updateRoom(
+      id: room.id,
+      name: room.name,
+      size: room.size,
+      tileId: room.tileId,
+      petId: room.petId,
+      petHunger: room.petHunger,
+      petHappiness: room.petHappiness,
+      petEnergy: room.petEnergy,
+      petPosition: room.petPosition,
+      petIsFlipped: room.petIsFlipped,
+    );
   }
 
   // DELETE
@@ -422,7 +486,7 @@ class AppState {
       );
       decoration.quantityOwned++;
       if (decoration.quantityOwned > 0) {
-        _ownedDecorations.add(decoration);
+        _ownedDecorations.add(decoration.id);
       }
 
       await _database.updateDecoration(

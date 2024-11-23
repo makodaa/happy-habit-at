@@ -2,7 +2,9 @@ import "package:flutter/material.dart" hide Decoration;
 import "package:happy_habit_at/constants/decoration_icons.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habitat_decoration.dart";
+import "package:happy_habit_at/utils/extension_types/ids.dart";
 import "package:happy_habit_at/utils/extensions/map_pairs.dart";
+import "package:happy_habit_at/utils/extensions/sorted_by.dart";
 import "package:happy_habit_at/widgets/currency_display.dart";
 import "package:happy_habit_at/widgets/decoration_icons.dart";
 import "package:provider/provider.dart";
@@ -30,14 +32,21 @@ class _DecorationScreenState extends State<DecorationScreen> {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
+            child: GridView(
               controller: scrollController,
-              child: Column(
-                children: <Widget>[
-                  for (var (String id, DecorationIcon decoration) in decorationIcons.pairs)
-                    _decorationTile(id, decoration),
-                ],
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.8,
+                mainAxisSpacing: 8.0,
+                crossAxisSpacing: 8.0,
               ),
+              children: <(String, Widget)>[
+                for (var (DecorationId id, DecorationIcon decoration) in decorationIcons.pairs)
+                  (decoration.name, _decorationTile(id, decoration)),
+              ]
+                  .sortedBy(((String, Widget) a, (String, Widget) b) => a.$1.compareTo(b.$1))
+                  .map(((String, Widget) p) => p.$2)
+                  .toList(),
             ),
           ),
         ),
@@ -45,25 +54,54 @@ class _DecorationScreenState extends State<DecorationScreen> {
     );
   }
 
-  Widget _decorationTile(String decorationId, DecorationIcon decoration) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: const ColorScheme.light().primary,
-        child: const Icon(Icons.chair),
+  Widget _decorationTile(DecorationId decorationId, DecorationIcon decoration) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () async {
+          await _showModal(decorationId, decoration);
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+            boxShadow: const <BoxShadow>[
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4.0,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(
+                    decoration.imagePath,
+                    width: decoration.imageDimensions.$1,
+                    height: decoration.imageDimensions.$2,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(decoration.name),
+              ),
+            ],
+          ),
+        ),
       ),
-      title: Text(decoration.name),
-      subtitle: Text(decoration.description),
-      onTap: () async {
-        await _showModal(decorationId, decoration);
-      },
     );
   }
 
-  Future<void> _showModal(String decorationId, DecorationIcon decoration) async {
+  Future<void> _showModal(DecorationId decorationId, DecorationIcon decoration) async {
     AnimatedScrollController innerScrollController =
         AnimatedScrollController(animationFactory: const ChromiumImpulse());
 
     await showModalBottomSheet<void>(
+      useRootNavigator: true,
       isScrollControlled: true,
       context: context,
       builder: (BuildContext context) {
@@ -79,7 +117,7 @@ class _DecorationScreenState extends State<DecorationScreen> {
                 const SizedBox(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: CurrencyDisplay(),
+                    child: UserCurrencyDisplay(),
                   ),
                 ),
                 const SizedBox(
@@ -137,6 +175,7 @@ class _DecorationScreenState extends State<DecorationScreen> {
                     },
                   ),
                 ),
+                const SizedBox(height: 16.0),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
@@ -149,7 +188,7 @@ class _DecorationScreenState extends State<DecorationScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: ListenableBuilder(
                     listenable: decorationInfo,
-                    builder: (BuildContext context, _) {
+                    builder: (_, __) {
                       int placements = appState.placementsOfDecoration(decorationId);
 
                       return Text(placements.toString());
@@ -162,17 +201,28 @@ class _DecorationScreenState extends State<DecorationScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
-                      FilledButton(
-                        onPressed: () {
-                          appState.sellDecoration(decorationId);
-                        },
-                        child: Text("Sell for ${decoration.resalePrice}"),
+                      ListenableBuilder(
+                        listenable: decorationInfo,
+                        builder: (_, __) => FilledButton(
+                          onPressed: decorationInfo.quantityOwned > 0
+                              ? () {
+                                  appState.sellDecoration(decorationId);
+                                }
+                              : null,
+                          child: Text("Sell for ${decoration.resalePrice}"),
+                        ),
                       ),
-                      FilledButton(
-                        onPressed: () {
-                          appState.buyDecoration(decorationId);
-                        },
-                        child: Text("Buy for ${decoration.salePrice}"),
+                      const SizedBox(width: 18.0),
+                      ValueListenableBuilder<int>(
+                        valueListenable: appState.currency,
+                        builder: (_, int value, __) => FilledButton(
+                          onPressed: value >= decoration.salePrice
+                              ? () {
+                                  appState.buyDecoration(decorationId);
+                                }
+                              : null,
+                          child: Text("Buy for ${decoration.salePrice}"),
+                        ),
                       ),
                     ],
                   ),

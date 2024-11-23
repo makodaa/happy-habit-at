@@ -1,12 +1,9 @@
 import "package:flutter/material.dart";
 
 enum DecorationCategory {
-  beds(label: "Beds", icon: Icons.bed),
-  chairs(label: "Chairs", icon: Icons.chair),
-  lights(label: "Lights", icon: Icons.light),
-  tables(label: "Tables", icon: Icons.table_restaurant),
-  smallDecoration(label: "Small Decoration", icon: Icons.toys),
-  largeDecoration(label: "Large Decoration", icon: Icons.nature);
+  nature(label: "Nature", icon: Icons.eco),
+  furniture(label: "Furniture", icon: Icons.chair),
+  camping(label: "Camping", icon: Icons.lightbulb),;
 
   const DecorationCategory({
     required this.label,

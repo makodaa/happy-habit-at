@@ -125,10 +125,35 @@ class Room extends ChangeNotifier {
 
   bool _petIsFlipped;
   bool get petIsFlipped => _petIsFlipped;
+
   set petIsFlipped(bool value) {
     if (petIsFlipped != value) {
       _petIsFlipped = value;
       notifyListeners();
     }
+  }
+
+  void updateRoom({
+    required String name,
+    required int size,
+    required String tileId,
+    required String petId,
+    required int petHunger,
+    required int petHappiness,
+    required int petEnergy,
+    required (int, int) petPosition,
+    required bool petIsFlipped,
+  }) {
+    _name = name;
+    _size = size;
+    _tileId = tileId;
+    _petId = petId;
+    _petHunger = petHunger;
+    _petHappiness = petHappiness;
+    _petEnergy = petEnergy;
+    _petPosition = petPosition;
+    _petIsFlipped = petIsFlipped;
+
+    notifyListeners();
   }
 }

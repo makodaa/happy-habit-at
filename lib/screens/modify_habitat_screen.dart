@@ -7,6 +7,7 @@ import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habitat_decoration.dart";
 import "package:happy_habit_at/providers/modify_habitat_state.dart";
 import "package:happy_habit_at/providers/room.dart";
+import "package:happy_habit_at/utils/extension_types/ids.dart";
 import "package:happy_habit_at/widgets/currency_display.dart";
 import "package:happy_habit_at/widgets/movable_game_display.dart";
 import "package:provider/provider.dart";
@@ -64,7 +65,9 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       _appBar(),
-                      const Expanded(child: MovableGameDisplay()),
+                      const Expanded(
+                        child: MovableGameDisplay(),
+                      ),
                     ],
                   ),
                 ),
@@ -86,6 +89,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return AppBar(
+          scrolledUnderElevation: 0.0,
           foregroundColor: Colors.white,
           backgroundColor: Colors.transparent,
           title: Center(
@@ -140,7 +144,7 @@ class _ModifyHabitatScreenState extends State<ModifyHabitatScreen> {
     return const Positioned(
       top: 56.0,
       right: 8.0,
-      child: CurrencyDisplay(color: Colors.white),
+      child: UserCurrencyDisplay(color: Colors.white),
     );
   }
 
@@ -182,55 +186,56 @@ class InventoryPanel extends StatelessWidget {
                 builder: (BuildContext context, _) {
                   return Row(
                     children: <Widget>[
-                      for (HabitatDecoration ownedDecoration in appState.ownedDecorations)
-                        ListenableBuilder(
-                          listenable: ownedDecoration,
-                          builder: (BuildContext context, Widget? child) {
-                            return GestureDetector(
-                              onTap: () {
-                                if (ownedDecoration.quantityOwned > 0) {
-                                  context.read<ModifyHabitatState>()
-                                    ..decorationIsNew = true
-                                    ..movingDecoration = ownedDecoration;
-                                }
-                              },
-                              child: Stack(
-                                children: <Widget>[
-                                  Container(
-                                    width: 92.0,
-                                    height: 92.0,
-                                    margin: const EdgeInsets.all(4.0),
-                                    color: Colors.blue.shade200,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Image.asset(
-                                        decorationIcons[ownedDecoration.id]!.imagePath,
+                      for (DecorationId id in appState.ownedDecorations)
+                        if (appState.decorationOf(id) case HabitatDecoration ownedDecoration)
+                          ListenableBuilder(
+                            listenable: ownedDecoration,
+                            builder: (BuildContext context, Widget? child) {
+                              return GestureDetector(
+                                onTap: () {
+                                  if (ownedDecoration.quantityOwned > 0) {
+                                    context.read<ModifyHabitatState>()
+                                      ..decorationIsNew = true
+                                      ..movingDecoration = ownedDecoration;
+                                  }
+                                },
+                                child: Stack(
+                                  children: <Widget>[
+                                    Container(
+                                      width: 92.0,
+                                      height: 92.0,
+                                      margin: const EdgeInsets.all(4.0),
+                                      color: Colors.blue.shade200,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Image.asset(
+                                          decorationIcons[ownedDecoration.id]!.imagePath,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Positioned(
-                                    top: 0.0,
-                                    right: 0.0,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12.0),
-                                      child: Container(
-                                        width: 24.0,
-                                        height: 24.0,
-                                        color: Colors.red[300],
-                                        child: Center(
-                                          child: Text(
-                                            "${ownedDecoration.quantityOwned}",
-                                            style: const TextStyle(color: Colors.white),
+                                    Positioned(
+                                      top: 0.0,
+                                      right: 0.0,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12.0),
+                                        child: Container(
+                                          width: 24.0,
+                                          height: 24.0,
+                                          color: Colors.red[300],
+                                          child: Center(
+                                            child: Text(
+                                              "${ownedDecoration.quantityOwned}",
+                                              style: const TextStyle(color: Colors.white),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                     ],
                   );
                 },

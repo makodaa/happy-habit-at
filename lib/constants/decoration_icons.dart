@@ -11,6 +11,7 @@
 
 import "package:happy_habit_at/constants/decoration_category.dart";
 import "package:happy_habit_at/structs/display_offset.dart";
+import "package:happy_habit_at/utils/extension_types/ids.dart";
 
 typedef DecorationIcon = ({
   String name,
@@ -23,13 +24,13 @@ typedef DecorationIcon = ({
   bool isFacingLeft,
 
   // Technical values
-  (double width, double height) imageDimensions ,
+  (double width, double height) imageDimensions,
   DecorationCategory category,
   DisplayOffset displayOffset,
 });
 
-const Map<String, DecorationIcon> decorationIcons = <String, DecorationIcon>{
-  "blue_table": (
+const Map<DecorationId, DecorationIcon> decorationIcons = <DecorationId, DecorationIcon>{
+  DecorationId("blue_table"): (
     name: "Blue Leather Table",
     description: "A Blue Leather Table.",
     imagePath: "assets/images/furniture/blue_table.png",
@@ -38,15 +39,15 @@ const Map<String, DecorationIcon> decorationIcons = <String, DecorationIcon>{
     happinessBuff: 100,
     energyBuff: 50,
     isFacingLeft: false,
-    imageDimensions : (42.0, 42.0),
-    category: DecorationCategory.smallDecoration,
+    imageDimensions: (42.0, 42.0),
+    category: DecorationCategory.furniture,
     displayOffset: DisplayOffset(
       defaultOffset: (6, -5),
       flippedOffset: (3, -5),
       baseOffset: (0, 0),
     ),
   ),
-  "burgundy_drawer": (
+  DecorationId("burgundy_drawer"): (
     name: "Burgundy Oak Drawer",
     description: "A glossy burgundy oak drawer.",
     imagePath: "assets/images/furniture/burgundy_drawer.png",
@@ -55,8 +56,8 @@ const Map<String, DecorationIcon> decorationIcons = <String, DecorationIcon>{
     happinessBuff: 100,
     energyBuff: 60,
     isFacingLeft: false,
-    imageDimensions : (42.0, 48.0),
-    category: DecorationCategory.smallDecoration,
+    imageDimensions: (42.0, 48.0),
+    category: DecorationCategory.furniture,
     displayOffset: DisplayOffset(
       defaultOffset: (3, -11),
       flippedOffset: (3, -11),
@@ -145,7 +146,7 @@ const Map<String, DecorationIcon> decorationIcons = <String, DecorationIcon>{
 //   ),
 //   // nature decorations
 //   //yellow autumn tree classifications
-  "bigytree1": (
+  DecorationId("bigytree1"): (
     name: "Tall Autumn Tree",
     description: "A stripped tall autumn tree.",
     imagePath: "assets/images/trees/bigytree1.png",
@@ -154,8 +155,8 @@ const Map<String, DecorationIcon> decorationIcons = <String, DecorationIcon>{
     happinessBuff: 100,
     energyBuff: 100,
     isFacingLeft: false,
-    imageDimensions : (64.0, 92.0),
-    category: DecorationCategory.smallDecoration,
+    imageDimensions: (64.0, 92.0),
+    category: DecorationCategory.nature,
     displayOffset: DisplayOffset(
       defaultOffset: (-8, -36),
       flippedOffset: (-8, -36),
@@ -577,7 +578,7 @@ const Map<String, DecorationIcon> decorationIcons = <String, DecorationIcon>{
 //     energyBuff: 100,
 //     isFacingLeft: false,
 //   ),
-  "tree2": (
+  DecorationId("tree2"): (
     name: "Tall Rounded Spruce Tree",
     description: "A tall spruce tree.",
     imagePath: "assets/images/trees/tree2.png",
@@ -586,8 +587,8 @@ const Map<String, DecorationIcon> decorationIcons = <String, DecorationIcon>{
     happinessBuff: 100,
     energyBuff: 100,
     isFacingLeft: false,
-    imageDimensions : (64.0, 96.0),
-    category: DecorationCategory.smallDecoration,
+    imageDimensions: (64.0, 96.0),
+    category: DecorationCategory.nature,
     displayOffset: DisplayOffset(
       defaultOffset: (-8, -12),
       flippedOffset: (-8, -12),
@@ -705,16 +706,23 @@ const Map<String, DecorationIcon> decorationIcons = <String, DecorationIcon>{
 //     energyBuff: 100,
 //     isFacingLeft: false,
 //   ),
-//   "chair": (
-//     name: "Camping Chair",
-//     description: "A camping chair.",
-//     imagePath: "assets/images/extras/chair.png",
-//     salePrice: 100,
-//     resalePrice: 200,
-//     happinessBuff: 100,
-//     energyBuff: 100,
-//     isFacingLeft: false,
-//   ),
+  DecorationId("chair"): (
+    name: "Camping Chair",
+    description: "A camping chair.",
+    imagePath: "assets/images/extras/chair.png",
+    salePrice: 100,
+    resalePrice: 200,
+    happinessBuff: 100,
+    energyBuff: 100,
+    isFacingLeft: false,
+    imageDimensions: (42.0, 42.0),
+    category: DecorationCategory.furniture,
+    displayOffset: DisplayOffset(
+      defaultOffset: (6, -5),
+      flippedOffset: (3, -5),
+      baseOffset: (0, 0),
+    ),
+  ),
 //   "cooking": (
 //     name: "Cooking Pot",
 //     description: "A cooking pot.",
@@ -725,27 +733,42 @@ const Map<String, DecorationIcon> decorationIcons = <String, DecorationIcon>{
 //     energyBuff: 100,
 //     isFacingLeft: false,
 //   ),
-//   "idkmb": (
-//     name: "Map",
-//     description: "An explorer map.",
-//     imagePath: "assets/images/extras/idkmb.png",
-//     salePrice: 100,
-//     resalePrice: 200,
-//     happinessBuff: 100,
-//     energyBuff: 100,
-//     isFacingLeft: false,
-//   ),
+  DecorationId("map"): (
+    name: "Explorer Map",
+    description: "An explorer map.",
+    imagePath: "assets/images/extras/map.png",
+    salePrice: 100,
+    resalePrice: 200,
+    happinessBuff: 100,
+    energyBuff: 100,
+    isFacingLeft: false,
+    imageDimensions: (42.0, 42.0),
+    category: DecorationCategory.furniture,
+    displayOffset: DisplayOffset(
+      defaultOffset: (6, 0),
+      flippedOffset: (3, 0),
+      baseOffset: (0, 0),
+    ),
+  ),
 
-//   "sign": (
-//     name: "Sign",
-//     description: "A sign.",
-//     imagePath: "assets/images/extras/sign.png",
-//     salePrice: 100,
-//     resalePrice: 200,
-//     happinessBuff: 100,
-//     energyBuff: 100,
-//     isFacingLeft: false,
-//   ),
+  DecorationId("sign"): (
+    name: "Sign",
+    description: "A sign.",
+    imagePath: "assets/images/extras/sign.png",
+    salePrice: 100,
+    resalePrice: 200,
+    happinessBuff: 100,
+    energyBuff: 100,
+    isFacingLeft: false,
+    imageDimensions: (56.0, 64.0),
+    category: DecorationCategory.furniture,
+    displayOffset: DisplayOffset(
+      defaultOffset: (1, -36),
+      flippedOffset: (-4, -36),
+      baseOffset: (0, 0),
+    ),
+  ),
+
 //   "tent": (
 //     name: "Tent",
 //     description: "A cozy tent to stay.",

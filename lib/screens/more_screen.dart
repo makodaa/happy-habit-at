@@ -20,6 +20,7 @@ class _MoreScreenState extends State<MoreScreen> {
       children: <Widget>[
         /// APPBAR
         AppBar(
+          scrolledUnderElevation: 0.0,
           title: const Center(child: Text("More")),
         ),
 

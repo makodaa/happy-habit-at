@@ -137,7 +137,7 @@ flutter:
     - assets/images/extras/butterfly.png
     - assets/images/extras/chair.png
     - assets/images/extras/cooking.png
-    - assets/images/extras/idkmb.png
+    - assets/images/extras/map.png
     - assets/images/extras/sign.png
     - assets/images/extras/tent.png
     - assets/images/trees/bigytree1.png
@@ -180,13 +180,11 @@ flutter:
     - assets/images/trees/ytree8.png
     - assets/images/trees/ytree9.png
     - assets/images/trees/ytree11.png
-    - assets/images/foods/cat_food_pack.png
-    - assets/images/foods/cup_bowl.png
+    - assets/images/foods/food_bundle.png
     - assets/images/foods/food_bag.png
     - assets/images/foods/full_bowl.png
     - assets/images/foods/pet_pack.png
-    - assets/images/foods/food_bowl.png
-    - assets/images/foods/pet_food.png
+    - assets/images/foods/small_bowl.png
 
   #   - images/a_dot_ham.jpeg
 

@@ -20,7 +20,6 @@ class _HabitatScreenState extends State<HabitatScreen> {
   @override
   void initState() {
     super.initState();
-    
 
     appState = context.read<AppState>();
     activeRoom = appState.activeRoom.value;
@@ -47,6 +46,7 @@ class _HabitatScreenState extends State<HabitatScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               AppBar(
+                scrolledUnderElevation: 0.0,
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.transparent,
                 title: Center(
@@ -62,7 +62,7 @@ class _HabitatScreenState extends State<HabitatScreen> {
         const Positioned(
           top: 56.0,
           right: 8.0,
-          child: CurrencyDisplay(color: Colors.white),
+          child: UserCurrencyDisplay(color: Colors.white),
         ),
         Positioned(
           bottom: 12.0,
