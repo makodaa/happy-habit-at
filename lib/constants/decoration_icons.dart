@@ -716,7 +716,7 @@ const Map<DecorationId, DecorationIcon> decorationIcons = <DecorationId, Decorat
     energyBuff: 100,
     isFacingLeft: false,
     imageDimensions: (42.0, 42.0),
-    category: DecorationCategory.furniture,
+    category: DecorationCategory.camping,
     displayOffset: DisplayOffset(
       defaultOffset: (6, -5),
       flippedOffset: (3, -5),
@@ -743,7 +743,7 @@ const Map<DecorationId, DecorationIcon> decorationIcons = <DecorationId, Decorat
     energyBuff: 100,
     isFacingLeft: false,
     imageDimensions: (42.0, 42.0),
-    category: DecorationCategory.furniture,
+    category: DecorationCategory.camping,
     displayOffset: DisplayOffset(
       defaultOffset: (6, 0),
       flippedOffset: (3, 0),

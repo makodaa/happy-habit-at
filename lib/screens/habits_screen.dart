@@ -160,7 +160,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
         String? description = appState
             .completionOfId(habit.id, selectedDate) //
             .nullableMap((Completion c) => _rightNow().difference(c.dateTime))
-            .nullableMap((Duration d) => (print(d) as Null, _description(d)).$2)
+            .nullableMap((Duration d) => _description(d))
             .nullableMap((String d) => "Completed $d ago");
 
         DateTime? dateTimeOfHabitTime = habit.time.nullableMap(

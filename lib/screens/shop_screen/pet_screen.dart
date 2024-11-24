@@ -14,7 +14,7 @@ class PetScreen extends StatelessWidget {
           children: <Widget>[
             const UserCurrencyDisplay(),
             _fieldSeparator,
-            const Text("Expand Habitat"),
+            const Text("New Pet"),
             _fieldSeparator,
             Center(
               child: Card(
@@ -37,14 +37,24 @@ class PetScreen extends StatelessWidget {
                         ),
                       ),
                       const Text(
-                        "Pet Gachapon",
+                        "Buy a new pet",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       _fieldSeparator,
-                      const Text("Increase habitat size from mxm to nxn"),
+                      const Stack(
+                        children: <Widget>[
+                          Opacity(
+                            opacity: 0.0,
+                            child: Text("If you can read this, you are a pogger"),
+                          ),
+                          Positioned.fill(
+                            child: Center(child: Text("Roll for a random pet!")),
+                          ),
+                        ],
+                      ),
                       _fieldSeparator,
                       FilledButton(
                         onPressed: () {},

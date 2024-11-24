@@ -110,7 +110,6 @@ class _ExpansionScreenState extends State<ExpansionScreen> {
                               FilledButton(
                                 onPressed: canAffordExpansion
                                     ? () async {
-                                        print("Expanding habitat");
                                         await appState.buyExpansion(appState.activeRoom.value.id);
                                       }
                                     : null,

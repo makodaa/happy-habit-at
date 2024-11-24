@@ -1,4 +1,5 @@
 import "package:flutter/material.dart" hide Decoration;
+import "package:happy_habit_at/constants/decoration_category.dart";
 import "package:happy_habit_at/constants/decoration_icons.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/providers/habitat_decoration.dart";
@@ -20,15 +21,24 @@ class DecorationScreen extends StatefulWidget {
 class _DecorationScreenState extends State<DecorationScreen> {
   late final AnimatedScrollController scrollController =
       AnimatedScrollController(animationFactory: const ChromiumImpulse());
-
   late final AppState appState = context.read<AppState>();
+  late DecorationCategory? selectedCategory = null;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        const DecorationIcons(),
+        DecorationIcons(
+          selectedCategory: selectedCategory,
+          onCategoryChange: (DecorationCategory? category) => setState(() {
+            if (selectedCategory == category) {
+              selectedCategory = null;
+            } else {
+              selectedCategory = category;
+            }
+          }),
+        ),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -42,7 +52,8 @@ class _DecorationScreenState extends State<DecorationScreen> {
               ),
               children: <(String, Widget)>[
                 for (var (DecorationId id, DecorationIcon decoration) in decorationIcons.pairs)
-                  (decoration.name, _decorationTile(id, decoration)),
+                  if (selectedCategory == null || decoration.category == selectedCategory)
+                    (decoration.name, _decorationTile(id, decoration)),
               ]
                   .sortedBy(((String, Widget) a, (String, Widget) b) => a.$1.compareTo(b.$1))
                   .map(((String, Widget) p) => p.$2)

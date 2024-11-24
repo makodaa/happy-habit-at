@@ -74,7 +74,6 @@ class _HabitatScreenState extends State<HabitatScreen> {
                 heroTag: "enterCustomizationButton",
                 backgroundColor: Colors.white,
                 onPressed: () {
-                  print("Pressed!");
                   context.go("/habitat/edit");
                 },
                 child: const Icon(
