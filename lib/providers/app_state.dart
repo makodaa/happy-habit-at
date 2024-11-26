@@ -118,7 +118,7 @@ class AppState {
     } else {
       this.currency = ValueNotifier<int>(currency);
     }
-    this.currency.value += 100000;
+    // this.currency.value += 100000;
 
     this.currency.addListener(() async {
       await sharedPreferences.setInt("currency", this.currency.value);

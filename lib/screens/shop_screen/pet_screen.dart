@@ -1,10 +1,21 @@
 import "package:flutter/material.dart";
 import "package:happy_habit_at/constants/pet_icons.dart";
+import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/utils/extensions/map_pairs.dart";
 import "package:happy_habit_at/widgets/currency_display.dart";
+import "package:provider/provider.dart";
 
-class PetScreen extends StatelessWidget {
+class PetScreen extends StatefulWidget {
   const PetScreen({super.key});
+
+  @override
+  State<PetScreen> createState() => _PetScreenState();
+
+  static const SizedBox _fieldSeparator = SizedBox(height: 16.0);
+}
+
+class _PetScreenState extends State<PetScreen> {
+  late final AppState appState = context.read<AppState>();
 
   @override
   Widget build(BuildContext context) {
@@ -15,10 +26,10 @@ class PetScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             const UserCurrencyDisplay(),
-            _fieldSeparator,
-            const Text("New Pet"),
-            _fieldSeparator,
-            _buyCard(),
+            PetScreen._fieldSeparator,
+            // const Text("New Pet"),
+            // _fieldSeparator,
+            // _buyCard(),
             const Text("Pets"),
             _pets(),
           ],
@@ -55,7 +66,7 @@ class PetScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              _fieldSeparator,
+              PetScreen._fieldSeparator,
               const Stack(
                 children: <Widget>[
                   Opacity(
@@ -67,7 +78,7 @@ class PetScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              _fieldSeparator,
+              PetScreen._fieldSeparator,
               FilledButton(
                 onPressed: () {},
                 child: const Padding(
@@ -85,8 +96,6 @@ class PetScreen extends StatelessWidget {
     );
   }
 
-  static const SizedBox _fieldSeparator = SizedBox(height: 16.0);
-
   Widget _pets() {
     return GridView(
       physics: const ScrollPhysics(),
@@ -98,44 +107,54 @@ class PetScreen extends StatelessWidget {
         crossAxisSpacing: 8.0,
       ),
       children: <Widget>[
-        for (var (_, PetIcon icon) in petIcons.pairs) //
-          _petTile(icon),
+        for (var (String id, PetIcon icon) in petIcons.pairs) //
+          _petTile(id, icon),
       ],
     );
   }
 
-  Widget _petTile(PetIcon petIcon) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4.0,
-            offset: Offset(0, 2),
+  Widget _petTile(String id, PetIcon petIcon) {
+    return GestureDetector(
+      onTap: () {
+        appState.activeRoom.value.petId = id;
+      },
+      child: ListenableBuilder(
+        listenable: appState.activeRoom.value,
+        builder: (BuildContext context, Widget? child) => DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+            border: appState.activeRoom.value.petId == id ? Border.all(color: Colors.green) : null,
+            boxShadow: const <BoxShadow>[
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4.0,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        children: <Widget>[
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image.asset(
-                  petIcon.imagePath,
-                  width: petIcon.dimensions.$1,
-                  height: petIcon.dimensions.$2,
+          child: child,
+        ),
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(
+                    petIcon.imagePath,
+                    width: petIcon.dimensions.$1,
+                    height: petIcon.dimensions.$2,
+                  ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(petIcon.name),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(petIcon.name),
+            ),
+          ],
+        ),
       ),
     );
   }

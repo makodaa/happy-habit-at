@@ -136,12 +136,14 @@ class _DecorationScreenState extends State<DecorationScreen> {
                 const SizedBox(
                   height: 16.0,
                 ),
-                const ColoredBox(
-                  color: Colors.black38,
-                  child: SizedBox(
-                    height: 150,
-                    child: Center(
-                      child: Icon(Icons.chair),
+                ColoredBox(
+                  color: const Color(0x7F41B06E),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 64.0),
+                    child: Image.asset(
+                      decoration.imagePath,
+                      width: decoration.imageDimensions.$1,
+                      height: decoration.imageDimensions.$2,
                     ),
                   ),
                 ),
