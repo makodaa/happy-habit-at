@@ -36,7 +36,6 @@ dependencies:
     sdk: flutter
 
   flutter_heatmap_calendar: ^1.0.5
-  flutter_launcher_icons: ^0.14.1
   go_router: ^14.3.0
   google_fonts: ^6.2.1
   intl: ^0.20.0
@@ -73,6 +72,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    #pets
     - assets/images/pets/bear.png
     - assets/images/pets/buffalo.png
     - assets/images/pets/bunny.png
@@ -98,9 +98,11 @@ flutter:
     - assets/images/pets/reindeer.png
     - assets/images/pets/whitebear.png
     - assets/images/pets/zebra.png
+    #tiles
     - assets/images/tiles/grass_dirt.png
     - assets/images/tiles/stone.png
     - assets/images/tiles/stone_bricks.png
+    #furnitures
     - assets/images/furniture/blue_table.png
     - assets/images/furniture/burgundy_drawer.png
     - assets/images/furniture/round_glass_table.png
@@ -112,11 +114,13 @@ flutter:
     - assets/images/furniture/water_dispenser.png
     - assets/images/furniture/melamine_bookshelf.png
     - assets/images/furniture/kitchen_drawer.png
+    #land
     - assets/images/land/land1.png
     - assets/images/land/land2.png
     - assets/images/land/land3.png
     - assets/images/land/land4.png
     - assets/images/land/pond.png
+    #bush
     - assets/images/bush/bush1.png
     - assets/images/bush/bush2.png
     - assets/images/bush/bush3.png
@@ -131,16 +135,19 @@ flutter:
     - assets/images/bush/ybush5.png
     - assets/images/bush/ybush6.png
     - assets/images/bush/ybush7.png
+    #rocks
     - assets/images/rocks/rock1.png
     - assets/images/rocks/rock2.png
     - assets/images/rocks/rock3.png
     - assets/images/rocks/rock4.png
+    #extras
     - assets/images/extras/butterfly.png
     - assets/images/extras/chair.png
     - assets/images/extras/cooking.png
     - assets/images/extras/map.png
     - assets/images/extras/sign.png
     - assets/images/extras/tent.png
+    #bigyellowtrees
     - assets/images/trees/bigytree1.png
     - assets/images/trees/bigytree2.png
     - assets/images/trees/bigytree3.png
@@ -149,6 +156,7 @@ flutter:
     - assets/images/trees/bigytree6.png
     - assets/images/trees/bigytree7.png
     - assets/images/trees/bigytree8.png
+    #limetrees
     - assets/images/trees/ntree1.png
     - assets/images/trees/ntree2.png
     - assets/images/trees/ntree3.png
@@ -157,6 +165,7 @@ flutter:
     - assets/images/trees/ntree6.png
     - assets/images/trees/ntree7.png
     - assets/images/trees/ntree8.png
+    #greentrees
     - assets/images/trees/talltree.png
     - assets/images/trees/tree1.png
     - assets/images/trees/tree2.png
@@ -170,8 +179,9 @@ flutter:
     - assets/images/trees/tree10.png
     - assets/images/trees/tree11.png
     - assets/images/trees/tree12.png
+    #yellowtrees
     - assets/images/trees/ytree.png
-    - assets/images/trees/ytree2.png
+    - assets/images/trees/ytree1.png
     - assets/images/trees/ytree2.png
     - assets/images/trees/ytree3.png
     - assets/images/trees/ytree4.png
@@ -180,12 +190,14 @@ flutter:
     - assets/images/trees/ytree7.png
     - assets/images/trees/ytree8.png
     - assets/images/trees/ytree9.png
-    - assets/images/trees/ytree11.png
+    - assets/images/trees/ytree10.png
+    #foods
     - assets/images/foods/food_bundle.png
+    - assets/images/foods/small_bowl.png
     - assets/images/foods/food_bag.png
     - assets/images/foods/full_bowl.png
     - assets/images/foods/pet_pack.png
-    - assets/images/foods/small_bowl.png
+
 
   #   - images/a_dot_ham.jpeg
 

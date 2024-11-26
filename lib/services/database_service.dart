@@ -45,7 +45,7 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 22,
+        version: 23,
         onUpgrade: (Database db, int oldVersion, int newVersion) async {
           /// Drop all tables.
           if (kDebugMode) {
@@ -54,6 +54,7 @@ class DatabaseService {
           await db.execute("""
             DROP TABLE IF EXISTS habit;
             DROP TABLE IF EXISTS decoration;
+            DROP TABLE IF EXISTS furniture;
             DROP TABLE IF EXISTS food;
             DROP TABLE IF EXISTS pet;
             DROP TABLE IF EXISTS activity;
@@ -189,14 +190,20 @@ class DatabaseService {
             );
 
             if (kDebugMode) {
-              print("Set the pet [$initialPet] to owned as there are no owned pets.");
-              print("In the recent transaction, there has been $rowsAffected rows affected.");
+              print(
+                "Set the pet [$initialPet] to owned as there are no owned pets.",
+              );
+              print(
+                "In the recent transaction, there has been $rowsAffected rows affected.",
+              );
             }
           }
 
           /// Ensure that we have a pet.
           if (kDebugMode) {
-            print("There are no rooms. Creating a default room with pet $initialPet.");
+            print(
+              "There are no rooms. Creating a default room with pet $initialPet.",
+            );
           }
 
           await database.insert("room", <String, Object?>{
@@ -213,9 +220,11 @@ class DatabaseService {
           });
         }
 
-        if ((await database.query(tables.decoration)).length != decorationIcons.length) {
+        if ((await database.query(tables.decoration)).length !=
+            decorationIcons.length) {
           await database.delete(tables.decoration);
-          for (var (DecorationId id, DecorationIcon decoration) in decorationIcons.pairs) {
+          for (var (DecorationId id, DecorationIcon decoration)
+              in decorationIcons.pairs) {
             await database.insert(
               tables.decoration,
               <String, Object?>{
@@ -252,7 +261,9 @@ class DatabaseService {
             database.rawQuery(query).then(
               (List<Map<String, Object?>> value) {
                 for (var {"name": String table as String} in value) {
-                  database.query(table).then((List<Map<String, Object?>> value) {
+                  database
+                      .query(table)
+                      .then((List<Map<String, Object?>> value) {
                     print((table, value));
                   });
                 }
@@ -608,9 +619,11 @@ class DatabaseService {
   }
 
   // Minor operations:
-  Future<String?> habitDebugDisplay() async =>
-      _database?.query("habit").then((List<Map<String, Object?>> o) => o.join("\n"));
+  Future<String?> habitDebugDisplay() async => _database
+      ?.query("habit")
+      .then((List<Map<String, Object?>> o) => o.join("\n"));
 
-  Future<String?> roomDebugDisplay() async =>
-      _database?.query("room").then((List<Map<String, Object?>> o) => o.join("\n"));
+  Future<String?> roomDebugDisplay() async => _database
+      ?.query("room")
+      .then((List<Map<String, Object?>> o) => o.join("\n"));
 }
