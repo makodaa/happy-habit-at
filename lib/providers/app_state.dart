@@ -232,6 +232,19 @@ class AppState {
     return _habits.singleWhere((Habit habit) => habit.id == habitId);
   }
 
+  List<Habit> completionsAtDate(DateTime date) {
+    return _completions
+        .where(
+          (Completion completion) =>
+              completion.dateTime.year == date.year &&
+              completion.dateTime.month == date.month &&
+              completion.dateTime.day == date.day,
+        )
+        .map((Completion p) => p.habitId)
+        .map((int p) => _habits.firstWhere((Habit h) => h.id == p))
+        .toList();
+  }
+
   bool isCompleted(int habitId, DateTime date) {
     return _completions.any(
       (Completion completion) =>
@@ -259,7 +272,14 @@ class AppState {
     Map<DateTime, int> completionsMap = <DateTime, int>{};
 
     for (Completion completion in _completions) {
-      completionsMap[completion.dateTime] = (completionsMap[completion.dateTime] ?? 0) + 1;
+      DateTime date = completion.dateTime.copyWith(
+        hour: 0,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+        microsecond: 0,
+      );
+      completionsMap[date] = (completionsMap[date] ?? 0) + 1;
     }
 
     return completionsMap;

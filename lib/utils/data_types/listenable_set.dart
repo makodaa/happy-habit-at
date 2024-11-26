@@ -8,6 +8,9 @@ class ListenableSet<T> extends Iterable<T> with ChangeNotifier implements Set<T>
   final Set<T> _inner;
 
   @override
+  int get length => _inner.length;
+
+  @override
   Iterator<T> get iterator => _inner.iterator;
 
   @override

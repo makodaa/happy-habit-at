@@ -152,7 +152,6 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
           ] //
               .sortedBy(_compareManhattanDistance)
               .map((Indexed<Widget> p) => p.$2),
-      
           /// If we are moving them, we should prioritize them at the stack.
           if (_petWidget(constraints) case (_, Widget widget) when !petIsLocked) widget,
           if (_movingDecorationWidget(constraints) case Widget widget) widget,
@@ -386,7 +385,7 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
     }
 
     var PetIcon(
-      :String path,
+      :String imagePath,
       dimensions: (double width, double height),
       displayOffset: DisplayOffset(
         defaultOffset: (double dx, double dy),
@@ -465,13 +464,11 @@ class _MovableGameDisplayState extends State<MovableGameDisplay> {
           },
           child: Transform.flip(
             flipX: isFlipped,
-            child: Image(
-              image: AssetImage(
-                path,
-              ),
+            child: Image.asset(
+              imagePath,
               width: width,
               height: height,
-              color: petIsLocked ? null : Colors.blue,
+              color: petIsLocked ? null : Colors.blue.withOpacity(0.75),
               colorBlendMode: petIsLocked ? null : BlendMode.srcIn,
             ),
           ),

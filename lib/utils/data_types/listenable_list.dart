@@ -10,6 +10,9 @@ class ListenableList<T> extends Iterable<T> with ChangeNotifier implements List<
   final List<T> _inner;
 
   @override
+  int get length => _inner.length;
+
+  @override
   Iterator<T> get iterator => _inner.iterator;
 
   @override

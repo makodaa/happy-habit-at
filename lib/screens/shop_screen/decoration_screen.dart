@@ -46,7 +46,7 @@ class _DecorationScreenState extends State<DecorationScreen> {
               controller: scrollController,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.8,
+                childAspectRatio: 0.85,
                 mainAxisSpacing: 8.0,
                 crossAxisSpacing: 8.0,
               ),
@@ -89,10 +89,12 @@ class _DecorationScreenState extends State<DecorationScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Image.asset(
-                    decoration.imagePath,
-                    width: decoration.imageDimensions.$1,
-                    height: decoration.imageDimensions.$2,
+                  child: Center(
+                    child: Image.asset(
+                      decoration.imagePath,
+                      width: decoration.imageDimensions.$1,
+                      height: decoration.imageDimensions.$2,
+                    ),
                   ),
                 ),
               ),

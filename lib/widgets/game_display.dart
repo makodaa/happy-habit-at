@@ -108,7 +108,7 @@ class _GameDisplayState extends State<GameDisplay> {
     }
 
     var PetIcon(
-      :String path,
+      :String imagePath,
       dimensions: (double width, double height),
       displayOffset: DisplayOffset(
         defaultOffset: (double dx, double dy),
@@ -129,8 +129,8 @@ class _GameDisplayState extends State<GameDisplay> {
           offset: isFlipped ? Offset(dxF, dyF) : Offset(dx, dy),
           child: Transform.flip(
             flipX: isFlipped,
-            child: Image(
-              image: AssetImage(path),
+            child: Image.asset(
+              imagePath,
               width: width,
               height: height,
             ),
