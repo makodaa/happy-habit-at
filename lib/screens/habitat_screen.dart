@@ -81,14 +81,6 @@ class _HabitatScreenState extends State<HabitatScreen> {
                   color: Colors.green,
                 ),
               ),
-              const SizedBox(
-                height: 16,
-              ),
-              FloatingActionButton(
-                heroTag: "feedPetButton",
-                onPressed: () {},
-                child: const Icon(Icons.rice_bowl_rounded),
-              ),
             ],
           ),
         ),

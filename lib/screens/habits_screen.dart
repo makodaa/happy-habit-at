@@ -142,72 +142,82 @@ class _HabitsScreenState extends State<HabitsScreen> {
 
   Widget _habitTile(Habit habit) {
     return ListenableBuilder(
-      listenable: habit,
-      builder: (BuildContext context, Widget? child) {
-        if (habit.daysOfTheWeek.isNotEmpty &&
-            !habit.daysOfTheWeek.contains(DaysOfTheWeek.values[selectedDate.weekday % 7])) {
-          return const SizedBox.shrink();
-        }
+      listenable: appState.completions,
+      builder: (BuildContext context, _) {
+        return ListenableBuilder(
+          listenable: habit,
+          builder: (BuildContext context, Widget? child) {
+            if (habit.daysOfTheWeek.isNotEmpty &&
+                !habit.daysOfTheWeek.contains(DaysOfTheWeek.values[selectedDate.weekday % 7])) {
+              return const SizedBox.shrink();
+            }
 
-        DateTime today = _currentDay();
-        bool isCompleted = appState.isCompleted(habit.id, selectedDate);
-        bool isCompletedBefore = appState.isCompleted(habit.id, selectedDate);
-        bool isBeforeToday = selectedDate.isBefore(today);
-        bool isAfterToday = selectedDate.isAfter(today);
+            DateTime today = _currentDay();
+            bool isCompleted = appState.isCompleted(habit.id, selectedDate);
+            bool isCompletedBefore = appState.isCompleted(habit.id, selectedDate);
+            bool isBeforeToday = selectedDate.isBefore(today);
+            bool isAfterToday = selectedDate.isAfter(today);
 
-        int dayDifference = today.difference(selectedDate).inDays.abs();
+            int dayDifference = today.difference(selectedDate).inDays.abs();
 
-        String? description = appState
-            .completionOfId(habit.id, selectedDate) //
-            .nullableMap((Completion c) => _rightNow().difference(c.dateTime))
-            .nullableMap((Duration d) => _description(d))
-            .nullableMap((String d) => "Completed $d ago");
+            String? description = appState
+                .completionOfId(habit.id, selectedDate) //
+                .nullableMap((Completion c) => _rightNow().difference(c.dateTime))
+                .nullableMap((Duration d) => _description(d))
+                .nullableMap(
+                  (String d) => d.trim().isEmpty ? "Just Completed " : "Completed $d ago",
+                );
 
-        DateTime? dateTimeOfHabitTime = habit.time.nullableMap(
-          (TimeOfDay t) => DateTime(
-            selectedDate.year,
-            selectedDate.month,
-            selectedDate.day,
-            t.hour,
-            t.minute,
-          ),
-        );
+            DateTime? dateTimeOfHabitTime = habit.time.nullableMap(
+              (TimeOfDay t) => DateTime(
+                selectedDate.year,
+                selectedDate.month,
+                selectedDate.day,
+                t.hour,
+                t.minute,
+              ),
+            );
 
-        /// This should result in 'Due ${description} ago' if the habit was due today.
-        String? agoDescription = dateTimeOfHabitTime
-            .nullableMap((DateTime p) => _rightNow().difference(p))
-            .nullableMap((Duration d) => _description(d))
-            .nullableMap((String p) => "Due $p ago");
+            /// This should result in 'Due ${description} ago' if the habit was due today.
+            String? agoDescription = dateTimeOfHabitTime
+                .nullableMap((DateTime p) => _rightNow().difference(p))
+                .nullableMap((Duration d) => _description(d))
+                .nullableMap((String p) => "Due $p ago");
 
-        /// This should result in 'In ${description}' if the habit is due today.
-        String? fromNowDescription = dateTimeOfHabitTime
-            .nullableMap((DateTime p) => p.difference(_rightNow()))
-            .nullableMap((Duration d) => _description(d))
-            .nullableMap((String p) => "In $p");
+            /// This should result in 'In ${description}' if the habit is due today.
+            String? fromNowDescription = dateTimeOfHabitTime
+                .nullableMap((DateTime p) => p.difference(_rightNow()))
+                .nullableMap((Duration d) => _description(d))
+                .nullableMap((String p) => "In $p");
 
-        print((agoDescription, fromNowDescription));
+            print((agoDescription, fromNowDescription));
 
-        String trailing = isBeforeToday
-            ? "${isCompletedBefore ? "Completed " : ""}"
-                "$dayDifference day${dayDifference > 1 ? "s" : ""} ago"
-            : isAfterToday
-                ? "In $dayDifference day${dayDifference > 1 ? "s" : ""}"
-                : isCompleted
-                    ? description ?? "Completed"
-                    : fromNowDescription
-                            .nullableFlatMap((String p) => p == "In " ? agoDescription : p) ??
-                        "Within today";
+            String trailing = isBeforeToday
+                ? "${isCompletedBefore ? "Completed " : ""}"
+                    "$dayDifference day${dayDifference > 1 ? "s" : ""} ago"
+                : isAfterToday
+                    ? "In $dayDifference day${dayDifference > 1 ? "s" : ""}"
+                    : isCompleted
+                        ? description ?? "Completed"
+                        : fromNowDescription
+                                .nullableFlatMap((String p) => p == "In " ? agoDescription : null)
+                                .nullableFlatMap(
+                                  (String p) => p == "Due  ago" ? "Due right now" : p,
+                                ) ??
+                            "Within today";
 
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: habit.colorIndex.nullableMap((int i) => habitColors[i].background),
-            child: Icon(habitIcons[habit.icon]),
-          ),
-          title: Text(habit.name),
-          subtitle: habit.goal.nullableMap((String g) => Text(g)),
-          trailing: Text(trailing),
-          onTap: () async {
-            await _showHabitInformationModal(habit);
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundColor: habit.colorIndex.nullableMap((int i) => habitColors[i].background),
+                child: Icon(habitIcons[habit.icon]),
+              ),
+              title: Text(habit.name),
+              subtitle: habit.goal.nullableMap((String g) => Text(g)),
+              trailing: Text(trailing),
+              onTap: () async {
+                await _showHabitInformationModal(habit);
+              },
+            );
           },
         );
       },
