@@ -7,6 +7,7 @@ import "package:happy_habit_at/global/shared_preferences.dart";
 import "package:happy_habit_at/providers/food.dart";
 import "package:happy_habit_at/providers/habit.dart";
 import "package:happy_habit_at/providers/habitat_decoration.dart";
+import "package:happy_habit_at/providers/pet.dart";
 import "package:happy_habit_at/providers/placement.dart";
 import "package:happy_habit_at/providers/room.dart";
 import "package:happy_habit_at/services/database_service.dart";
@@ -45,6 +46,12 @@ class AppState {
 
   final ListenableSet<DecorationId> _ownedDecorations = ListenableSet<DecorationId>();
   ImmutableListenableSet<DecorationId> get ownedDecorations => _ownedDecorations.immutable;
+
+  final ListenableList<Pet> _pets = ListenableList<Pet>();
+  ImmutableListenableList<Pet> get pets => _pets.immutable;
+
+  final ListenableSet<PetId> _ownedPets = ListenableSet<PetId>();
+  ImmutableListenableSet<PetId> get ownedPets => _ownedPets.immutable;
 
   final ListenableList<Food> _foods = ListenableList<Food>();
   ImmutableListenableList<Food> get foods => _foods.immutable;
@@ -96,6 +103,16 @@ class AppState {
 
     for (Map<String, Object?> foodMap in await _database.readFoods()) {
       _foods.add(Food.fromMap(foodMap));
+    }
+
+    for (Map<String, Object?> pet in await _database.readPets()) {
+      _pets.add(Pet.fromMap(pet));
+    }
+
+    for (Pet pet in _pets) {
+      if (pet.isOwned != 0) {
+        _ownedPets.add(pet.id);
+      }
     }
 
     /// Initialize the last active room.
@@ -411,6 +428,14 @@ class AppState {
     );
 
     currency.value -= decoration.salePrice;
+  }
+
+  Future<void> ownPet(PetId petId) async {
+    ///
+
+    _ownedPets.add(petId);
+    await _database.updatePet(petId: petId, isOwned: 1);
+    currency.value -= 150;
   }
 
   Future<void> sellDecoration(DecorationId decorationId) async {
