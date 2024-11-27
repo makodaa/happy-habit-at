@@ -45,7 +45,7 @@ class DatabaseService {
       String path = join(await getDatabasesPath(), "app_database.db");
       _database = await openDatabase(
         path,
-        version: 22,
+        version: 28,
         onUpgrade: (Database db, int oldVersion, int newVersion) async {
           /// Drop all tables.
           if (kDebugMode) {
@@ -54,11 +54,14 @@ class DatabaseService {
           await db.execute("""
             DROP TABLE IF EXISTS habit;
             DROP TABLE IF EXISTS decoration;
+            DROP TABLE IF EXISTS furniture;
             DROP TABLE IF EXISTS food;
             DROP TABLE IF EXISTS pet;
             DROP TABLE IF EXISTS activity;
             DROP TABLE IF EXISTS room;
             DROP TABLE IF EXISTS placement;
+            DROP TABLE IF EXISTS regularity;
+            DROP TABLE IF EXISTS time;
           """);
         },
       );
@@ -150,7 +153,7 @@ class DatabaseService {
 
         /// If pets are not yet initialized, we initialize them.
         if ((await database.query(tables.pet)).length != petIcons.length) {
-          for (String id in petIcons.keys) {
+          for (PetId id in petIcons.keys) {
             await database.insert(
               "pet",
               <String, Object?>{
@@ -160,19 +163,28 @@ class DatabaseService {
               },
               conflictAlgorithm: ConflictAlgorithm.ignore,
             );
+            //TODO: check update
+            await database.update(
+              "pet",
+              <String, Object?>{
+                "is_owned": 1,
+              },
+              where: "pet_id = ?",
+              whereArgs: <Object?>["1"],
+            );
           }
         }
 
         /// If there are no rooms, we create a default one.
         if (await database.query(tables.room) case []) {
-          String initialPet;
+          PetId initialPet;
 
           List<Map<String, Object?>> ownedPets = await database.rawQuery(
             "SELECT pet_id FROM pet WHERE is_owned = 1",
           );
 
           if (ownedPets.isNotEmpty) {
-            initialPet = ownedPets.first["pet_id"]! as String;
+            initialPet = PetId(ownedPets.first["pet_id"]! as String);
           } else {
             initialPet = petIcons.keys.first;
 
@@ -189,18 +201,24 @@ class DatabaseService {
             );
 
             if (kDebugMode) {
-              print("Set the pet [$initialPet] to owned as there are no owned pets.");
-              print("In the recent transaction, there has been $rowsAffected rows affected.");
+              print(
+                "Set the pet [$initialPet] to owned as there are no owned pets.",
+              );
+              print(
+                "In the recent transaction, there has been $rowsAffected rows affected.",
+              );
             }
           }
 
           /// Ensure that we have a pet.
           if (kDebugMode) {
-            print("There are no rooms. Creating a default room with pet $initialPet.");
+            print(
+              "There are no rooms. Creating a default room with pet $initialPet.",
+            );
           }
 
           await database.insert("room", <String, Object?>{
-            "room_name": "Room Uno",
+            "room_name": "Your First Room",
             "room_size": 5,
             "room_tile_id": "grass_dirt",
             "pet_id": "dog",
@@ -220,7 +238,7 @@ class DatabaseService {
               tables.decoration,
               <String, Object?>{
                 "decoration_id": id,
-                "quantity_owned": 1,
+                "quantity_owned": 0,
                 "happiness_buff": decoration.happinessBuff,
                 "energy_buff": decoration.energyBuff,
               },
@@ -433,6 +451,13 @@ class DatabaseService {
     return <Map<String, Object?>>[];
   }
 
+  Future<List<Map<String, Object?>>> readPets() async {
+    if (_database case Database database) {
+      return database.query("pet");
+    }
+    return <Map<String, Object?>>[];
+  }
+
   // UPDATE
   Future<int?> updateHabit({
     required int id,
@@ -480,7 +505,7 @@ class DatabaseService {
     required String name,
     required int size,
     required String tileId,
-    required String petId,
+    required PetId petId,
     required int petHunger,
     required int petHappiness,
     required int petEnergy,
@@ -563,6 +588,20 @@ class DatabaseService {
         },
         where: "decoration_id = ?",
         whereArgs: <Object?>[decorationId],
+      );
+    }
+  }
+
+  Future<void> updatePet({
+    required PetId petId,
+    required int isOwned,
+  }) async {
+    if (_database case Database database) {
+      await database.update(
+        "pet",
+        <String, Object?>{"is_owned": isOwned},
+        where: "pet_id = ?",
+        whereArgs: <Object?>[petId],
       );
     }
   }

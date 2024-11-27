@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:happy_habit_at/utils/extension_types/ids.dart";
 
 // CREATE TABLE IF NOT EXISTS room (
 //   room_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,7 +20,7 @@ class Room extends ChangeNotifier {
     required String name,
     required int size,
     required String tileId,
-    required String petId,
+    required PetId petId,
     required int petHunger,
     required int petHappiness,
     required int petEnergy,
@@ -41,7 +42,7 @@ class Room extends ChangeNotifier {
         _name = map["room_name"]! as String,
         _size = map["room_size"]! as int,
         _tileId = map["room_tile_id"]! as String,
-        _petId = map["pet_id"]! as String,
+        _petId = PetId(map["pet_id"]! as String),
         _petHunger = map["pet_hunger"]! as int,
         _petHappiness = map["pet_happiness"]! as int,
         _petEnergy = map["pet_energy"]! as int,
@@ -78,9 +79,9 @@ class Room extends ChangeNotifier {
     }
   }
 
-  String _petId;
-  String get petId => _petId;
-  set petId(String value) {
+  PetId _petId;
+  PetId get petId => _petId;
+  set petId(PetId value) {
     if (petId != value) {
       _petId = value;
       notifyListeners();
@@ -137,7 +138,7 @@ class Room extends ChangeNotifier {
     required String name,
     required int size,
     required String tileId,
-    required String petId,
+    required PetId petId,
     required int petHunger,
     required int petHappiness,
     required int petEnergy,

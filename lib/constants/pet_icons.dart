@@ -1,4 +1,5 @@
 import "package:happy_habit_at/structs/display_offset.dart";
+import "package:happy_habit_at/utils/extension_types/ids.dart";
 
 typedef PetIcon = ({
   /// The asset imagePath of the pet icon.
@@ -18,8 +19,8 @@ typedef PetIcon = ({
   bool imageIsFacingLeft,
 });
 
-const Map<String, PetIcon> petIcons = <String, PetIcon>{
-  "dog": (
+const Map<PetId, PetIcon> petIcons = <PetId, PetIcon>{
+  PetId("dog"): (
     name: "Dog",
     imagePath: "assets/images/pets/dog.png",
     model: "",
@@ -31,7 +32,7 @@ const Map<String, PetIcon> petIcons = <String, PetIcon>{
     ),
     imageIsFacingLeft: true,
   ),
-  "cat": (
+  PetId("cat"): (
     name: "Cat",
     imagePath: "assets/images/pets/cat.png",
     model: "",
@@ -43,7 +44,7 @@ const Map<String, PetIcon> petIcons = <String, PetIcon>{
     ),
     imageIsFacingLeft: true,
   ),
-  "buffalo": (
+  PetId("buffalo"): (
     name: "Buffalo",
     imagePath: "assets/images/pets/buffalo.png",
     model: "",
@@ -55,7 +56,7 @@ const Map<String, PetIcon> petIcons = <String, PetIcon>{
     ),
     imageIsFacingLeft: true,
   ),
-  "cow": (
+  PetId("cow"): (
     name: "Cow",
     imagePath: "assets/images/pets/cow.png",
     model: "",
@@ -67,7 +68,7 @@ const Map<String, PetIcon> petIcons = <String, PetIcon>{
     ),
     imageIsFacingLeft: true,
   ),
-  "bunny": (
+  PetId("bunny"): (
     name: "Bunny",
     imagePath: "assets/images/pets/bunny.png",
     model: "",
@@ -79,7 +80,7 @@ const Map<String, PetIcon> petIcons = <String, PetIcon>{
     ),
     imageIsFacingLeft: true,
   ),
-  "deer": (
+  PetId("deer"): (
     name: "Deer",
     imagePath: "assets/images/pets/deer.png",
     model: "",
