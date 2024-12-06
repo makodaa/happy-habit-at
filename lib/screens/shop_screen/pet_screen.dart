@@ -1,13 +1,14 @@
+import "dart:async";
 import "dart:math";
 
 import "package:flutter/material.dart";
+import "package:flutter/scheduler.dart";
 import "package:happy_habit_at/constants/pet_icons.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/utils/extension_types/ids.dart";
 import "package:happy_habit_at/utils/extensions/map_pairs.dart";
 import "package:happy_habit_at/widgets/currency_display.dart";
 import "package:provider/provider.dart";
-import "package:recase/recase.dart";
 
 class PetScreen extends StatefulWidget {
   const PetScreen({super.key});
@@ -18,8 +19,13 @@ class PetScreen extends StatefulWidget {
   static const SizedBox _fieldSeparator = SizedBox(height: 16.0);
 }
 
-class _PetScreenState extends State<PetScreen> {
+class _PetScreenState extends State<PetScreen> with SingleTickerProviderStateMixin {
   late final AppState appState = context.read<AppState>();
+
+  late Completer<PetId>? rollCompleter = null;
+  late Duration? lastDuration = null;
+  late DateTime? lastTick = null;
+  late Ticker? ticker = null;
 
   @override
   Widget build(BuildContext context) {
@@ -50,86 +56,146 @@ class _PetScreenState extends State<PetScreen> {
         elevation: 2.0,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: <Widget>[
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50.0),
-                  color: Colors.green.shade800,
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.catching_pokemon,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const Text(
-                "Buy a new pet",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              PetScreen._fieldSeparator,
-              const Stack(
-                children: <Widget>[
-                  Opacity(
-                    opacity: 0.0,
-                    child: Text("If you can read this, you are a pogger"),
-                  ),
-                  Positioned.fill(
-                    child: Center(child: Text("Roll for a random pet!")),
-                  ),
-                ],
-              ),
-              PetScreen._fieldSeparator,
-              FilledButton(
-                onPressed: appState.currency.value > 150
-                    ? () async {
-                        Random generator = Random();
-                        List<PetId> petList = petIcons.keys.toList();
-                        PetId newPet = petList[generator.nextInt(petIcons.length)];
-                        await appState.ownPet(newPet);
-                        if (context.mounted) {
-                          return showDialog<void>(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text("You got a new pet"),
-                                content: SingleChildScrollView(
-                                  child: Column(
-                                    children: <Widget>[
-                                      Padding(
-                                        padding: const EdgeInsets.all(32.0),
-                                        child: Image.asset(
-                                          petIcons[newPet]!.imagePath,
-                                          width: petIcons[newPet]!.dimensions.$1,
-                                          height: petIcons[newPet]!.dimensions.$2,
+          child: ListenableBuilder(
+            listenable: appState.ownedPets,
+            builder: (BuildContext context, _) {
+              Random generator = Random();
+              List<PetId> notOwnedPets = appState.notOwnedPets;
+
+              return switch (notOwnedPets.isNotEmpty) {
+                true => Column(
+                    children: <Widget>[
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50.0),
+                          color: Colors.green.shade800,
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(
+                            Icons.catching_pokemon,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const Text(
+                        "Buy a new pet",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      PetScreen._fieldSeparator,
+                      const Stack(
+                        children: <Widget>[
+                          Opacity(
+                            opacity: 0.0,
+                            child: Text("If you can read this, you are a pogger"),
+                          ),
+                          Positioned.fill(
+                            child: Center(child: Text("Roll for a random pet!")),
+                          ),
+                        ],
+                      ),
+                      PetScreen._fieldSeparator,
+                      FilledButton(
+                        onPressed: appState.currency.value > 150
+                            ? () async {
+                                PetId newPetId =
+                                      notOwnedPets[generator.nextInt(notOwnedPets.length)];
+                                PetIcon newPetIcon = petIcons[newPetId]!;
+
+                                await appState.ownPet(newPetId);
+                                if (!context.mounted) {
+                                  return;
+                                }
+
+                                return showDialog<void>(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text("You got a new pet"),
+                                      content: SingleChildScrollView(
+                                        child: Column(
+                                          children: <Widget>[
+                                            Padding(
+                                              padding: const EdgeInsets.all(32.0),
+                                              child: Center(
+                                                child: Image.asset(
+                                                  newPetIcon.imagePath,
+                                                  width: newPetIcon.dimensions.$1,
+                                                  height: newPetIcon.dimensions.$2,
+                                                ),
+                                              ),
+                                            ),
+                                            Text(newPetIcon.name),
+                                          ],
                                         ),
                                       ),
-                                      Text(
-                                        "$newPet".pascalCase,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        }
-                      }
-                    : null,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 8.0,
-                    horizontal: 2.0,
+                                    );
+                                  },
+                                );
+                              }
+                            : null,
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 8.0,
+                            horizontal: 2.0,
+                          ),
+                          child: CurrencyDisplay(currency: 150),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: CurrencyDisplay(currency: 150),
-                ),
-              ),
-            ],
+                false => Column(
+                    children: <Widget>[
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50.0),
+                          color: Colors.green.shade800,
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(
+                            Icons.catching_pokemon,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const Text(
+                        "Buy a new pet",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      PetScreen._fieldSeparator,
+                      const Stack(
+                        children: <Widget>[
+                          Opacity(
+                            opacity: 0.0,
+                            child: Text("If you can read this, you are a pogger"),
+                          ),
+                          Positioned.fill(
+                            child: Center(child: Text("You own all the pets!")),
+                          ),
+                        ],
+                      ),
+                      PetScreen._fieldSeparator,
+                      const FilledButton(
+                        onPressed: null,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 8.0,
+                            horizontal: 2.0,
+                          ),
+                          child: CurrencyDisplay(currency: 150),
+                        ),
+                      ),
+                    ],
+                  ),
+              };
+            },
           ),
         ),
       ),
@@ -218,7 +284,7 @@ class _PetScreenState extends State<PetScreen> {
                           )
                         : null,
                   ),
-                )
+                ),
               ],
             ),
           ),

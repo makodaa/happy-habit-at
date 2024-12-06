@@ -2,6 +2,7 @@ import "package:flutter/foundation.dart";
 import "package:flutter/material.dart" hide Decoration;
 import "package:happy_habit_at/constants/decoration_icons.dart";
 import "package:happy_habit_at/constants/expansion_rules.dart";
+import "package:happy_habit_at/constants/pet_icons.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/global/shared_preferences.dart";
 import "package:happy_habit_at/providers/food.dart";
@@ -329,6 +330,13 @@ class AppState {
     return _placements
         .where((Placement placement) => placement.decorationId == decorationId)
         .length;
+  }
+
+  List<PetId> get notOwnedPets {
+    return petIcons.entries
+        .where((MapEntry<PetId, PetIcon> entry) => !_ownedPets.contains(entry.key))
+        .map((MapEntry<PetId, PetIcon> entry) => entry.key)
+        .toList();
   }
 
   // UPDATE
