@@ -21,7 +21,6 @@ class HomeScreen extends StatelessWidget {
         children: children,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        // TODO(water-mizuu): Change colors to use ColorTheme.
         unselectedItemColor: const Color(0xFF8A8A8E),
         selectedItemColor: const Color(0xFF0FA958),
         currentIndex: navigationShell.currentIndex,

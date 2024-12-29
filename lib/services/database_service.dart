@@ -163,7 +163,6 @@ class DatabaseService {
               },
               conflictAlgorithm: ConflictAlgorithm.ignore,
             );
-            //TODO: check update
             await database.update(
               "pet",
               <String, Object?>{

@@ -24,7 +24,6 @@ class _ShopScreenState extends State<ShopScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
 
-    // TODO(water-mizuu): Modify
     tabController = TabController(length: 3, vsync: this)
       ..addListener(() {
         widget.navigationShell.goBranch(tabController.index);
