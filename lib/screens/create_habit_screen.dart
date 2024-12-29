@@ -5,7 +5,6 @@ import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:happy_habit_at/constants/habit_colors.dart";
 import "package:happy_habit_at/constants/habit_icons.dart";
-import "package:happy_habit_at/constants/habit_icons.dart";
 import "package:happy_habit_at/enums/days_of_the_week.dart";
 import "package:happy_habit_at/providers/app_state.dart";
 import "package:happy_habit_at/widgets/icon_dialog.dart";
